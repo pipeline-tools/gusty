@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+build
+dist
+gusty.egg-info
+*.pyc
