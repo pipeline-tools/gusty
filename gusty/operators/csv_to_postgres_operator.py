@@ -55,7 +55,7 @@ class CSVToPostgresOperator(BaseOperator):
         self.csv_file = csv_file
         self.postgres_conn_id = postgres_conn_id
         self.schema = schema
-        super(CSVtoPostgresOperator, self).__init__(**kwargs)
+        super(CSVToPostgresOperator, self).__init__(**kwargs)
 
     def execute(self, context):
         hook = PostgresHook(postgres_conn_id = postgres_conn_id)

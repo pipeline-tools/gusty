@@ -8,4 +8,5 @@ from .operators.csv_to_postgres_operator import CSVToPostgresOperator
 
 class GustyPlugin(AirflowPlugin):
   name = 'gusty'
-  operators = [RmdOperator, JupyterOperator, MaterializedPostgresOperator]
+  operators = [RmdOperator, JupyterOperator, MaterializedPostgresOperator,
+               CSVToPostgresOperator]

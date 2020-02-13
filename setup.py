@@ -16,7 +16,8 @@ setuptools.setup(
     install_requires=[
           'apache-airflow',
           'jinja2',
-          'inflection'
+          'inflection',
+          'python-frontmatter'
     ],
     entry_points = {
         'airflow.plugins': [
