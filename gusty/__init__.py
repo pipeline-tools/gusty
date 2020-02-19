@@ -220,13 +220,19 @@ def build_tasks(yaml_specs, dag):
     task_dict = {}
 
     for spec in yaml_specs:
-        # The spec will have dag added and some keys removed
-        args = spec.copy()
-        args["dag"] = dag
-        for k in ["operator", "dependencies", "external_dependencies"]:
-            args.pop(k, None)
-
         operator = __get_operator(spec["operator"])
+
+        # The spec will have dag added and some keys removed
+        args = {k:v for k,v in spec.items()
+            if not hasattr(operator, 'template_fields')
+                or k in operator.template_fields}
+        args["task_id"] = spec["task_id"]
+        args["dag"] = dag
+
+        # Some arguments are used only by gusty
+        for field in ['operator', 'dependencies', 'external_dependencies']:
+            args.pop(field, None)
+
         task = operator(**args)
 
         task_dict[spec["task_id"]] = task
