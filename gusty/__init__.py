@@ -32,7 +32,7 @@ def __get_operator(operator_name):
     """Given the name as camel case"""
     if not re.match("^[A-Za-z\d]+$", operator_name):
         raise ValueError("Operator name must be an alphanumeric string")
-    
+
     module_name = module_dict[underscore(operator_name)]
     import_stmt = "from %s import %s" % (module_name, operator_name)
 
@@ -109,7 +109,7 @@ def get_yaml_spec_dependencies(spec, task):
     """
     spec_dependencies = spec.get("dependencies", [])
     task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
-    
+
     return spec_dependencies + task_dependencies
 
 # External Dependencies
@@ -200,24 +200,24 @@ def set_dependencies(yaml_specs, tasks, latest_only=True, **kwargs):
 
 def build_tasks(yaml_specs, dag):
     task_dict = {}
-    
+
     for spec in yaml_specs:
         # The spec will have dag added and some keys removed
         args = spec.copy()
         args["dag"] = dag
         for k in ["operator", "dependencies", "external_dependencies", "file_path"]:
             args.pop(k, None)
-        
+
         operator = __get_operator(spec["operator"])
         task = operator(**args)
-        
+
         task_dict[spec["task_id"]] = task
 
     return task_dict
 
-def build_dag(directory, dag):
+def build_dag(directory, dag, latest_only=True):
     yaml_specs = get_yaml_specs(directory)
     tasks = build_tasks(yaml_specs, dag=dag)
-    set_dependencies(yaml_specs, tasks, dag=dag)
+    set_dependencies(yaml_specs, tasks, dag=dag, latest_only=latest_only)
 
     return tasks
