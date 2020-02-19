@@ -205,7 +205,7 @@ def build_tasks(yaml_specs, dag):
         # The spec will have dag added and some keys removed
         args = spec.copy()
         args["dag"] = dag
-        for k in ["operator", "dependencies", "external_dependencies", "file_path"]:
+        for k in ["operator", "dependencies", "external_dependencies"]:
             args.pop(k, None)
 
         operator = __get_operator(spec["operator"])
