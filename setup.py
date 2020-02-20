@@ -17,11 +17,13 @@ setuptools.setup(
           'apache-airflow',
           'jinja2',
           'inflection',
-          'python-frontmatter'
+          'python-frontmatter',
+          'sshtunnel',
+          'pysftp'
     ],
     entry_points = {
         'airflow.plugins': [
-            'gusty = gusty.gusty_plugin:GustyPlugin'
+        #    'gusty = gusty.gusty_plugin:GustyPlugin'
         ]},
     classifiers=[
         "Programming Language :: Python :: 3",

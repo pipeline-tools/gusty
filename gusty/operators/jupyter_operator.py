@@ -1,33 +1,38 @@
 import os
 
-from airflow.operators.bash_operator import BashOperator
+from airflow.contrib.operators.ssh_operator import SSHOperator
+from airflow.contrib.hooks.sftp_hook import SFTPHook
 from airflow.utils.decorators import apply_defaults
 
-class JupyterOperator(BashOperator):
-    """
-    The JupyterOperator executes a Jupyter notebook file. Note that it is up to
-    the ipynb itself to handle connecting to the database.
-    """
-    ui_color = "#ef8d50"
+command_template = """
+jupytext --execute ~/{basename}' || exit 1; rm ~/{basename}
+"""
 
+class JupyterOperator(SSHOperator):
+    """
+    The JupyterOperator executes the Jupyer notebook on another server.
+    """
+    ui_color = "#75AADB"
+    template_fields = SSHOperator.template_fields + ('file_path', )
+    
     @apply_defaults
-    def __init__(self, file_path, **kwargs):
-        self.ipynb_file = file_path
-        self.html_output = file_path.replace('.ipynb', '.html')
-        self.user = os.environ['EZ_AF_USER']
-        self.pythonserver = os.environ['EZ_AF_PYTHON_SERVER']
+    def __init__(self, file_path, ssh_conn_id = "pythonserver_default", *args, **kwargs):
+        self.file_path = file_path
+        self.base_name = os.path.basename(self.file_path)
+        self.html_output = self.base_name.replace('.Rmd', '.html')
 
-        self.command = """(scp -o StrictHostKeyChecking=no {local_filepath} {user}@{pythonserver}:~/
-                           ssh -o StrictHostKeyChecking=no {user}@{pythonserver} 'jupyter nbconvert --execute ~/{filepath_basename}' || exit 1;
-                           ssh -o StrictHostKeyChecking=no {user}@{pythonserver} 'rm ~/{filepath_basename} && rm ~/{html_output_basename}';
-                           )""".format(
-                           user = self.user,
-                           pythonserver = self.pythonserver,
-                           local_filepath = self.ipynb_file,
-                           filepath_basename = os.path.basename(self.ipynb_file),
-                           html_output_basename = os.path.basename(self.html_output))
+        command = command_template.format(basename = self.base_name,
+                                          html_output_basename = self.html_output)
 
-        super(JupyterOperator, self).__init__(
-            bash_command = self.command,
-            **kwargs)
+        super(JupyterOperator, self).__init__(ssh_conn_id = ssh_conn_id, command = command,
+                                              *args, **kwargs)
 
+    def execute(self, context):
+        # Run the command, but first put the file up on the server
+        print(self.ssh_conn_id)
+        sftp_hook = SFTPHook(ftp_conn_id=self.ssh_conn_id,
+                             timeout=self.timeout)
+        
+        sftp_hook.store_file(self.base_name, self.file_path)
+
+        super(JupyterOperator, self).execute(context)

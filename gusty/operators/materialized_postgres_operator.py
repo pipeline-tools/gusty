@@ -22,6 +22,7 @@ def detect_dependencies(query, schema, task_id):
 
 class MaterializedPostgresOperator(PostgresOperator):
     ui_color = "#c37ed5"
+    template_fields = PostgresOperator.template_fields + ("schema", "description", "fields", )
 
     @apply_defaults
     def __init__(

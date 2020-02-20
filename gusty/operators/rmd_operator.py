@@ -1,32 +1,38 @@
 import os
 
-from airflow.operators.bash_operator import BashOperator
+from airflow.contrib.operators.ssh_operator import SSHOperator
+from airflow.contrib.hooks.sftp_hook import SFTPHook
 from airflow.utils.decorators import apply_defaults
 
-class RmdOperator(BashOperator):
+command_template = """
+Rscript -e 'library(methods); rmarkdown::render("~/{basename}")'; rm -f ~/{basename}; rm -f ~/{html_out}
+"""
+
+class RmdOperator(SSHOperator):
     """
     The RmdOperator executes the R Markdown file. Note that it is up to the Rmd itself
     to handle connecting to the database.
     """
     ui_color = "#75AADB"
+    template_fields = SSHOperator.template_fields + ('file_path', )
     
     @apply_defaults
-    def __init__(self, file_path, **kwargs):
-        self.rmd_file = file_path
-        self.html_output = file_path.replace('.Rmd', '.html')
-        self.user = os.environ['EZ_AF_USER']
-        self.rserver = os.environ['EZ_AF_R_SERVER']
+    def __init__(self, file_path, ssh_conn_id = "rserver_default", *args, **kwargs):
+        self.file_path = file_path
+        self.base_name = os.path.basename(self.file_path)
+        self.html_output = self.base_name.replace('.Rmd', '.html')
 
-        self.command = """(scp -o StrictHostKeyChecking=no {local_filepath} {user}@{rserver}:~/
-                           ssh -o StrictHostKeyChecking=no {user}@{rserver} 'Rscript /usr/render_rmd.R ~/{filepath_basename}';
-                           ssh -o StrictHostKeyChecking=no {user}@{rserver} 'rm ~/{filepath_basename} && rm ~/{html_output_basename}';
-                           )""".format(
-                           user = self.user,
-                           rserver = self.rserver,
-                           local_filepath = self.rmd_file,
-                           filepath_basename = os.path.basename(self.rmd_file),
-                           html_output_basename = os.path.basename(self.html_output))
+        command = command_template.format(basename = self.base_name,
+                                          html_out = self.html_output)
 
-        super(RmdOperator, self).__init__(
-            bash_command = self.command,
-            **kwargs)
+        super(RmdOperator, self).__init__(ssh_conn_id = ssh_conn_id, command = command,
+                                          *args, **kwargs)
+
+    def execute(self, context):
+        # Run the command, but first put the file up on the server
+        sftp_hook = SFTPHook(ftp_conn_id=self.ssh_conn_id,
+                             timeout=self.timeout)
+        
+        sftp_hook.store_file(self.base_name, self.file_path)
+
+        super(RmdOperator, self).execute(context)

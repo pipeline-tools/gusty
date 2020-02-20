@@ -1,11 +1,9 @@
+import sys
 import re
 import os
 import yaml
 import pkgutil
 import itertools
-
-# Huge hack: work with gusty plugin
-import airflow.operators.gusty
 
 import airflow
 from airflow.operators.latest_only_operator import LatestOnlyOperator
@@ -17,12 +15,17 @@ from inflection import underscore
 
 ##########
 
+# Hack: add AIRFLOW_HOME/operators to the Python path, for custom operators
+CUSTOM_OPERATORS_DIR = os.path.join(os.environ["AIRFLOW_HOME"], "operators")
+sys.path.append(CUSTOM_OPERATORS_DIR)
+
 gusty_path = [os.path.join(os.path.split(__file__)[0], "operators")]
 
 module_paths = [
     ("airflow.operators.", airflow.operators.__path__),
     ("airflow.contrib.operators.", airflow.contrib.operators.__path__),
-    ("gusty.operators.", gusty_path)
+    ("gusty.operators.", gusty_path),
+    ("", [CUSTOM_OPERATORS_DIR])
 ]
 
 pairs = [[(_.name, m + _.name) for _ in pkgutil.iter_modules(path)]

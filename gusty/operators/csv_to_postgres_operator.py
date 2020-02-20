@@ -3,6 +3,8 @@ import re
 from inflection import underscore
 
 from airflow.models.baseoperator import BaseOperator
+from airflow.hooks.postgres_hook import PostgresHook
+
 from airflow.utils.decorators import apply_defaults
 
 from gusty.templates.sql_templates import postgres_comment_table
@@ -43,6 +45,7 @@ def upload_csv(csv_file, table_name, schema, engine):
 class CSVToPostgresOperator(BaseOperator):
     """Upload a CSV file from the dags/csv folder to a Postgres connection."""
     ui_color = "#fffad8"
+    template_fields = BaseOperator.template_fields + ["csv_file", "postgres_conn_id", "schema", ]
 
     @apply_defaults
     def __init__(
@@ -58,7 +61,7 @@ class CSVToPostgresOperator(BaseOperator):
         super(CSVToPostgresOperator, self).__init__(**kwargs)
 
     def execute(self, context):
-        hook = PostgresHook(postgres_conn_id = postgres_conn_id)
+        hook = PostgresHook(postgres_conn_id = self.postgres_conn_id)
         engine = hook.get_sqlalchemy_engine()
 
         upload_csv(self.csv_file, self.task_id, self.schema, engine)
