@@ -12,9 +12,9 @@ class JupyterOperator(SSHOperator):
     """
     The JupyterOperator executes the Jupyer notebook on another server.
     """
-    ui_color = "#75AADB"
+    ui_color = "#ef8d50"
     template_fields = SSHOperator.template_fields + ('file_path', )
-    
+
     @apply_defaults
     def __init__(self, file_path, ssh_conn_id = "pythonserver_default", *args, **kwargs):
         self.file_path = file_path
@@ -32,7 +32,7 @@ class JupyterOperator(SSHOperator):
         print(self.ssh_conn_id)
         sftp_hook = SFTPHook(ftp_conn_id=self.ssh_conn_id,
                              timeout=self.timeout)
-        
+
         sftp_hook.store_file(self.base_name, self.file_path)
 
         super(JupyterOperator, self).execute(context)
