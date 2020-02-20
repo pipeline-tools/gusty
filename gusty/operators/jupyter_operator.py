@@ -5,7 +5,7 @@ from airflow.contrib.hooks.sftp_hook import SFTPHook
 from airflow.utils.decorators import apply_defaults
 
 command_template = """
-jupytext --execute ~/{basename}' || exit 1; rm ~/{basename}
+jupytext --execute ~/{basename}; rm ~/{basename}
 """
 
 class JupyterOperator(SSHOperator):

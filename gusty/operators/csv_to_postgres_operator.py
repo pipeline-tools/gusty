@@ -13,8 +13,7 @@ from gusty.templates.sql_templates import postgres_comment_table
 ## Globals ##
 #############
 
-# csv_dir = os.path.join(os.getenv('AIRFLOW_HOME'), "dags", "csv")
-# csv_files = [os.path.join(csv_dir, file) for file in os.listdir(csv_dir) if file.endswith("csv")]
+csv_dir = os.path.join(os.getenv('AIRFLOW_HOME'), "dags", "csv")
 
 ###############
 ## Functions ##
@@ -31,7 +30,9 @@ def clean_columns(df):
 
 def upload_csv(csv_file, table_name, schema, engine):
     csv_path = os.path.join(csv_dir, csv_file)
-    assert csv_path in csv_files, "CSV file " + csv_file + " does not exist in " + csv_dir
+    
+    if not os.path.exists(csv_dir):
+        raise FileNotFoundError("CSV %s should be in airflow/dags/csv" % (csv_file, ))
 
     import pandas as pd
     csv_file = pd.read_csv(csv_path)
@@ -45,7 +46,7 @@ def upload_csv(csv_file, table_name, schema, engine):
 class CSVToPostgresOperator(BaseOperator):
     """Upload a CSV file from the dags/csv folder to a Postgres connection."""
     ui_color = "#fffad8"
-    template_fields = BaseOperator.template_fields + ["csv_file", "postgres_conn_id", "schema", ]
+    template_fields = BaseOperator.template_fields + ["csv_file", "postgres_conn_id", "schema", "description", "fields", ]
 
     @apply_defaults
     def __init__(
@@ -53,11 +54,15 @@ class CSVToPostgresOperator(BaseOperator):
             csv_file,
             postgres_conn_id = "postgres_default",
             schema = "views",
+            description = None,
+            fields = None,
             **kwargs):
 
         self.csv_file = csv_file
         self.postgres_conn_id = postgres_conn_id
         self.schema = schema
+        self.description = description
+        self.fields = fields
         super(CSVToPostgresOperator, self).__init__(**kwargs)
 
     def execute(self, context):
@@ -67,10 +72,11 @@ class CSVToPostgresOperator(BaseOperator):
         upload_csv(self.csv_file, self.task_id, self.schema, engine)
         
         # comment the table
-        comment_sql = postgres_comment_table.render(task_id = self.task_id,
-                                                    schema = self.schema,
-                                                    fields = self.fields,
-                                                    description = self.description)
+        if self.fields or self.description:
+            comment_sql = postgres_comment_table.render(task_id = self.task_id,
+                                                        schema = self.schema,
+                                                        fields = self.fields,
+                                                        description = self.description)
 
-        engine.run(comment_sql, autocommit = True)
+            engine.execute(comment_sql, autocommit = True)
 

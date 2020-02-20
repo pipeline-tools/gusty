@@ -29,11 +29,15 @@ class MaterializedPostgresOperator(PostgresOperator):
             self,
             task_id,
             sql,
-            schema = "views",
             postgres_conn_id = "postgres_default",
+            schema = "views",
             description = None,
             fields = None,
             **kwargs):
+
+        self.schema = schema
+        self.description = description
+        self.fields = fields
 
         # Turn the SQL into a CREATE TABLE + document command
         create_sql = postgres_create_table.render(task_id = task_id,
