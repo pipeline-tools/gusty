@@ -6,7 +6,7 @@ python:
   - "3.7"
   - "3.8"
 script:
-    pytest gusty
+    python3 -m pytest gusty
 env:
   global:
     - AIRFLOW_CONN_POSTGRES_DEFAULT="postgresql://postgres:@localhost:5432/postgres"
