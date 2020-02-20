@@ -1,0 +1,13 @@
+language: python
+services:
+  - postgresql
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+script:
+    python3 -m pytest gusty
+env:
+  global:
+    - AIRFLOW_CONN_POSTGRES_DEFAULT="postgresql://postgres:@localhost:5432/postgres"
+

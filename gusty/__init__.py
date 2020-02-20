@@ -16,7 +16,11 @@ from inflection import underscore
 ##########
 
 # Hack: add AIRFLOW_HOME/operators to the Python path, for custom operators
-CUSTOM_OPERATORS_DIR = os.path.join(os.environ["AIRFLOW_HOME"], "operators")
+CUSTOM_OPERATORS_DIR = os.path.join(
+        os.environ.get("AIRFLOW_HOME", ""),
+        "operators"
+        )
+
 sys.path.append(CUSTOM_OPERATORS_DIR)
 
 gusty_path = [os.path.join(os.path.split(__file__)[0], "operators")]
