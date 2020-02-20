@@ -5,7 +5,7 @@ from airflow.contrib.hooks.sftp_hook import SFTPHook
 from airflow.utils.decorators import apply_defaults
 
 command_template = """
-Rscript -e 'library(methods); rmarkdown::render("~/{basename}")'; rm -f ~/{basename}; rm -f ~/{html_out}
+Rscript -e 'library(methods); rmarkdown::render("~/{basename}")' || exit 1; rm -f ~/{basename}; rm -f ~/{html_out}
 """
 
 class RmdOperator(SSHOperator):
@@ -15,7 +15,7 @@ class RmdOperator(SSHOperator):
     """
     ui_color = "#75AADB"
     template_fields = SSHOperator.template_fields + ('file_path', )
-    
+
     @apply_defaults
     def __init__(self, file_path, ssh_conn_id = "rserver_default", *args, **kwargs):
         self.file_path = file_path
@@ -32,7 +32,7 @@ class RmdOperator(SSHOperator):
         # Run the command, but first put the file up on the server
         sftp_hook = SFTPHook(ftp_conn_id=self.ssh_conn_id,
                              timeout=self.timeout)
-        
+
         sftp_hook.store_file(self.base_name, self.file_path)
 
         super(RmdOperator, self).execute(context)
