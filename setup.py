@@ -17,6 +17,7 @@ setuptools.setup(
           'apache-airflow',
           'jinja2',
           'inflection',
+          'nbformat',
           'python-frontmatter',
           'sshtunnel',
           'pysftp'
