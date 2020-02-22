@@ -1,0 +1,20 @@
+# This DAG lines up one-to-one with the Airflow tutorial:
+# https://airflow.apache.org/docs/stable/tutorial.html
+description: "A Gusty version of the DAG described by this Airflow tutorial: https://airflow.apache.org/docs/stable/tutorial.html"
+schedule_interval: "1 0 * * *"
+default_args:
+    owner: airflow
+    depends_on_past: false
+    start_date: !days_ago 1
+    email: airflow@example.com
+    email_on_failure: false
+    email_on_retry: false
+    retries: 1
+    retry_delay: !timedelta 'minutes: 5'
+#   queue: bash_queue
+#   pool: backfill
+#   priority_weight: 10
+#   end_date: !datetime [2016, 1, 1]
+#   wait_for_downstream: false
+#   sla: !timedelta 'hours: 2'
+#   trigger_rule: all_success
