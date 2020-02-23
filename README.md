@@ -1,6 +1,6 @@
 # gusty
 
-Gusty is an opinionated framework for data ETL built on top of Airflow, where every task is represented by one YAML file, and each task creates a view in a database.
+Gusty is an opinionated framework for data ETL built on top of Airflow, where every task is represented by one YAML file, and each task creates a view in a database. Check out the [gusty demo](https://github.com/chriscardillo/gusty-demo) for an example of a fully dockerized data pipeline using gusty!
 
 ## Structure
 
