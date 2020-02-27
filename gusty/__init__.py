@@ -13,6 +13,8 @@ import frontmatter
 import nbformat
 from inflection import underscore
 
+from .utils import GustyYAMLLoader
+
 ##########
 
 # Hack: add AIRFLOW_HOME/operators to the Python path, for custom operators
@@ -62,8 +64,9 @@ def get_files(yaml_dir):
     """
     List all file paths in a dag subdirectory
     """
-    files = [os.path.join(yaml_dir, file) for file in os.listdir(yaml_dir) if file.endswith(valid_extensions)]
-    assert len(files) > 0, "No files with valid extensions found. Valid extensions are " + valid_extensions
+    files = [os.path.join(yaml_dir, file) for file in os.listdir(yaml_dir)
+        if file.endswith(valid_extensions) and file != "METADATA.yml"]
+    assert len(files) > 0, ("No files with valid extensions found in %s. Valid extensions are %s" % (yaml_dir, "/".join(valid_extensions)))
     return files
 
 ########################
@@ -84,7 +87,7 @@ def read_yaml_spec(file):
     else:
         # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
         file_parsed = frontmatter.load(file)
-        yaml_file = file_parsed.metadata or yaml.load(file_parsed.content, Loader = yaml.FullLoader)
+        yaml_file = file_parsed.metadata or yaml.load(file_parsed.content, Loader = GustyYAMLLoader)
 
     assert "operator" in yaml_file, "No operator specified in yaml spec " + file
 
@@ -236,3 +239,39 @@ def build_dag(directory, dag, latest_only=True):
     set_dependencies(yaml_specs, tasks, dag=dag, latest_only=latest_only)
 
     return tasks
+
+###############################################
+################## GustyDAG ###################
+###############################################
+
+class GustyDAG(airflow.DAG):
+    """
+    A version of an Airflow DAG that is created from a directory
+    of spec files, generally YAML, Rmd, or Jupyter notebooks.
+    Arguments to the DAG can be given either as keyword arguments
+    or in a METADATA.yml file.
+    """
+    def __init__(self, directory, latest_only = True, **kwargs):
+        name = os.path.basename(directory)
+        
+        metadata_file = os.path.join(directory, "METADATA.yml")
+        if os.path.exists(metadata_file):
+            with open(metadata_file) as inf:
+                dag_metadata = yaml.load(inf, GustyYAMLLoader)
+
+                # The keyword arguments take precedence over metadata,
+                # except that default_args is also combined
+                default_args = dag_metadata.get("default_args", {})
+                default_args.update(kwargs.get("default_args", {}))
+                
+                dag_metadata.update(kwargs)
+                kwargs = dag_metadata
+                kwargs["default_args"] = default_args
+
+        # Initialize the DAG
+        super(GustyDAG, self).__init__(name, **kwargs)
+
+        # Create dependencies
+        yaml_specs = get_yaml_specs(directory)
+        tasks = build_tasks(yaml_specs, dag=self)
+        set_dependencies(yaml_specs, tasks, dag=self, latest_only=latest_only)

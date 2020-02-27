@@ -1,0 +1,2 @@
+operator: BashOperator
+bash_command: date
