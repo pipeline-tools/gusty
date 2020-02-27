@@ -58,15 +58,12 @@ def __get_operator(operator_name):
 ## Read Files ##
 ################
 
-valid_extensions = ('.yml', '.Rmd', '.ipynb')
-
 def get_files(yaml_dir):
     """
     List all file paths in a dag subdirectory
     """
     files = [os.path.join(yaml_dir, file) for file in os.listdir(yaml_dir)
-        if file.endswith(valid_extensions) and file != "METADATA.yml"]
-    assert len(files) > 0, ("No files with valid extensions found in %s. Valid extensions are %s" % (yaml_dir, "/".join(valid_extensions)))
+        if file != "METADATA.yml"]
     return files
 
 ########################
@@ -253,7 +250,7 @@ class GustyDAG(airflow.DAG):
     """
     def __init__(self, directory, latest_only = True, **kwargs):
         name = os.path.basename(directory)
-        
+
         metadata_file = os.path.join(directory, "METADATA.yml")
         if os.path.exists(metadata_file):
             with open(metadata_file) as inf:
@@ -263,7 +260,7 @@ class GustyDAG(airflow.DAG):
                 # except that default_args is also combined
                 default_args = dag_metadata.get("default_args", {})
                 default_args.update(kwargs.get("default_args", {}))
-                
+
                 dag_metadata.update(kwargs)
                 kwargs = dag_metadata
                 kwargs["default_args"] = default_args
