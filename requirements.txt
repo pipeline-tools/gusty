@@ -15,7 +15,7 @@ colorama==0.4.3
 colorlog==4.0.2
 configparser==3.5.3
 croniter==0.3.31
-cryptography==2.8
+cryptography==3.2
 decorator==4.4.1
 defusedxml==0.6.0
 dill==0.3.1.1
