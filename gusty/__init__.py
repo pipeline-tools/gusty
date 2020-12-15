@@ -6,6 +6,7 @@ import pkgutil
 import itertools
 
 import airflow
+import airflow.contrib.operators
 from airflow.operators.latest_only_operator import LatestOnlyOperator
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
