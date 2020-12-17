@@ -22,10 +22,6 @@ setuptools.setup(
           'sshtunnel',
           'pysftp'
     ],
-    entry_points = {
-        'airflow.plugins': [
-        #    'gusty = gusty.gusty_plugin:GustyPlugin'
-        ]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
