@@ -54,6 +54,8 @@ def __get_operator(operator_name):
 ################# File System #################
 ###############################################
 
+valid_extensions = ('.yml', '.Rmd', '.ipynb')
+
 ################
 ## Read Files ##
 ################
@@ -63,7 +65,7 @@ def get_files(yaml_dir):
     List all file paths in a dag subdirectory
     """
     files = [os.path.join(yaml_dir, file) for file in os.listdir(yaml_dir)
-        if file != "METADATA.yml"]
+        if file.endswith(valid_extensions) and file != "METADATA.yml"]
     return files
 
 ########################
