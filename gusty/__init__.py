@@ -271,7 +271,7 @@ class GustyDAG(airflow.DAG):
         super(GustyDAG, self).__init__(name, **kwargs)
 
         # Allow for latest_only to be passed through default_args
-        latest_checked = kwargs["default_args"]['latest_only'] if 'latest_only' in kwargs.keys() else latest_only
+        latest_checked = default_args['latest_only'] if 'latest_only' in default_args.keys() else latest_only
 
         # Create dependencies
         yaml_specs = get_yaml_specs(directory)
