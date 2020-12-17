@@ -31,7 +31,6 @@ gusty_path = [os.path.join(os.path.split(__file__)[0], "operators")]
 module_paths = [
     ("airflow.operators.", airflow.operators.__path__),
     ("airflow.contrib.operators.", airflow.contrib.operators.__path__),
-    ("gusty.operators.", gusty_path),
     ("", [CUSTOM_OPERATORS_DIR])
 ]
 
