@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.0.6",
+    version="0.1.0",
     author="Chris Cardillo",
     author_email="cfcardillo23@gmail.com",
     description="An opinionated framework for ETL built on top of Airflow",
@@ -22,10 +22,6 @@ setuptools.setup(
           'sshtunnel',
           'pysftp'
     ],
-    entry_points = {
-        'airflow.plugins': [
-        #    'gusty = gusty.gusty_plugin:GustyPlugin'
-        ]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

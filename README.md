@@ -1,17 +1,90 @@
 # gusty
 
-Gusty is an opinionated framework for data ETL built on top of Airflow, where every task is represented by one YAML file, and each task creates a view in a database. Check out the [gusty demo](https://github.com/chriscardillo/gusty-demo) for an example of a fully dockerized data pipeline using gusty!
+gusty allows you to manage your Airflow DAGs and tasks with greater ease. Instead of writing your DAGs, tasks, and dependencies in a `.py` file, you can instead specify DAGs and tasks in `.yml` files, and designate task dependencies within a task's `.yml` file, as well.
 
-## Structure
+In addition to parsing `.yml` files, gusty also parses YAML front matter in `.ipynb` and `.Rmd` files, allowing you to include Python and R notebook formats in your data pipeline.
 
-The `.yml` approach to generating jobs within Airflow DAGs is not a new idea, but it is useful and there are a few built in benefits to it here.
+## Hello World
 
-- **Dependencies** - Dependencies can quickly be set in `.yml` files through one of three means:
+### Tasks
 
-    1. Using the `dependencies` specification, you can set dependencies between jobs in the same DAG.
-    2. Using the `external_dependencies` specification, you can set dependencies between jobs in different DAGs.
-    3. For the `MaterializedPostgresOperator`, dependencies in the same DAG that are a part of the `views` schema are automatically registered.
+Instead of importing and calling a `BashOperator` directly, you can specify the operator and the `command` parameter (which is a required field for Airflow's BashOperator) in a `.yml`:
 
-- **Operator configuration** - After you build an operator, you can pass parameters to it in each `.yml` job definition file. This means that, for example, if you have to call different API endpoints, you may only need to build one operator to ingest data from this API, and then can specify the endpoint to call in the `.yml` job definition file.
+```yml
+operator: BashOperator
+bash_command: echo hello world
+```
 
-- **Support for popular notebook formats** - There are currently two **notebook** operators, `RmdOperator` and `JupyterOperator`, which enable you to simply write RMarkdown or Jupyter Notebook files and deploy them as jobs in your data pipeline. More importantly, `RmdOperator` and `JupyterOperator` are actually executed on separate dedicated docker containers, and interact with the Airflow container via SSH, which is useful if you want to deploy these services separately in the cloud!
+gusty takes the above `.yml` and turns it into a task based on its file name. If this file was called `hello_world.yml`, the resulting task would show up in your DAG as `hello_world`.
+
+You can also set dependencies between jobs in `.yml` as well. Here is another task, `goodbye_world`. that depends on `hello_world`.
+
+```yml
+operator: BashOperator
+bash_command: echo goodbye world
+dependencies:
+  - hello_world
+```
+
+This will automatically set the `goodbye_world` task downstream of the `hello_world` task.
+
+External dependencies can also be set using the format:
+
+```yml
+external_dependencies:
+  - dag: task
+```
+
+To wait for an entire external DAG to run successfully just use `dag: all` instead.
+
+### DAGs
+
+Your DAGs can also be represented as `.yml` files. Specifically, DAGs should be represented in a file called `METADATA.yml`. Similar to the basic Airflow tutorial, our DAG might look something like this:
+
+```yml
+description: "A Gusty version of the DAG described by this Airflow tutorial: https://airflow.apache.org/docs/stable/tutorial.html"
+schedule_interval: "1 0 * * *"
+default_args:
+    owner: airflow
+    depends_on_past: False
+    start_date: !days_ago 1
+    email: airflow@example.com
+    email_on_failure: False
+    email_on_retry: False
+    retries: 1
+    retry_delay: !timedelta 'minutes: 5'
+#   queue: bash_queue
+#   pool: backfill
+#   priority_weight: 10
+#   end_date: !datetime [2016, 1, 1]
+#   wait_for_downstream: false
+#   sla: !timedelta 'hours: 2'
+#   trigger_rule: all_success
+```
+By default, gusty will create a `latest_only` DAG, where every job in the DAG will only run for the most recent run date, regardless of if a backfill is called. You can disable this behavior by adding `latest_only: False` to the `default_args` block above.
+
+### GustyDAG
+
+To have gusty generate a DAG, you can use the `GustyDAG` class, which just needs an (absolute) path to a directory that contains a `METADATA.yml` for the DAG and `.yml` files for the tasks. You must also import airflow. An example of the entire `.py` file that generates your DAG looks like this:
+
+```py
+import airflow
+from gusty import GustyDAG
+
+dag = GustyDAG('/usr/local/airflow/dags/hello_world')
+```
+The resulting DAG will be named after the directory, in this case, `hello_world`.
+
+## Operators
+
+### Airflow Operators
+
+gusty will take parameterized `.yml` for any operator located in `airflow.operators` and `airflow.contrib.operators`. In theory, if it's available in these modules, you can use a `.yml` to define it.
+
+### Custom Operators
+
+gusty will also work with any of your custom operators, so long as those operators are located in an `operators` directory in your designated `AIRFLOW_HOME`.
+
+## Demo
+
+You use a containerized demo of gusty and Airflow over at the [gusty-demo](https://github.com/chriscardillo/gusty-demo).

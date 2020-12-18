@@ -31,7 +31,6 @@ gusty_path = [os.path.join(os.path.split(__file__)[0], "operators")]
 module_paths = [
     ("airflow.operators.", airflow.operators.__path__),
     ("airflow.contrib.operators.", airflow.contrib.operators.__path__),
-    ("gusty.operators.", gusty_path),
     ("", [CUSTOM_OPERATORS_DIR])
 ]
 
@@ -55,6 +54,8 @@ def __get_operator(operator_name):
 ################# File System #################
 ###############################################
 
+valid_extensions = ('.yml', '.Rmd', '.ipynb')
+
 ################
 ## Read Files ##
 ################
@@ -64,7 +65,7 @@ def get_files(yaml_dir):
     List all file paths in a dag subdirectory
     """
     files = [os.path.join(yaml_dir, file) for file in os.listdir(yaml_dir)
-        if file != "METADATA.yml"]
+        if file.endswith(valid_extensions) and file != "METADATA.yml"]
     return files
 
 ########################
@@ -269,7 +270,10 @@ class GustyDAG(airflow.DAG):
         # Initialize the DAG
         super(GustyDAG, self).__init__(name, **kwargs)
 
+        # Allow for latest_only to be passed through default_args
+        latest_checked = default_args['latest_only'] if 'latest_only' in default_args.keys() else latest_only
+
         # Create dependencies
         yaml_specs = get_yaml_specs(directory)
         tasks = build_tasks(yaml_specs, dag=self)
-        set_dependencies(yaml_specs, tasks, dag=self, latest_only=latest_only)
+        set_dependencies(yaml_specs, tasks, dag=self, latest_only=latest_checked)

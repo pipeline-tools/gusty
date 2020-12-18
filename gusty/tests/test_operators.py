@@ -1,8 +1,6 @@
-import gusty.operators
 import airflow
 import os
 import tempfile
-
 
 from pathlib import Path
 
@@ -48,20 +46,3 @@ def test_stub_xfail():
 def test_stub_skip():
     print("should not run")
     assert False
-
-def test_csv_to_postgres_operator(tmp_dir):
-    import pandas as pd
-    from gusty.operators.csv_to_postgres_operator import CSVToPostgresOperator
-    data = pd.DataFrame({'a': [1,2,3]})
-    data.to_csv(Path(tmp_dir) / 'dags' / 'csv' / 'dumb.csv')
-
-    op = CSVToPostgresOperator(
-            task_id = "dumb", 
-            schema = "public",
-            postgres_conn_id = "postgres_default",
-            csv_file = "dumb.csv"
-            )
-
-    op.execute(None)
-
-
