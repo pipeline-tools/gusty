@@ -73,6 +73,7 @@ from gusty import GustyDAG
 
 dag = GustyDAG('/usr/local/airflow/dags/hello_world')
 ```
+The resulting DAG will be named after the directory, in this case, `hello_world`.
 
 ## Operators
 
@@ -83,3 +84,7 @@ gusty will take parameterized `.yml` for any operator located in `airflow.operat
 ### Custom Operators
 
 gusty will also work with any of your custom operators, so long as those operators are located in an `operators` directory in your designated `AIRFLOW_HOME`.
+
+## Demo
+
+You use a containerized demo of gusty and Airflow over at the [gusty-demo](https://github.com/chriscardillo/gusty-demo).
