@@ -11,7 +11,7 @@ In addition to parsing `.yml` files, gusty also parses YAML front matter in `.ip
 Instead of importing and calling a `BashOperator` directly, you can specify the operator and the `command` parameter (which is a required field for Airflow's BashOperator) in a `.yml`:
 
 ```yml
-operator: BashOperator
+operator: airflow.operators.bash.BashOperator
 bash_command: echo hello world
 ```
 
@@ -20,7 +20,7 @@ gusty takes the above `.yml` and turns it into a task based on its file name. If
 You can also set dependencies between jobs in `.yml` as well. Here is another task, `goodbye_world`. that depends on `hello_world`.
 
 ```yml
-operator: BashOperator
+operator: airflow.operators.bash.BashOperator
 bash_command: echo goodbye world
 dependencies:
   - hello_world
@@ -85,6 +85,10 @@ gusty will take parameterized `.yml` for any operator located in `airflow.operat
 
 gusty will also work with any of your custom operators, so long as those operators are located in an `operators` directory in your designated `AIRFLOW_HOME`.
 
+In order for your local operators to import properly, they must follow the pattern of having a snake_case file name and a CamelCase operator name, for example the file of an operator called `YourOperator` must be called `your_operator.py`.
+
+Just as the BashOperator above was accessed via with full module path prepended, `airflow.operators.bash.BashOperator`, your local operators are accessed via the `local` keyword, e.g. `local.YourOperator`.
+
 ## Demo
 
-You use a containerized demo of gusty and Airflow over at the [gusty-demo](https://github.com/chriscardillo/gusty-demo).
+You can use a containerized demo of gusty and Airflow over at the [gusty-demo](https://github.com/chriscardillo/gusty-demo), and see all of the above in practice.
