@@ -4,6 +4,8 @@ gusty allows you to manage your Airflow DAGs and tasks with greater ease. Instea
 
 In addition to parsing `.yml` files, gusty also parses YAML front matter in `.ipynb` and `.Rmd` files, allowing you to include Python and R notebook formats in your data pipeline.
 
+gusty works with both Airflow 1.x and Airflow 2.x.
+
 ## Hello World
 
 ### Tasks
@@ -85,7 +87,7 @@ gusty will take parameterized `.yml` for any operator located in `airflow.operat
 
 gusty will also work with any of your custom operators, so long as those operators are located in an `operators` directory in your designated `AIRFLOW_HOME`.
 
-In order for your local operators to import properly, they must follow the pattern of having a snake_case file name and a CamelCase operator name, for example the file of an operator called `YourOperator` must be called `your_operator.py`.
+In order for your local operators to import properly, they must follow the pattern of having a snake_case file name and a CamelCase operator name, for example the filename of an operator called `YourOperator` must be called `your_operator.py`.
 
 Just as the BashOperator above was accessed via with full module path prepended, `airflow.operators.bash.BashOperator`, your local operators are accessed via the `local` keyword, e.g. `local.YourOperator`.
 
