@@ -6,9 +6,14 @@ import pkgutil
 import itertools
 
 import airflow
-import airflow.contrib.operators
-from airflow.operators.latest_only_operator import LatestOnlyOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
+airflow_version = int(str(airflow.__version__)[0])
+
+if airflow_version > 1:
+    from airflow.operators.latest_only import LatestOnlyOperator
+    from airflow.sensors.external_task import ExternalTaskSensor
+else:
+    from airflow.operators.latest_only_operator import LatestOnlyOperator
+    from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 import frontmatter
 import nbformat
@@ -16,9 +21,26 @@ from inflection import underscore
 
 from .utils import GustyYAMLLoader
 
-##########
+###########################
+## Operator Import Logic ##
+###########################
 
-# Hack: add AIRFLOW_HOME/operators to the Python path, for custom operators
+def get_operator_location(operator_string):
+    # location will generally be 'airflow',
+    # but if it's 'local', then we will look locally for the operator
+    return operator_string.split('.')[0]
+
+def get_operator_name(operator_string):
+    # the actual name of the operator
+    return operator_string.split('.')[-1]
+
+def get_operator_module(operator_string):
+    # the module, for when the operator is not a local operator
+    operator_path = '.'.join(operator_string.split('.')[:-1])
+    assert len(operator_path) != 0, "Please specify a format like 'package.operator' to specify your operator. You passed in '%s'" % operator_string
+    return operator_path
+
+# Hack: add AIRFLOW_HOME/operators to the Python path, for local operators
 CUSTOM_OPERATORS_DIR = os.path.join(
         os.environ.get("AIRFLOW_HOME", ""),
         "operators"
@@ -26,11 +48,7 @@ CUSTOM_OPERATORS_DIR = os.path.join(
 
 sys.path.append(CUSTOM_OPERATORS_DIR)
 
-gusty_path = [os.path.join(os.path.split(__file__)[0], "operators")]
-
 module_paths = [
-    ("airflow.operators.", airflow.operators.__path__),
-    ("airflow.contrib.operators.", airflow.contrib.operators.__path__),
     ("", [CUSTOM_OPERATORS_DIR])
 ]
 
@@ -39,12 +57,15 @@ pairs = [[(_.name, m + _.name) for _ in pkgutil.iter_modules(path)]
 
 module_dict = dict(itertools.chain(*pairs))
 
-def __get_operator(operator_name):
-    """Given the name as camel case"""
-    if not re.match("^[A-Za-z\d]+$", operator_name):
-        raise ValueError("Operator name must be an alphanumeric string")
+def __get_operator(operator_string):
+    operator_name = get_operator_name(operator_string)
+    operator_location = get_operator_location(operator_string)
 
-    module_name = module_dict[underscore(operator_name)]
+    if operator_location == 'local':
+        module_name = module_dict[underscore(operator_name)]
+    else:
+        module_name = get_operator_module(operator_string)
+
     import_stmt = "from %s import %s" % (module_name, operator_name)
 
     exec(import_stmt)
