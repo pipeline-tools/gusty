@@ -1,6 +1,7 @@
 # gusty
 
 [![PyPi](https://img.shields.io/pypi/v/gusty.svg)](https://pypi.org/project/gusty/)
+![build](https://github.com/chriscardillo/gusty/workflows/build/badge.svg)
 
 gusty allows you to manage your Airflow DAGs and tasks with greater ease. Instead of writing your DAGs, tasks, and dependencies in a `.py` file, you can instead specify DAGs and tasks in `.yml` files, and designate task dependencies within a task's `.yml` file, as well.
 
