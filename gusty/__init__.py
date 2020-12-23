@@ -242,7 +242,6 @@ def build_tasks(yaml_specs, dag):
             if not hasattr(operator, 'template_fields')
                 or k in operator.template_fields
                 or k in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
-                or k in inspect.signature(airflow.DAG.__init__).parameters.keys()
                 }
         args["task_id"] = spec["task_id"]
         args["dag"] = dag
