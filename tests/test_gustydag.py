@@ -8,7 +8,7 @@ def gustydag():
     return dag
 
 def test_dag_tasks(gustydag):
-    assert len(gustydag._task_group.children) == 4 # latest only by default
+    assert len(gustydag._task_group.children) == 5 # latest only by default + one external dependency in sleep job
 
 def test_dag_task_dependencies(gustydag):
-    gustydag._task_group.children['sleep']._upstream_task_ids == {'print_date'}
+    assert gustydag._task_group.children['sleep']._upstream_task_ids == {'print_date'}

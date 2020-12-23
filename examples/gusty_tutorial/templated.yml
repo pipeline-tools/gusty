@@ -9,3 +9,5 @@ params:
     my_param: Parameter I passed in
 dependencies:
     - print_date
+external_dependencies:
+    - another_dag: task_in_another_dag
