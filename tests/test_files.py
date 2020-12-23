@@ -16,5 +16,5 @@ def test_read_yaml_spec():
 
 def test_get_yaml_specs():
     yaml_specs = get_yaml_specs('examples/gusty_tutorial')
-    assert len(yaml_specs) is 3
+    assert len(yaml_specs) == 3
     assert [*map(lambda x: isinstance(x, dict), yaml_specs)]
