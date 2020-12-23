@@ -3,7 +3,7 @@ import airflow
 from airflow import DAG
 from datetime import timedelta
 from airflow.utils.dates import days_ago
-from gusty import get_yaml_specs, build_tasks
+from gusty import get_yaml_specs, build_tasks, build_dag
 
 @pytest.fixture
 def dag():
@@ -36,3 +36,7 @@ def specs():
 def test_build_tasks(specs, dag):
     tasks = build_tasks(specs, dag)
     assert isinstance(tasks['print_date'], airflow.operators.bash.BashOperator)
+
+def test_build_dag(dag):
+    tasks = build_dag('examples/gusty_tutorial', dag)
+    assert tasks['sleep'].upstream_task_ids == {'print_date'}
