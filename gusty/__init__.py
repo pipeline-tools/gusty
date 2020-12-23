@@ -4,6 +4,7 @@ import os
 import yaml
 import pkgutil
 import itertools
+import inspect
 
 import airflow
 airflow_version = int(str(airflow.__version__)[0])
@@ -239,7 +240,9 @@ def build_tasks(yaml_specs, dag):
         # The spec will have dag added and some keys removed
         args = {k:v for k,v in spec.items()
             if not hasattr(operator, 'template_fields')
-                or k in operator.template_fields}
+                or k in operator.template_fields
+                or k in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
+                }
         args["task_id"] = spec["task_id"]
         args["dag"] = dag
 

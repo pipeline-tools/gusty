@@ -12,3 +12,6 @@ def test_dag_tasks(gustydag):
 
 def test_dag_task_dependencies(gustydag):
     assert gustydag._task_group.children['sleep']._upstream_task_ids == {'print_date'}
+
+def test_dag_task_dependencies(gustydag):
+    assert gustydag._task_group.children['sleep'].retries == 3
