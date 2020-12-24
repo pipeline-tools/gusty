@@ -5,7 +5,7 @@
 ![build](https://github.com/chriscardillo/gusty/workflows/build/badge.svg)
 [![coverage](https://codecov.io/github/chriscardillo/gusty/coverage.svg?branch=master)](https://codecov.io/github/chriscardillo/gusty?branch=master)
 
-gusty allows you to manage your Airflow DAGs and tasks with greater ease. Instead of writing your DAGs, tasks, and dependencies in a `.py` file, you can instead specify DAGs and tasks in `.yml` files, and designate task dependencies within a task's `.yml` file, as well.
+gusty allows you to manage your Airflow DAGs and tasks with greater ease. Instead of writing your DAGs, tasks, and dependencies in a `.py` file, you specify DAGs and tasks in `.yml` files, and designate task dependencies within a task's `.yml` file, as well.
 
 In addition to parsing `.yml` files, gusty also parses YAML front matter in `.ipynb` and `.Rmd` files, allowing you to include Python and R notebook formats in your data pipeline.
 
