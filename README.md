@@ -87,7 +87,7 @@ The resulting DAG will be named after the directory, in this case, `hello_world`
 
 ### Airflow Operators
 
-gusty will take parameterized `.yml` for any operator located in `airflow.operators` and `airflow.contrib.operators`. In theory, if it's available in these modules, you can use a `.yml` to define it.
+gusty will take parameterized `.yml` for any operator, given a string that includes the module path and the operator class, such as `airflow.operators.bash.BashOperator` or `airflow.providers.amazon.aws.transfers.s3_to_redshift.S3ToRedshiftOperator`. In theory, if it's available in a module, you can use a `.yml` to define it.
 
 ### Custom Operators
 
