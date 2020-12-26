@@ -1,0 +1,8 @@
+operator: airflow.operators.bash.BashOperator
+dependencies:
+  - pour_coffee
+external_dependencies:
+  - another_dag: task_in_another_dag
+  - an_entire_dag: all
+bash_command: echo breakfast is excellent
+retries: 3
