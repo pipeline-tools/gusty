@@ -64,7 +64,7 @@ pairs = [
 module_dict = dict(itertools.chain(*pairs))
 
 
-def __get_operator(operator_string):
+def get_operator(operator_string):
     operator_name = get_operator_name(operator_string)
     operator_location = get_operator_location(operator_string)
 
@@ -290,7 +290,7 @@ def build_tasks(yaml_specs, dag):
     task_dict = {}
 
     for spec in yaml_specs:
-        operator = __get_operator(spec["operator"])
+        operator = get_operator(spec["operator"])
 
         # The spec will have dag added and some keys removed
         args = {
