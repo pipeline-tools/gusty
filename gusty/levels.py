@@ -248,16 +248,7 @@ class GustySetup:
                 for dependency in task_dependencies:
                     task.set_upstream(valid_dependency_objects[dependency])
 
-
-
-    # map dependencies
-    # - Look at the whole schematic
-    # - Identify all valid dependencies - how to structure this? {task_id: [upstream_object_1, upstream_object_2...]}
-    #     - Don't forget to check operators for dependencies attr!
-    # - Set all dependencies
-
-    # create level dependencies
-
-    # create task dependencies
-
-    # latest only?
+    # TODO
+    #   - wait for tasks
+    #   - latest only
+    #   - task groups accept renaming?
