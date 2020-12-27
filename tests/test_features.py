@@ -15,6 +15,16 @@ def dag_dir():
 
 
 @pytest.fixture
+def dag_files(dag_dir):
+    dag_files = [
+        file
+        for file in os.listdir(dag_dir)
+        if os.path.isfile(os.path.join(dag_dir, file)) and file != "METADATA.yml"
+    ]
+    return dag_files
+
+
+@pytest.fixture
 def dag(dag_dir):
     dag = GustyDAG(dag_dir)
     return dag
@@ -60,10 +70,9 @@ def test_tasks_are_operators(featured_task):
 
 # Did we create a task for every file in the directory? (Besides METADATA.yml)
 # (Also accounting for latest_only option in gusty and any wait_for tasks)
-def test_dag_tasks_exist(dag_tasks, dag_dir):
-    dag_dir_files = os.listdir(dag_dir)
-    metadata_exists = 1 if "METADATA.yml" in dag_dir_files else 0
-    task_files = len(dag_dir_files) - metadata_exists
+def test_dag_tasks_exist(dag_tasks, dag_files):
+    dag_dir_files = dag_files
+    task_files = len(dag_dir_files)
     expected_tasks = len(
         [
             task
@@ -75,11 +84,10 @@ def test_dag_tasks_exist(dag_tasks, dag_dir):
 
 
 # Are created tasks named after their file names?
-def test_task_names(dag_dir, dag_tasks):
+def test_task_names(dag_files, dag_tasks):
     files_to_check = [
         os.path.splitext(file)[0]
-        for file in os.listdir(dag_dir)
-        if file != "METADATA.yml"
+        for file in dag_files
     ]
     tasks_created = [name in dag_tasks.keys() for name in files_to_check]
     assert all(tasks_created)
