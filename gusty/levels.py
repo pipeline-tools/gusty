@@ -322,7 +322,7 @@ class GustySetup:
                                 external_task_id if external_task_id != "all" else None
                             ),
                             # maybe give users options to set these sensor parameters?
-                            poke_interval=60,
+                            poke_interval=10,
                             timeout=60,
                             retries=60,
                         )
@@ -359,7 +359,7 @@ class GustySetup:
                                 external_task_id if external_task_id != "all" else None
                             ),
                             # maybe give users options to set these sensor parameters?
-                            poke_interval=60,
+                            poke_interval=10,
                             timeout=60,
                             retries=60,
                         )
