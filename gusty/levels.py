@@ -277,8 +277,8 @@ class GustySetup:
                     and dependency != task_id
                 ]
 
-                task_dependencies = list(set(task_dependencies + task_spec_dependencies))
-
+            task_dependencies = task_dependencies + task_spec_dependencies
+            if len(task_dependencies):
                 for dependency in task_dependencies:
                     task.set_upstream(valid_dependency_objects[dependency])
 
