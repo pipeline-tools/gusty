@@ -261,25 +261,22 @@ class GustySetup:
         }
         valid_dependency_objects = {**level_tasks, **sibling_levels}
         for task_id, task in level_tasks.items():
-            task_spec_dependencies = {
+            task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
+            spec_dependencies = {
                 task_id: spec["dependencies"]
                 for spec in level_specs
                 if spec["task_id"] == task_id and "dependencies" in spec.keys()
             }
+            if len(spec_dependencies) > 0:
+                spec_dependencies = spec_dependencies[task_id]
+                spec_task_dependencies = task_dependencies + spec_dependencies
+            else:
+                spec_task_dependencies = task_dependencies
 
-            task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
+            spec_task_dependencies = list(set(spec_task_dependencies))
 
-            if len(task_spec_dependencies) > 0:
-                task_spec_dependencies = [
-                    dependency
-                    for dependency in task_spec_dependencies[task_id]
-                    if dependency in valid_dependency_objects.keys()
-                    and dependency != task_id
-                ]
-
-            task_dependencies = task_dependencies + task_spec_dependencies
-            if len(task_dependencies):
-                for dependency in task_dependencies:
+            if len(spec_task_dependencies) > 0:
+                for dependency in spec_task_dependencies:
                     task.set_upstream(valid_dependency_objects[dependency])
 
     def create_task_external_dependencies(self, id):
