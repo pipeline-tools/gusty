@@ -296,7 +296,7 @@ def build_tasks(yaml_specs, dag):
         args = {
             k: v
             for k, v in spec.items()
-            if not hasattr(operator, "template_fields")
+            if not hasattr(operator, "template_fields") # IS THIS LINE UNNECESSARY?
             or k in operator.template_fields
             or k
             in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
@@ -305,6 +305,7 @@ def build_tasks(yaml_specs, dag):
         args["dag"] = dag
 
         # Some arguments are used only by gusty
+        # IS THIS LOOP UNNECESSARY?
         for field in ["operator", "dependencies", "external_dependencies"]:
             args.pop(field, None)
 
@@ -352,6 +353,14 @@ class GustyDAG(airflow.DAG):
                 dag_metadata.update(kwargs)
                 kwargs = dag_metadata
                 kwargs["default_args"] = default_args
+                # only keep kwargs that are available in DAG init
+                kwargs = {
+                    k: v
+                    for k, v in kwargs.items()
+                    if k
+                    in k
+                    in inspect.signature(airflow.DAG.__init__).parameters.keys()
+                }
 
         # Initialize the DAG
         super(GustyDAG, self).__init__(name, **kwargs)
