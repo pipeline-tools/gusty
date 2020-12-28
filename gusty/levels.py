@@ -149,9 +149,7 @@ class GustySetup:
                     for file in files
                     if file.endswith(valid_extensions)
                     and file != "METADATA.yml"
-                    and not os.path.basename(os.path.dirname(os.path.abspath(os.path.join(dir, file)))).startswith(
-                        ("__", ".")
-                    )
+                    and not file.startswith(("_", "."))
                 ],
                 "specs": [],
                 "metadata": os.path.abspath(os.path.join(dir, "METADATA.yml"))
@@ -165,6 +163,7 @@ class GustySetup:
                 "external_dependencies": [],
             }
             for dir, subdirs, files in os.walk(dag_dir)
+            if not os.path.basename(dir).startswith(("_", "."))
         }
 
         # We will accept multiple levels only for Airflow v2 and up
