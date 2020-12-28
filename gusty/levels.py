@@ -267,13 +267,18 @@ class GustySetup:
                 if spec["task_id"] == task_id and "dependencies" in spec.keys()
             }
 
+            task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
+
             if len(task_spec_dependencies) > 0:
-                task_dependencies = [
+                task_spec_dependencies = [
                     dependency
                     for dependency in task_spec_dependencies[task_id]
                     if dependency in valid_dependency_objects.keys()
                     and dependency != task_id
                 ]
+
+                task_dependencies = list(set(task_dependencies + task_spec_dependencies))
+
                 for dependency in task_dependencies:
                     task.set_upstream(valid_dependency_objects[dependency])
 
