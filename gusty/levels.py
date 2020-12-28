@@ -394,3 +394,18 @@ class GustySetup:
                 for name, dependency in valid_dependency_objects.items():
                     if len(dependency.upstream_task_ids) == 0:
                         dependency.set_upstream(latest_only_operator)
+
+    def return_dag(self):
+        return get_top_level_dag(self.schematic)
+
+def create_gusty_DAG(dag_dir):
+    setup = GustySetup(dag_dir)
+    [setup.create_level(level) for level in setup.levels]
+    [setup.read_specs(level) for level in setup.levels]
+    [setup.create_tasks(level) for level in setup.levels]
+    [setup.create_level_dependencies(level) for level in setup.levels]
+    [setup.create_task_dependencies(level) for level in setup.levels]
+    [setup.create_task_external_dependencies(level) for level in setup.levels]
+    [setup.create_level_external_dependencies(level) for level in setup.levels]
+    [setup.create_root_dependencies(level) for level in setup.levels]
+    return(setup.return_dag())
