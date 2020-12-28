@@ -330,6 +330,9 @@ class GustySetup:
         level_parent_id = self.schematic[id]["parent_id"]
         if level_parent_id is not None:
             if len(level_external_dependencies) > 0:
+                level_external_dependencies = dict(
+                    j for i in level_external_dependencies for j in i.items()
+                )
                 for (
                     external_dag_id,
                     external_task_id,
