@@ -150,7 +150,7 @@ class GustySetup:
                     if file.endswith(valid_extensions)
                     and file != "METADATA.yml"
                     and not os.path.basename(os.path.dirname(file)).startswith(
-                        ["__", "."]
+                        ("__", ".")
                     )
                 ],
                 "specs": [],
