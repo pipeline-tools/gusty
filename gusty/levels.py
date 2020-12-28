@@ -147,7 +147,10 @@ class GustySetup:
                 "spec_paths": [
                     os.path.abspath(os.path.join(dir, file))
                     for file in files
-                    if file.endswith(valid_extensions) and file != "METADATA.yml"
+                    if file.endswith(valid_extensions)
+                    and file != "METADATA.yml"
+                    and not file.startswith("__")
+                    and not file.startswith(".")
                 ],
                 "specs": [],
                 "metadata": os.path.abspath(os.path.join(dir, "METADATA.yml"))
@@ -390,13 +393,18 @@ class GustySetup:
                     for level_id, level in self.schematic.items()
                     if level["parent_id"] == id
                 }
-                valid_dependency_objects = {**level_tasks, **child_levels, **self.wait_for_tasks}
+                valid_dependency_objects = {
+                    **level_tasks,
+                    **child_levels,
+                    **self.wait_for_tasks,
+                }
                 for name, dependency in valid_dependency_objects.items():
                     if len(dependency.upstream_task_ids) == 0:
                         dependency.set_upstream(latest_only_operator)
 
     def return_dag(self):
         return get_top_level_dag(self.schematic)
+
 
 def create_gusty_DAG(dag_dir):
     setup = GustySetup(dag_dir)
@@ -408,4 +416,4 @@ def create_gusty_DAG(dag_dir):
     [setup.create_task_external_dependencies(level) for level in setup.levels]
     [setup.create_level_external_dependencies(level) for level in setup.levels]
     [setup.create_root_dependencies(level) for level in setup.levels]
-    return(setup.return_dag())
+    return setup.return_dag()
