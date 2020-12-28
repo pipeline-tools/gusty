@@ -149,8 +149,8 @@ class GustySetup:
                     for file in files
                     if file.endswith(valid_extensions)
                     and file != "METADATA.yml"
-                    and not file.startswith("__")
-                    and not file.startswith(".")
+                    and not subdirs.startswith("__")
+                    and not subdirs.startswith(".")
                 ],
                 "specs": [],
                 "metadata": os.path.abspath(os.path.join(dir, "METADATA.yml"))
