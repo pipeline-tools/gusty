@@ -390,7 +390,7 @@ class GustySetup:
                     for level_id, level in self.schematic.items()
                     if level["parent_id"] == id
                 }
-                valid_dependency_objects = {**level_tasks, **child_levels}
+                valid_dependency_objects = {**level_tasks, **child_levels, **self.wait_for_tasks}
                 for name, dependency in valid_dependency_objects.items():
                     if len(dependency.upstream_task_ids) == 0:
                         dependency.set_upstream(latest_only_operator)
