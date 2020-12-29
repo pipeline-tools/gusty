@@ -467,7 +467,7 @@ class GustySetup:
         return get_top_level_dag(self.schematic)
 
 
-def create_DAG(
+def create_dag(
     dag_dir,
     task_group_defaults={},
     wait_for_defaults={},
