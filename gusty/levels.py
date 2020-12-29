@@ -463,8 +463,8 @@ class GustySetup:
 
 def create_DAG(
     dag_dir,
-    task_group_defaults=None,
-    wait_for_defaults=None,
+    task_group_defaults={},
+    wait_for_defaults={}},
     latest_only=True,
     **kwargs
 ):
