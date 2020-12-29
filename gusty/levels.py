@@ -197,8 +197,8 @@ class GustySetup:
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
-        level_metadata = metadata_defaults
-        self.schematic[id]["metadata"] = level_metadata
+        #level_metadata = metadata_defaults
+        self.schematic[id]["metadata"] = metadata_defaults
         # dependencies get explicity set at the level-"level" for each level
         level_dependencies = {
             k: v
