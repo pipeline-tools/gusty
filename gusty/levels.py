@@ -261,7 +261,6 @@ class GustySetup:
             for level_id, level in self.schematic.items()
             if level["parent_id"] == id and level_id != id
         }
-        #valid_dependency_objects = {**level_tasks, **sibling_levels}
         valid_dependency_objects = {**self.all_tasks, **sibling_levels}
         for task_id, task in level_tasks.items():
             task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
