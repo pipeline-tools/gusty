@@ -180,7 +180,7 @@ class GustySetup:
 
 
         # Set a starting point for default metadata, a copy of all defaults...
-        metadata_defaults = self.defaults.copy()
+        metadata_defaults = self.defaults#.copy()
         # if top-level DAG, get rid of task_group_defaults and wait_for_defaults, because they are irrelevant...
         if self.schematic[id]["parent_id"] is None:
             metadata_defaults.pop("task_group_defaults", None)
