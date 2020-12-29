@@ -146,6 +146,15 @@ class GustySetup:
         # store all defaults
         self.defaults = kwargs if len(kwargs) > 0 else {}
 
+        # DAG defaults
+        self.dag_defaults = {
+            k: v for k, v in kwargs.items()
+            if k not in ["task_group_defaults", "wait_for_defaults"]
+        }
+
+        # TaskGroup defaults
+        self.task_group_defaults = kwargs["task_group_defaults"] if "task_group_defaults" in kwargs.keys() else {}
+
         # handle external dependency / wait_for defaults
         self.wait_for_defaults = {"poke_interval": 10, "timeout": 60, "retries": 60}
         if "wait_for_defaults" in self.defaults.keys():
@@ -179,20 +188,12 @@ class GustySetup:
     def parse_metadata(self, id):
 
 
-        # Set a starting point for default metadata, a copy of all defaults...
-        metadata_defaults = self.defaults#.copy()
         # if top-level DAG, get rid of task_group_defaults and wait_for_defaults, because they are irrelevant...
         if self.schematic[id]["parent_id"] is None:
-            metadata_defaults.pop("task_group_defaults", None)
-            metadata_defaults.pop("wait_for_defaults", None)
+            metadata_defaults = self.dag_defaults.copy()
         # otherwise, only keep task_group_defaults, because that's the only other structure a level can be...
         else:
-            metadata_defaults = (
-                metadata_defaults["task_group_defaults"]
-                if "task_group_defaults" in metadata_defaults.keys()
-                else {}
-            )
-
+            metadata_defaults = self.task_group_defaults.copy()
 
         # METADATA.yml will override defaults
         level_metadata_path = self.schematic[id]["metadata_path"]
@@ -249,12 +250,12 @@ class GustySetup:
                         level_spec["task_id"] = "{x}_{y}".format(
                             x=level_name, y=level_spec["task_id"]
                         )
-                # elif "suffix_group_id" in level_metadata.keys():
-                #     if level_metadata["suffix_group_id"]:
-                #         for level_spec in level_specs:
-                #             level_spec["task_id"] = "{y}_{x}".format(
-                #                 x=level_name, y=level_spec["task_id"]
-                #             )
+                elif "suffix_group_id" in level_metadata.keys():
+                    if level_metadata["suffix_group_id"]:
+                        for level_spec in level_specs:
+                            level_spec["task_id"] = "{y}_{x}".format(
+                                x=level_name, y=level_spec["task_id"]
+                            )
         self.schematic[id].update({"specs": level_specs})
 
     def create_tasks(self, id):
