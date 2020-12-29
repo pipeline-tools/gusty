@@ -176,6 +176,7 @@ class GustySetup:
         # It is important for gusty to keep a record  of the tasks created
         self.wait_for_tasks = {}
         self.latest_only_task = {}
+        self.all_tasks = {}
 
     def create_level(self, id):
         """
@@ -219,6 +220,7 @@ class GustySetup:
             for spec in level_specs
         }
         self.schematic[id]["tasks"] = level_tasks
+        self.all_tasks.update(level_tasks)
 
     def create_level_dependencies(self, id):
         """
@@ -259,7 +261,8 @@ class GustySetup:
             for level_id, level in self.schematic.items()
             if level["parent_id"] == id and level_id != id
         }
-        valid_dependency_objects = {**level_tasks, **sibling_levels}
+        #valid_dependency_objects = {**level_tasks, **sibling_levels}
+        valid_dependency_objects = {**self.all_tasks, **sibling_levels}
         for task_id, task in level_tasks.items():
             task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
             spec_dependencies = {
@@ -274,6 +277,15 @@ class GustySetup:
                 spec_task_dependencies = task_dependencies
 
             spec_task_dependencies = list(set(spec_task_dependencies))
+
+            # Should tasks be able to depend on things on any level?
+            spec_task_dependencies = [
+                dependency
+                for dependency
+                in spec_task_dependencies
+                if dependency
+                in valid_dependency_objects.keys()
+            ]
 
             if len(spec_task_dependencies) > 0:
                 for dependency in spec_task_dependencies:
