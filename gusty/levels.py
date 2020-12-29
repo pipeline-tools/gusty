@@ -244,18 +244,18 @@ class GustySetup:
         if airflow_version > 1:
             level_structure = self.schematic[id]["structure"]
             level_name = self.schematic[id]["name"]
+            add_suffix = level_metadata["suffix_group_id"] if "suffix_group_id" in level_metadata.keys() else False
             if isinstance(level_structure, TaskGroup):
-                if level_structure.prefix_group_id:
+                if level_structure.prefix_group_id and not add_suffix:
                     for level_spec in level_specs:
                         level_spec["task_id"] = "{x}_{y}".format(
                             x=level_name, y=level_spec["task_id"]
                         )
-                elif "suffix_group_id" in level_metadata.keys():
-                    if level_metadata["suffix_group_id"]:
-                        for level_spec in level_specs:
-                            level_spec["task_id"] = "{y}_{x}".format(
-                                x=level_name, y=level_spec["task_id"]
-                            )
+                elif add_suffix:
+                    for level_spec in level_specs:
+                        level_spec["task_id"] = "{y}_{x}".format(
+                            x=level_name, y=level_spec["task_id"]
+                        )
         self.schematic[id].update({"specs": level_specs})
 
     def create_tasks(self, id):
