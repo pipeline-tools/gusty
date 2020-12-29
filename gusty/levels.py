@@ -96,7 +96,7 @@ class Level:
                     k: v
                     for k, v in self.metadata.items()
                     if k in k in inspect.signature(TaskGroup.__init__).parameters.keys()
-                    and k != "dag"
+                    and k not in ["dag", "parent_group"]
                 }
                 level_defaults.update(level_init_data)
 
@@ -104,9 +104,7 @@ class Level:
 
 
 class GustySetup:
-    def __init__(
-        self, dag_dir
-    ):  # task_group_defaults, wait_for_defaults, **kwargs (for DAG level)
+    def __init__(self, dag_dir, **kwargs):
         """
         Because DAGs can be multiple "levels" now, the Setup class is here to first
         create a "schematic" of the DAG's levels and all of the specs associated with
@@ -145,6 +143,27 @@ class GustySetup:
             if not os.path.basename(dir).startswith(("_", "."))
         }
 
+        # store all defaults
+        self.defaults = kwargs if len(kwargs) > 0 else {}
+
+        # handle external dependency / wait_for defaults
+        self.wait_for_defaults = {"poke_interval": 10, "timeout": 60, "retries": 60}
+        if "wait_for_defaults" in self.defaults.keys():
+            user_wait_for_defaults = {
+                k: v
+                for k, v in self.defaults["wait_for_defaults"].items()
+                if k
+                in [
+                    "poke_interval",
+                    "timeout",
+                    "retries",
+                    "soft_fail",
+                    "execution_date_fn",
+                    "check_existence",
+                ]
+            }
+            self.wait_for_defaults.update(user_wait_for_defaults)
+
         # We will accept multiple levels only for Airflow v2 and up
         # This will keep the TaskGroup logic of the Levels class
         # Solely for Airflow v2 and up
@@ -158,20 +177,36 @@ class GustySetup:
         self.all_tasks = {}
 
     def parse_metadata(self, id):
+        metadata_defaults = self.defaults.copy()
+        # if top-level DAG, get rid of task_group_defaults and wait_for_defaults
+        if self.schematic[id]["parent_id"] is None:
+            metadata_defaults.pop("task_group_defaults", None)
+            metadata_defaults.pop("wait_for_defaults", None)
+        # otherwise, only keep task_group_defaults
+        else:
+            metadata_defaults = (
+                metadata_defaults["task_group_defaults"]
+                if "task_group_defaults" in metadata_defaults.keys()
+                else {}
+            )
+        # METADATA.yml will override defaults
         level_metadata_path = self.schematic[id]["metadata_path"]
         if os.path.exists(level_metadata_path or ""):
             with open(level_metadata_path) as inf:
                 level_metadata = yaml.load(inf, GustyYAMLLoader)
-            self.schematic[id]["metadata"] = level_metadata
-            # dependencies have a separate place
-            level_dependencies = {
-                k: v
-                for k, v in level_metadata.items()
-                if k in k in ["dependencies", "external_dependencies"]
-            }
-            if len(level_dependencies) > 0:
-                self.schematic[id].update(level_dependencies)
-        # then override with user kwargs if need be :) or visa versa?
+        else:
+            level_metadata = {}
+        metadata_defaults.update(level_metadata)
+        level_metadata = metadata_defaults
+        self.schematic[id]["metadata"] = level_metadata
+        # dependencies get explicity set at the level-"level" for each level
+        level_dependencies = {
+            k: v
+            for k, v in level_metadata.items()
+            if k in k in ["dependencies", "external_dependencies"]
+        }
+        if len(level_dependencies) > 0:
+            self.schematic[id].update(level_dependencies)
 
     def create_level(self, id):
         """
@@ -339,10 +374,11 @@ class GustySetup:
                             external_task_id=(
                                 external_task_id if external_task_id != "all" else None
                             ),
+                            **self.wait_for_defaults
                             # maybe give users options to set these sensor parameters?
-                            poke_interval=10,
-                            timeout=60,
-                            retries=60,
+                            # poke_interval=10,
+                            # timeout=60,
+                            # retries=60,
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         task.set_upstream(wait_for_task)
@@ -377,9 +413,10 @@ class GustySetup:
                                 external_task_id if external_task_id != "all" else None
                             ),
                             # maybe give users options to set these sensor parameters?
-                            poke_interval=10,
-                            timeout=60,
-                            retries=60,
+                            **self.wait_for_defaults
+                            # poke_interval=10,
+                            # timeout=60,
+                            # retries=60,
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         level_structure.set_upstream(wait_for_task)
@@ -424,8 +461,20 @@ class GustySetup:
         return get_top_level_dag(self.schematic)
 
 
-def create_gusty_DAG(dag_dir):
-    setup = GustySetup(dag_dir)
+def create_DAG(
+    dag_dir,
+    task_group_defaults=None,
+    wait_for_defaults=None,
+    latest_only=True,
+    **kwargs
+):
+    setup = GustySetup(
+        dag_dir,
+        task_group_defaults=task_group_defaults,
+        wait_for_defaults=wait_for_defaults,
+        latest_only=latest_only,
+        **kwargs
+    )
     [setup.parse_metadata(level) for level in setup.levels]
     [setup.create_level(level) for level in setup.levels]
     [setup.read_specs(level) for level in setup.levels]
