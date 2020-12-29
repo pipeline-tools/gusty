@@ -138,7 +138,7 @@ class GustySetup:
                 "metadata_path": os.path.abspath(os.path.join(dir, "METADATA.yml"))
                 if "METADATA.yml" in files
                 else None,
-                "metadata": None,
+                "metadata": {},
                 "tasks": {},
                 "dependencies": []
                 if os.path.basename(os.path.dirname(dir))
@@ -202,6 +202,7 @@ class GustySetup:
         """
         For a given level id, parse all of that level's yaml specs, given paths to those files.
         """
+        level_metadata = self.schematic[id]["metadata"]
         level_spec_paths = self.schematic[id]["spec_paths"]
         level_specs = [read_yaml_spec(spec_path) for spec_path in level_spec_paths]
         if airflow_version > 1:
@@ -213,6 +214,12 @@ class GustySetup:
                         level_spec["task_id"] = "{x}_{y}".format(
                             x=level_name, y=level_spec["task_id"]
                         )
+                elif "suffix_group_id" in level_metadata.keys():
+                    if level_metadata["suffix_group_id"]:
+                        for level_spec in level_specs:
+                            level_spec["task_id"] = "{y}_{x}".format(
+                                x=level_name, y=level_spec["task_id"]
+                            )
         self.schematic[id].update({"specs": level_specs})
 
     def create_tasks(self, id):
