@@ -33,7 +33,6 @@ def build_task(spec, level_id, full_schematic):
     args = {
         k: v
         for k, v in spec.items()
-        # if not hasattr(operator, "template_fields")  # I THINK THIS LINE IS UNNECESSARY?
         if k in operator.template_fields
         or k
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
@@ -44,10 +43,6 @@ def build_task(spec, level_id, full_schematic):
         level_structure = get_level_structure(level_id, full_schematic)
         if isinstance(level_structure, TaskGroup):
             args["task_group"] = level_structure
-
-    # THIS LINE IS ALSO UNNECESSARY?
-    # for field in ["operator", "dependencies", "external_dependencies"]:
-    #     args.pop(field, None)
 
     task = operator(**args)
 
