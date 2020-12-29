@@ -60,28 +60,20 @@ class Level:
         full_schematic,
         parent_id,
         name,
-        structure,
         metadata,
-        dependencies,
-        external_dependencies,
     ):
         self.parent_id = parent_id
         self.name = name
         self.is_top_level = self.parent_id is None
         self.metadata = metadata
-        self.structure = structure
 
         if self.is_top_level:
-            if os.path.exists(self.metadata or ""):
-                with open(self.metadata) as inf:
-                    level_metadata = yaml.load(inf, GustyYAMLLoader)
-                    level_init_data = {
-                        k: v
-                        for k, v in level_metadata.items()
-                        if k in k in inspect.signature(DAG.__init__).parameters.keys()
-                    }
-            else:
-                level_metadata = None
+            if self.metadata is not None:
+                level_init_data = {
+                    k: v
+                    for k, v in self.metadata.items()
+                    if k in k in inspect.signature(DAG.__init__).parameters.keys()
+                }
             self.structure = DAG(self.name, **level_init_data)
 
         else:
@@ -103,32 +95,23 @@ class Level:
                 level_defaults.update({"parent_group": parent})
 
             # Read in any metadata
-            if os.path.exists(self.metadata or ""):
-                with open(self.metadata) as inf:
-                    level_metadata = yaml.load(inf, GustyYAMLLoader)
-
-                    # scrub for TaskGroup inits only
-                    level_init_data = {
-                        k: v
-                        for k, v in level_metadata.items()
-                        if k
-                        in k
-                        in inspect.signature(TaskGroup.__init__).parameters.keys()
-                    }
-                    level_defaults.update(level_init_data)
-
-                    # add level dependencies if any are found
-                    self.level_dependencies = {
-                        k: v
-                        for k, v in level_metadata.items()
-                        if k in k in ["dependencies", "external_dependencies"]
-                    }
+            if self.metadata is not None:
+                # scrub for TaskGroup inits only
+                level_init_data = {
+                    k: v
+                    for k, v in self.metadata.items()
+                    if k in k in inspect.signature(TaskGroup.__init__).parameters.keys()
+                    and k != "dag"
+                }
+                level_defaults.update(level_init_data)
 
             self.structure = TaskGroup(**level_defaults)
 
 
 class GustySetup:
-    def __init__(self, dag_dir):
+    def __init__(
+        self, dag_dir
+    ):  # task_group_defaults, wait_for_defaults, **kwargs (for DAG level)
         """
         Because DAGs can be multiple "levels" now, the Setup class is here to first
         create a "schematic" of the DAG's levels and all of the specs associated with
@@ -152,9 +135,10 @@ class GustySetup:
                     and not file.startswith(("_", "."))
                 ],
                 "specs": [],
-                "metadata": os.path.abspath(os.path.join(dir, "METADATA.yml"))
+                "metadata_path": os.path.abspath(os.path.join(dir, "METADATA.yml"))
                 if "METADATA.yml" in files
                 else None,
+                "metadata": None,
                 "tasks": {},
                 "dependencies": []
                 if os.path.basename(os.path.dirname(dir))
@@ -178,6 +162,22 @@ class GustySetup:
         self.latest_only_task = {}
         self.all_tasks = {}
 
+    def parse_metadata(self, id):
+        level_metadata_path = self.schematic[id]["metadata_path"]
+        if os.path.exists(level_metadata_path or ""):
+            with open(level_metadata_path) as inf:
+                level_metadata = yaml.load(inf, GustyYAMLLoader)
+            self.schematic[id]["metadata"] = level_metadata
+            # dependencies have a separate place
+            level_dependencies = {
+                k: v
+                for k, v in level_metadata.items()
+                if k in k in ["dependencies", "external_dependencies"]
+            }
+            if len(level_dependencies) > 0:
+                self.schematic[id].update(level_dependencies)
+        # then override with user kwargs if need be :) or visa versa?
+
     def create_level(self, id):
         """
         Given a level of the DAG, a structure such as a DAG or a TaskGroup will be initialized
@@ -198,10 +198,6 @@ class GustySetup:
         # We update the schematic with the structure of the level created
         self.schematic[id].update({"structure": level.structure})
 
-        # add any dependencies from level creation
-        if "level_dependencies" in level.__dict__.keys():
-            self.schematic[id].update(level.level_dependencies)
-
     def read_specs(self, id):
         """
         For a given level id, parse all of that level's yaml specs, given paths to those files.
@@ -214,7 +210,9 @@ class GustySetup:
             if isinstance(level_structure, TaskGroup):
                 if level_structure.prefix_group_id:
                     for level_spec in level_specs:
-                        level_spec["task_id"] = "{x}_{y}".format(x=level_name, y=level_spec["task_id"])
+                        level_spec["task_id"] = "{x}_{y}".format(
+                            x=level_name, y=level_spec["task_id"]
+                        )
         self.schematic[id].update({"specs": level_specs})
 
     def create_tasks(self, id):
@@ -270,7 +268,9 @@ class GustySetup:
         }
         valid_dependency_objects = {**self.all_tasks, **sibling_levels}
         for task_id, task in level_tasks.items():
-            task_dependencies = task.dependencies if hasattr(task, "dependencies") else []
+            task_dependencies = (
+                task.dependencies if hasattr(task, "dependencies") else []
+            )
             spec_dependencies = {
                 task_id: spec["dependencies"]
                 for spec in level_specs
@@ -287,10 +287,8 @@ class GustySetup:
             # Should tasks be able to depend on things on any level?
             spec_task_dependencies = [
                 dependency
-                for dependency
-                in spec_task_dependencies
-                if dependency
-                in valid_dependency_objects.keys()
+                for dependency in spec_task_dependencies
+                if dependency in valid_dependency_objects.keys()
             ]
 
             if len(spec_task_dependencies) > 0:
@@ -393,9 +391,7 @@ class GustySetup:
         level_parent_id = self.schematic[id]["parent_id"]
         # parent level only
         if level_parent_id is None:
-            if os.path.exists(level_metadata or ""):
-                with open(level_metadata) as inf:
-                    level_metadata = yaml.load(inf, GustyYAMLLoader)
+            if level_metadata is not None:
                 level_latest_only = (
                     level_metadata["latest_only"]
                     if "latest_only" in level_metadata.keys()
@@ -428,6 +424,7 @@ class GustySetup:
 
 def create_gusty_DAG(dag_dir):
     setup = GustySetup(dag_dir)
+    [setup.parse_metadata(level) for level in setup.levels]
     [setup.create_level(level) for level in setup.levels]
     [setup.read_specs(level) for level in setup.levels]
     [setup.create_tasks(level) for level in setup.levels]
