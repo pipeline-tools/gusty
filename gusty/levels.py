@@ -177,7 +177,7 @@ class GustySetup:
         self.all_tasks = {}
 
     def parse_metadata(self, id):
-        metadata_defaults = self.defaults.copy()
+        metadata_defaults = self.defaults
         # if top-level DAG, get rid of task_group_defaults and wait_for_defaults
         if self.schematic[id]["parent_id"] is None:
             metadata_defaults.pop("task_group_defaults", None)
@@ -197,8 +197,8 @@ class GustySetup:
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
-        #level_metadata = metadata_defaults
-        self.schematic[id]["metadata"] = metadata_defaults
+        level_metadata = metadata_defaults
+        self.schematic[id]["metadata"] = level_metadata
         # dependencies get explicity set at the level-"level" for each level
         level_dependencies = {
             k: v
