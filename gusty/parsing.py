@@ -1,6 +1,5 @@
-import yaml
+import os, yaml, frontmatter, nbformat
 from datetime import datetime, timedelta
-
 from airflow.utils.dates import days_ago
 
 
@@ -45,3 +44,39 @@ class GustyYAMLLoader(yaml.UnsafeLoader):
             return func(value)
 
         return ret
+
+
+def read_yaml_spec(file):
+    """
+    Reading in yaml specs
+    """
+
+    if file.endswith(".ipynb"):
+        # Find first yaml cell in jupyter notebook and parse yaml
+        nb_cells = nbformat.read(file, as_version=4)["cells"]
+        yaml_cell = [
+            cell
+            for cell in nb_cells
+            if cell["cell_type"] == "markdown"
+            and cell["source"].startswith("```yaml")  # ("```yaml", "```yml")
+        ][0]["source"]
+        yaml_file = yaml.safe_load(yaml_cell.replace("```yaml", "").replace("```", ""))
+
+    else:
+        # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
+        file_parsed = frontmatter.load(file)
+        yaml_file = file_parsed.metadata or yaml.load(
+            file_parsed.content, Loader=GustyYAMLLoader
+        )
+
+    assert "operator" in yaml_file, "No operator specified in yaml spec " + file
+
+    task_id = os.path.splitext(os.path.basename(file))[0]
+    yaml_file["task_id"] = task_id.lower().strip()
+    assert (
+        yaml_file["task_id"] != "all"
+    ), "Task name 'all' is not allowed. Please change your task name."
+
+    yaml_file["file_path"] = file
+
+    return yaml_file

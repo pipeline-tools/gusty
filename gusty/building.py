@@ -1,10 +1,11 @@
-import os
-import yaml
-import inspect
-import airflow
+import os, yaml, inspect, airflow
 from airflow import DAG
-from gusty.utils import GustyYAMLLoader
-from gusty import valid_extensions, airflow_version, read_yaml_spec, get_operator
+from gusty.parsing import GustyYAMLLoader, read_yaml_spec
+from gusty.importing import airflow_version, valid_extensions, get_operator
+
+###########################
+## Version Compatability ##
+###########################
 
 if airflow_version > 1:
     from airflow.utils.task_group import TaskGroup
@@ -17,18 +18,62 @@ else:
     from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 
-def get_level_structure(level_id, full_schematic):
-    level_structure = full_schematic[level_id]["structure"]
+#########################
+## Schematic Functions ##
+#########################
+
+
+def create_schematic(dag_dir):
+    return {
+        # Each entry is a "level" of the main DAG
+        os.path.abspath(dir): {
+            "name": os.path.basename(dir),
+            "parent_id": os.path.abspath(os.path.dirname(dir))
+            if os.path.basename(os.path.dirname(dir))
+            != os.path.basename(os.path.dirname(dag_dir))
+            else None,
+            "structure": None,
+            "spec_paths": [
+                os.path.abspath(os.path.join(dir, file))
+                for file in files
+                if file.endswith(valid_extensions)
+                and file != "METADATA.yml"
+                and not file.startswith(("_", "."))
+            ],
+            "specs": [],
+            "metadata_path": os.path.abspath(os.path.join(dir, "METADATA.yml"))
+            if "METADATA.yml" in files
+            else None,
+            "metadata": {},
+            "tasks": {},
+            "dependencies": []
+            if os.path.basename(os.path.dirname(dir))
+            != os.path.basename(os.path.dirname(dag_dir))
+            else None,
+            "external_dependencies": [],
+        }
+        for dir, subdirs, files in os.walk(dag_dir)
+        if not os.path.basename(dir).startswith(("_", "."))
+    }
+
+
+def get_level_structure(level_id, schematic):
+    level_structure = schematic[level_id]["structure"]
     return level_structure
 
 
-def get_top_level_dag(full_schematic):
-    top_level_id = list(full_schematic.keys())[0]
-    top_level_dag = get_level_structure(top_level_id, full_schematic)
+def get_top_level_dag(schematic):
+    top_level_id = list(schematic.keys())[0]
+    top_level_dag = get_level_structure(top_level_id, schematic)
     return top_level_dag
 
 
-def build_task(spec, level_id, full_schematic):
+#######################
+## Builder Functions ##
+#######################
+
+
+def build_task(spec, level_id, schematic):
     operator = get_operator(spec["operator"])
     args = {
         k: v
@@ -38,9 +83,9 @@ def build_task(spec, level_id, full_schematic):
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
     }
     args["task_id"] = spec["task_id"]
-    args["dag"] = get_top_level_dag(full_schematic)
+    args["dag"] = get_top_level_dag(schematic)
     if airflow_version > 1:
-        level_structure = get_level_structure(level_id, full_schematic)
+        level_structure = get_level_structure(level_id, schematic)
         if isinstance(level_structure, TaskGroup):
             args["task_group"] = level_structure
 
@@ -49,61 +94,56 @@ def build_task(spec, level_id, full_schematic):
     return task
 
 
-class Level:
-    def __init__(
-        self,
-        full_schematic,
-        parent_id,
-        name,
-        metadata,
-    ):
-        self.parent_id = parent_id
-        self.name = name
-        self.is_top_level = self.parent_id is None
-        self.metadata = metadata
-
-        if self.is_top_level:
-            if self.metadata is not None:
-                level_init_data = {
-                    k: v
-                    for k, v in self.metadata.items()
-                    if k in k in inspect.signature(DAG.__init__).parameters.keys()
-                }
-            self.structure = DAG(self.name, **level_init_data)
-
-        else:
-            # What is the main DAG?
-            top_level_dag = get_top_level_dag(full_schematic)
-
-            # What is the parent structure?
-            parent = full_schematic[self.parent_id]["structure"]
-
-            # Set some TaskGroup defaults
-            level_defaults = {
-                "group_id": self.name,
-                "prefix_group_id": False,
-                "dag": top_level_dag,
+def build_structure(schematic, parent_id, name, metadata):
+    is_top_level = parent_id is None
+    if is_top_level:
+        if metadata is not None:
+            level_init_data = {
+                k: v
+                for k, v in metadata.items()
+                if k in k in inspect.signature(DAG.__init__).parameters.keys()
             }
+        structure = DAG(name, **level_init_data)
 
-            # If the parent structure is another TaskGroup, add it as parent_group kwarg
-            if isinstance(parent, TaskGroup):
-                level_defaults.update({"parent_group": parent})
+    else:
+        # What is the main DAG?
+        top_level_dag = get_top_level_dag(schematic)
 
-            # Read in any metadata
-            if self.metadata is not None:
-                # scrub for TaskGroup inits only
-                level_init_data = {
-                    k: v
-                    for k, v in self.metadata.items()
-                    if k in k in inspect.signature(TaskGroup.__init__).parameters.keys()
-                    and k not in ["dag", "parent_group"]
-                }
-                level_defaults.update(level_init_data)
+        # What is the parent structure?
+        parent = schematic[parent_id]["structure"]
 
-            self.structure = TaskGroup(**level_defaults)
+        # Set some TaskGroup defaults
+        level_defaults = {
+            "group_id": name,
+            "prefix_group_id": False,
+            "dag": top_level_dag,
+        }
+
+        # If the parent structure is another TaskGroup, add it as parent_group kwarg
+        if isinstance(parent, TaskGroup):
+            level_defaults.update({"parent_group": parent})
+
+        # Read in any metadata
+        if metadata is not None:
+            # scrub for TaskGroup inits only
+            level_init_data = {
+                k: v
+                for k, v in metadata.items()
+                if k in k in inspect.signature(TaskGroup.__init__).parameters.keys()
+                and k not in ["dag", "parent_group"]
+            }
+            level_defaults.update(level_init_data)
+
+        structure = TaskGroup(**level_defaults)
+
+    return structure
+
+##################
+## GustyBuilder ##
+##################
 
 
-class GustySetup:
+class GustyBuilder:
     def __init__(self, dag_dir, **kwargs):
         """
         Because DAGs can be multiple "levels" now, the Setup class is here to first
@@ -111,56 +151,28 @@ class GustySetup:
         each level, at which point it moves through the schematic to build each level's
         "structure" (DAG or TaskGroup), tasks, dependencies, and external_dependencies
         """
-        self.schematic = {
-            # Each entry is a "level" of the main DAG
-            os.path.abspath(dir): {
-                "name": os.path.basename(dir),
-                "parent_id": os.path.abspath(os.path.dirname(dir))
-                if os.path.basename(os.path.dirname(dir))
-                != os.path.basename(os.path.dirname(dag_dir))
-                else None,
-                "structure": None,
-                "spec_paths": [
-                    os.path.abspath(os.path.join(dir, file))
-                    for file in files
-                    if file.endswith(valid_extensions)
-                    and file != "METADATA.yml"
-                    and not file.startswith(("_", "."))
-                ],
-                "specs": [],
-                "metadata_path": os.path.abspath(os.path.join(dir, "METADATA.yml"))
-                if "METADATA.yml" in files
-                else None,
-                "metadata": {},
-                "tasks": {},
-                "dependencies": []
-                if os.path.basename(os.path.dirname(dir))
-                != os.path.basename(os.path.dirname(dag_dir))
-                else None,
-                "external_dependencies": [],
-            }
-            for dir, subdirs, files in os.walk(dag_dir)
-            if not os.path.basename(dir).startswith(("_", "."))
-        }
-
-        # store all defaults
-        self.defaults = kwargs if len(kwargs) > 0 else {}
+        self.schematic = create_schematic(dag_dir)
 
         # DAG defaults
         self.dag_defaults = {
-            k: v for k, v in kwargs.items()
+            k: v
+            for k, v in kwargs.items()
             if k not in ["task_group_defaults", "wait_for_defaults"]
         }
 
         # TaskGroup defaults
-        self.task_group_defaults = kwargs["task_group_defaults"] if "task_group_defaults" in kwargs.keys() else {}
+        self.task_group_defaults = (
+            kwargs["task_group_defaults"]
+            if "task_group_defaults" in kwargs.keys()
+            else {}
+        )
 
         # handle external dependency / wait_for defaults
         self.wait_for_defaults = {"poke_interval": 10, "timeout": 60, "retries": 60}
-        if "wait_for_defaults" in self.defaults.keys():
+        if "wait_for_defaults" in kwargs.keys():
             user_wait_for_defaults = {
                 k: v
-                for k, v in self.defaults["wait_for_defaults"].items()
+                for k, v in kwargs["wait_for_defaults"].items()
                 if k
                 in [
                     "poke_interval",
@@ -187,7 +199,6 @@ class GustySetup:
 
     def parse_metadata(self, id):
 
-
         # if top-level DAG, get rid of task_group_defaults and wait_for_defaults, because they are irrelevant...
         if self.schematic[id]["parent_id"] is None:
             metadata_defaults = self.dag_defaults.copy()
@@ -203,7 +214,7 @@ class GustySetup:
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
-        #level_metadata = metadata_defaults
+        # level_metadata = metadata_defaults
         self.schematic[id]["metadata"] = metadata_defaults
         # dependencies get explicity set at the level-"level" for each level
         level_dependencies = {
@@ -214,7 +225,7 @@ class GustySetup:
         if len(level_dependencies) > 0:
             self.schematic[id].update(level_dependencies)
 
-    def create_level(self, id):
+    def create_structure(self, id):
         """
         Given a level of the DAG, a structure such as a DAG or a TaskGroup will be initialized
         and, additionally, dependencies or external dependencies specified in METADATA.yml will be
@@ -224,15 +235,13 @@ class GustySetup:
         level_kwargs = {
             k: v
             for k, v in level_schematic.items()
-            if k in inspect.signature(Level.__init__).parameters.keys()
+            if k in inspect.signature(build_structure).parameters.keys()
         }
 
-        # The Level class instantiates the structure (a DAG or TaskGroup)
-        # And checks METADATA.yml for dependencies if any are present
-        level = Level(self.schematic, **level_kwargs)
+        level_structure = build_structure(self.schematic, **level_kwargs)
 
         # We update the schematic with the structure of the level created
-        self.schematic[id].update({"structure": level.structure})
+        self.schematic[id].update({"structure": level_structure})
 
     def read_specs(self, id):
         """
@@ -244,7 +253,11 @@ class GustySetup:
         if airflow_version > 1:
             level_structure = self.schematic[id]["structure"]
             level_name = self.schematic[id]["name"]
-            add_suffix = level_metadata["suffix_group_id"] if "suffix_group_id" in level_metadata.keys() else False
+            add_suffix = (
+                level_metadata["suffix_group_id"]
+                if "suffix_group_id" in level_metadata.keys()
+                else False
+            )
             if isinstance(level_structure, TaskGroup):
                 if level_structure.prefix_group_id and not add_suffix:
                     for level_spec in level_specs:
@@ -465,29 +478,3 @@ class GustySetup:
 
     def return_dag(self):
         return get_top_level_dag(self.schematic)
-
-
-def create_dag(
-    dag_dir,
-    task_group_defaults={},
-    wait_for_defaults={},
-    latest_only=True,
-    **kwargs
-):
-    setup = GustySetup(
-        dag_dir,
-        task_group_defaults=task_group_defaults,
-        wait_for_defaults=wait_for_defaults,
-        latest_only=latest_only,
-        **kwargs
-    )
-    [setup.parse_metadata(level) for level in setup.levels]
-    [setup.create_level(level) for level in setup.levels]
-    [setup.read_specs(level) for level in setup.levels]
-    [setup.create_tasks(level) for level in setup.levels]
-    [setup.create_level_dependencies(level) for level in setup.levels]
-    [setup.create_task_dependencies(level) for level in setup.levels]
-    [setup.create_task_external_dependencies(level) for level in setup.levels]
-    [setup.create_level_external_dependencies(level) for level in setup.levels]
-    [setup.create_root_dependencies(level) for level in setup.levels]
-    return setup.return_dag()
