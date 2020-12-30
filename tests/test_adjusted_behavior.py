@@ -28,12 +28,22 @@ def dag(with_metadata_dir):
 
 
 def test_default_args_provided(dag):
+    """
+    create_dag default_args should be implemented on top of
+    METADATA.yml-provided default_args when a default arg (e.g. retries)
+    is not provided METADATA.yml but is provided by create_dag default_args
+    """
     top_level_task = dag.task_dict["top_level_task"]
     assert top_level_task.__dict__["retries"] == 5
     pass
 
 
 def test_default_args_overridden(dag):
+    """
+    create_dag default_args should be overridden by METADATA.yml-provided default_args
+    when a default arg (e.g. retries) exists in both create_dag default_args and
+    METADATA.yml default_args
+    """
     top_level_task = dag.task_dict["top_level_task"]
     assert top_level_task.__dict__["email"] == "meta@gusty.com"
     pass
