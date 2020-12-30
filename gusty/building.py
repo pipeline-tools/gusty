@@ -488,8 +488,6 @@ class GustyBuilder:
                     if "latest_only" in level_metadata.keys()
                     else True
                 )
-            else:
-                level_latest_only = True
             if level_latest_only:
                 latest_only_operator = LatestOnlyOperator(
                     task_id="latest_only", dag=get_top_level_dag(self.schematic)
