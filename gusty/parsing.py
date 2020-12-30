@@ -59,7 +59,9 @@ def read_yaml_spec(file):
             for cell in nb_cells
             if cell["cell_type"] == "markdown"
             and cell["source"].startswith(("```yaml", "```yml"))
-        ][0]["source"]
+        ]
+        assert len(yaml_cell) > 0, "Please add a yaml block to %s" % file
+        yaml_cell = yaml_cell[0]["source"]
         yaml_file = yaml.safe_load(
             yaml_cell.replace("```yaml", "").replace("```yml", "").replace("```", "")
         )
