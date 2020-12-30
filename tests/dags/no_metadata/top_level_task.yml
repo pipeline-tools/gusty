@@ -1,0 +1,4 @@
+operator: airflow.operators.bash.BashOperator
+bash_command: echo hello
+dependencies:
+  - dependable_task

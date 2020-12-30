@@ -1,27 +1,10 @@
 import pytest
-from gusty import get_operator_location, get_operator_name, get_operator_module
+from gusty.parsing import read_yaml_spec
 
 
-@pytest.fixture
-def operator_string():
-    return "airflow.operators.bash.BashOperator"
-
-
-def test_location(operator_string):
-    location = get_operator_location(operator_string)
-    assert location == "airflow"
-
-
-def test_operator_name(operator_string):
-    operator_name = get_operator_name(operator_string)
-    assert operator_name == "BashOperator"
-
-
-def test_operator_module(operator_string):
-    operator_module = get_operator_module(operator_string)
-    assert operator_module == "airflow.operators.bash"
-
-
-def test_module_fail():
-    with pytest.raises(AssertionError):
-        get_operator_module("BashOperator")
+def test_read_yaml_spec():
+    yaml_spec = read_yaml_spec("tests/dags/no_metadata/top_level_task.yml")
+    assert yaml_spec["task_id"] == "top_level_task"
+    assert yaml_spec["file_path"] == "tests/dags/no_metadata/top_level_task.yml"
+    assert "operator" in yaml_spec.keys()
+    assert "bash_command" in yaml_spec.keys()
