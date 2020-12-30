@@ -15,6 +15,7 @@ def with_metadata_dir():
 def dag(with_metadata_dir):
     dag = create_dag(
         with_metadata_dir,
+        default_args={"email": "default@gusty.com", "retries": 5},
         task_group_defaults={"prefix_group_id": True},
         wait_for_defaults={"poke_interval": 12},
     )
@@ -24,6 +25,18 @@ def dag(with_metadata_dir):
 ###########
 ## TESTS ##
 ###########
+
+
+def test_default_args_provided(dag):
+    top_level_task = dag.task_dict["top_level_task"]
+    assert top_level_task.__dict__["retries"] == 5
+    pass
+
+
+def test_default_args_overridden(dag):
+    top_level_task = dag.task_dict["top_level_task"]
+    assert top_level_task.__dict__["email"] == "meta@gusty.com"
+    pass
 
 
 def test_latest_only_false(dag):

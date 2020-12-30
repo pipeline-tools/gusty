@@ -212,6 +212,22 @@ class GustyBuilder:
         if os.path.exists(level_metadata_path or ""):
             with open(level_metadata_path) as inf:
                 level_metadata = yaml.load(inf, GustyYAMLLoader)
+
+            # special case - default_args provided in both metadata_defaults and level_metadata
+            if (
+                self.schematic[id]["parent_id"] is None
+                and "default_args" in metadata_defaults.keys()
+                and "default_args" in level_metadata.keys()
+            ):
+                # metadata defaults
+                metadata_default_args = metadata_defaults["default_args"]
+                # level_metadata (provided via METADATA.yml)
+                level_default_args = level_metadata["default_args"]
+                # metadata defaults updated with level_metadata
+                metadata_default_args.update(level_default_args)
+                # updated and resolved attached back to level_metadata
+                level_metadata.update({"default_args": metadata_default_args})
+
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
