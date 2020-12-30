@@ -48,7 +48,7 @@ class GustyYAMLLoader(yaml.UnsafeLoader):
 
 def read_yaml_spec(file):
     """
-    Reading in yaml specs
+    Reading in yaml specs / frontmatter.
     """
 
     if file.endswith(".ipynb"):

@@ -24,6 +24,9 @@ else:
 
 
 def create_schematic(dag_dir):
+    """
+    Given a dag directory, identify requirements (e.g spec_paths, metadata) for each "level" of the DAG.
+    """
     return {
         # Each entry is a "level" of the main DAG
         os.path.abspath(dir): {
@@ -58,11 +61,17 @@ def create_schematic(dag_dir):
 
 
 def get_level_structure(level_id, schematic):
+    """
+    Helper function to pull out a DAG level's structure (e.g. DAG or TaskGroup)
+    """
     level_structure = schematic[level_id]["structure"]
     return level_structure
 
 
 def get_top_level_dag(schematic):
+    """
+    Helper function to pull out the primary DAG object in a schematic
+    """
     top_level_id = list(schematic.keys())[0]
     top_level_dag = get_level_structure(top_level_id, schematic)
     return top_level_dag
@@ -74,6 +83,9 @@ def get_top_level_dag(schematic):
 
 
 def build_task(spec, level_id, schematic):
+    """
+    Given a task specification ("spec"), locate the operator and instantiate the object with args from the spec.
+    """
     operator = get_operator(spec["operator"])
     args = {
         k: v
@@ -95,6 +107,9 @@ def build_task(spec, level_id, schematic):
 
 
 def build_structure(schematic, parent_id, name, metadata):
+    """
+    Builds a DAG or a TaskGroup, contingent on the parent_id (which is None for the main DAG in a schematic)
+    """
     is_top_level = parent_id is None
     if is_top_level:
         if metadata is not None:
@@ -147,14 +162,16 @@ def build_structure(schematic, parent_id, name, metadata):
 class GustyBuilder:
     def __init__(self, dag_dir, **kwargs):
         """
-        Because DAGs can be multiple "levels" now, the Setup class is here to first
+        Because DAGs can be multiple "levels" now, the GustyBuilder class is here to first
         create a "schematic" of the DAG's levels and all of the specs associated with
         each level, at which point it moves through the schematic to build each level's
-        "structure" (DAG or TaskGroup), tasks, dependencies, and external_dependencies
+        "structure" (DAG or TaskGroup), tasks, dependencies, and external_dependencies, so on,
+        until the DAG is complete.
         """
         self.schematic = create_schematic(dag_dir)
 
-        # DAG defaults
+        # DAG defaults - everything that's not task_group_defaults or wait_for_defaults
+        # is considered DAG default metadata
         self.dag_defaults = {
             k: v
             for k, v in kwargs.items()
@@ -168,7 +185,7 @@ class GustyBuilder:
             else {}
         )
 
-        # handle external dependency / wait_for defaults
+        # external dependency / wait_for_defaults
         self.wait_for_defaults = {"poke_interval": 10, "timeout": 60, "retries": 60}
         if "wait_for_defaults" in kwargs.keys():
             user_wait_for_defaults = {
@@ -188,22 +205,25 @@ class GustyBuilder:
 
         # We will accept multiple levels only for Airflow v2 and up
         # This will keep the TaskGroup logic of the Levels class
-        # Solely for Airflow v2 and up
+        # Solely for Airflow v2 and beyond
         self.levels = [level_id for level_id in self.schematic.keys()]
         self.levels = [self.levels[0]] if airflow_version < 2 else self.levels
 
         # For tasks gusty creates outside of specs provided by the directory
-        # It is important for gusty to keep a record  of the tasks created
+        # It is important for gusty to keep a record  of the tasks created.
+        # We keep a running list of all_tasks, as well.
         self.wait_for_tasks = {}
         self.latest_only_task = {}
         self.all_tasks = {}
 
     def parse_metadata(self, id):
+        """
+        For a given level id, parse any metadata if there is a METADATA.yml path,
+        otherwise add applicable metadata defaults for that level.
+        """
 
-        # if top-level DAG, get rid of task_group_defaults and wait_for_defaults, because they are irrelevant...
         if self.schematic[id]["parent_id"] is None:
             metadata_defaults = self.dag_defaults.copy()
-        # otherwise, only keep task_group_defaults, because that's the only other structure a level can be...
         else:
             metadata_defaults = self.task_group_defaults.copy()
 
@@ -231,9 +251,10 @@ class GustyBuilder:
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
-        # level_metadata = metadata_defaults
         self.schematic[id]["metadata"] = metadata_defaults
         # dependencies get explicity set at the level-"level" for each level
+        # and must be pulled out separately. They can only be passed in via level_metadata,
+        # not in defaults
         level_dependencies = {
             k: v
             for k, v in level_metadata.items()
@@ -244,9 +265,7 @@ class GustyBuilder:
 
     def create_structure(self, id):
         """
-        Given a level of the DAG, a structure such as a DAG or a TaskGroup will be initialized
-        and, additionally, dependencies or external dependencies specified in METADATA.yml will be
-        added to the level's schematic
+        Given a level of the DAG, a structure such as a DAG or a TaskGroup will be initialized.
         """
         level_schematic = self.schematic[id]
         level_kwargs = {
@@ -302,7 +321,7 @@ class GustyBuilder:
 
     def create_level_dependencies(self, id):
         """
-        For a given level id, identify what would be considered a valid set of dependencies within the dag
+        For a given level id, identify what would be considered a valid set of dependencies within the DAG
         for that level, and then set any specified dependencies upstream of that level. An example here would be
         a DAG has two .yml jobs and one subfolder, which (the subfolder) is turned into a TaskGroup. That TaskGroup
         can validly depend on the two .yml jobs, so long as either of those task_ids are defined within the dependencies
@@ -371,7 +390,7 @@ class GustyBuilder:
     def create_task_external_dependencies(self, id):
         """
         As with create_task_dependencies, for a given level id, parse all of the external dependencies in a task's
-        spec, then create and add those "wait_for_" tasks upstream of a given task. Note the Setup class must keep
+        spec, then create and add those "wait_for_" tasks upstream of a given task. Note the Builder class must keep
         a record of all "wait_for_" tasks as to not recreate the same task twice.
         """
         level_specs = self.schematic[id]["specs"]
@@ -411,15 +430,14 @@ class GustyBuilder:
                                 external_task_id if external_task_id != "all" else None
                             ),
                             **self.wait_for_defaults
-                            # maybe give users options to set these sensor parameters?
-                            # poke_interval=10,
-                            # timeout=60,
-                            # retries=60,
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         task.set_upstream(wait_for_task)
 
     def create_level_external_dependencies(self, id):
+        """
+        Same as create_task_external_dependencies, except for levels intead of tasks
+        """
         level_structure = self.schematic[id]["structure"]
         level_external_dependencies = self.schematic[id]["external_dependencies"]
         level_parent_id = self.schematic[id]["parent_id"]
@@ -448,19 +466,17 @@ class GustyBuilder:
                             external_task_id=(
                                 external_task_id if external_task_id != "all" else None
                             ),
-                            # maybe give users options to set these sensor parameters?
                             **self.wait_for_defaults
-                            # poke_interval=10,
-                            # timeout=60,
-                            # retries=60,
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         level_structure.set_upstream(wait_for_task)
 
     def create_root_dependencies(self, id):
         """
-        Finally, we look at the root for latest only and any external dependencies (TODO) at the root level.
-        Then we wire up any tasks and groups from the parent level to these deps if needed
+        Finally, we look at the root level for a latest only spec. If latest_only, we create
+        latest only and wire up any tasks and groups from the parent level to these deps if needed.
+
+        (In a future release, external dependencies and other sensors will also be available at the root level)
         """
         level_metadata = self.schematic[id]["metadata"]
         level_parent_id = self.schematic[id]["parent_id"]

@@ -14,17 +14,26 @@ valid_extensions = (".yml", ".Rmd", ".ipynb")
 
 
 def get_operator_location(operator_string):
+    """
+    Get package name / determine if "local" keyword is used
+    """
     # location will generally be 'airflow',
     # but if it's 'local', then we will look locally for the operator
     return operator_string.split(".")[0]
 
 
 def get_operator_name(operator_string):
+    """
+    Get operator class
+    """
     # the actual name of the operator
     return operator_string.split(".")[-1]
 
 
 def get_operator_module(operator_string):
+    """
+    Get module name
+    """
     # the module, for when the operator is not a local operator
     operator_path = ".".join(operator_string.split(".")[:-1])
     assert len(operator_path) != 0, (
@@ -46,6 +55,9 @@ module_dict = dict(itertools.chain(*pairs))
 
 
 def get_operator(operator_string):
+    """
+    Given an operator string, determine the location of that operator and return the operator object
+    """
     operator_name = get_operator_name(operator_string)
     operator_location = get_operator_location(operator_string)
 
