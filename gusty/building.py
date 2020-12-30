@@ -138,6 +138,7 @@ def build_structure(schematic, parent_id, name, metadata):
 
     return structure
 
+
 ##################
 ## GustyBuilder ##
 ##################

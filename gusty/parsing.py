@@ -60,7 +60,9 @@ def read_yaml_spec(file):
             if cell["cell_type"] == "markdown"
             and cell["source"].startswith(("```yaml", "```yml"))
         ][0]["source"]
-        yaml_file = yaml.safe_load(yaml_cell.replace("```yaml", "").replace("```yml", "").replace("```", ""))
+        yaml_file = yaml.safe_load(
+            yaml_cell.replace("```yaml", "").replace("```yml", "").replace("```", "")
+        )
 
     else:
         # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
