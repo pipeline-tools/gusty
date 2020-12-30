@@ -48,3 +48,17 @@ def test_deeper(dag):
     # maybe an airflow bug?
     assert "first" in dag.task_dict.keys()
     assert "deeper.second.second_second" in dag.task_dict.keys()
+
+
+def test_wait_for_defaults(dag):
+    wait_for_tasks = [
+        task
+        for task_id, task in dag.task_dict.items()
+        if task_id.startswith("wait_for_")
+    ]
+
+    wait_for_tasks_adjusted = [
+        task.__dict__["poke_interval"] == 12 for task in wait_for_tasks
+    ]
+
+    assert all(wait_for_tasks_adjusted)

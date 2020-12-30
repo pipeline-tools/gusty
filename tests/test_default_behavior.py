@@ -118,6 +118,7 @@ def test_tasks_created(dag, dag_files):
     assert all(expected_tasks)
     assert all(tasks_are_operators)
 
+
 def test_args_passed(dag):
     top_level_task = dag.task_dict["top_level_task"]
-    assert top_level_task.__dict__["bash_command"] == 'echo hello'
+    assert top_level_task.__dict__["bash_command"] == "echo hello"
