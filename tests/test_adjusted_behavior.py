@@ -85,3 +85,10 @@ def test_wait_for_defaults(dag):
     ]
 
     assert all(wait_for_tasks_adjusted)
+
+def test_prefixed_dependencies_work(dag):
+    # if a user turns task group prefixes/suffixes on, gusty should proactively check
+    # for prefixed/suffixed dependencies in addition to whatever is provided in a task's spec
+    # e.g. in a task group "tg" with prefixes turned on, the dependency to look for is "tg_task",
+    #      but the user only specified "task" in the depedencies block.
+    assert "prefixes.prefixes_check" in dag.task_dict["prefixes.prefixes_dep_check"].__dict__["_upstream_task_ids"]

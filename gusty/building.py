@@ -353,6 +353,8 @@ class GustyBuilder:
         """
         level_specs = self.schematic[id]["specs"]
         level_tasks = self.schematic[id]["tasks"]
+        level_structure = self.schematic[id]["structure"]
+        level_metadata = self.schematic[id]["metadata"]
         sibling_levels = {
             level["name"]: level["structure"]
             for level_id, level in self.schematic.items()
@@ -360,6 +362,9 @@ class GustyBuilder:
         }
         valid_dependency_objects = {**self.all_tasks, **sibling_levels}
         for task_id, task in level_tasks.items():
+            # task_dependencies allows users to add a dependencies attribute to
+            # their custom operators, so that dependencies could be automatically detected
+            # through something like regex detecting schemas in a SQL query
             task_dependencies = (
                 task.dependencies if hasattr(task, "dependencies") else []
             )
@@ -370,13 +375,46 @@ class GustyBuilder:
             }
             if len(spec_dependencies) > 0:
                 spec_dependencies = spec_dependencies[task_id]
+
+                # special case: prefixing or suffixing in task groups
+                # may create a case where a spec dependency is incorrectly named;
+                # the intuitive thing to happen is that gusty can pick up name changes
+                # for items in the same task group
+                if airflow_version > 1:
+                    if isinstance(level_structure, TaskGroup):
+                        add_suffix = (
+                            level_metadata["suffix_group_id"]
+                            if "suffix_group_id" in level_metadata.keys()
+                            else False
+                        )
+                        add_prefix = level_structure.prefix_group_id
+                        if add_prefix or add_suffix:
+                            potential_task_names = (
+                                [
+                                    "{x}_{y}".format(
+                                        x=self.schematic[id]["name"], y=dep
+                                    )
+                                    for dep in spec_dependencies
+                                ]
+                                if add_prefix
+                                else [
+                                    "{x}_{y}".format(
+                                        x=dep, y=self.schematic[id]["name"]
+                                    )
+                                    for dep in spec_dependencies
+                                ]
+                            )
+
+                            for potential_name in potential_task_names:
+                                if potential_name in valid_dependency_objects.keys():
+                                    spec_dependencies.append(potential_name)
+
                 spec_task_dependencies = task_dependencies + spec_dependencies
             else:
                 spec_task_dependencies = task_dependencies
 
             spec_task_dependencies = list(set(spec_task_dependencies))
 
-            # Should tasks be able to depend on things on any level?
             spec_task_dependencies = [
                 dependency
                 for dependency in spec_task_dependencies
