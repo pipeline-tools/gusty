@@ -196,6 +196,7 @@ class GustyBuilder:
                     "poke_interval",
                     "timeout",
                     "retries",
+                    "mode",
                     "soft_fail",
                     "execution_date_fn",
                     "check_existence",
