@@ -14,13 +14,13 @@ In addition to parsing YAML files, gusty also parses YAML front matter in `.ipyn
 
 Lastly, gusty's `create_dag` function can be passed any keyword argument from Airflow's DAG class, as well as dictionaries for task group defaults and external dependency sensor defaults. And if you'd rather, gusty can pick up per-DAG and per-task-group specifications via YAML files titled `METADATA.yml` - which will override any defaults passed to `create_dag` - so you can specify defaults *and* override those defaults with metadata.
 
-gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can specify task group dependencies and external external_dependencies in `METADATA.yml`.
+gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can specify task group dependencies and external external_dependencies in each task group's `METADATA.yml` file.
 
 In short, gusty allows you to focus on the tasks in a pipeline instead of the scaffolding.
 
 ## Up and running with `create_dag`
 
-gusty's core function is `create_dag`. To have gusty generate a DAG, provide a path to a directory that contains `.yml` files for the DAG's tasks. The `create_dag` function can take any keyword arguments from Airflow's DAG class, as well as a dictionaries for task group defaults (task_group_defaults) and external dependency sensor defaults (wait_for_defaults).
+gusty's core function is `create_dag`. To have gusty generate a DAG, provide a path to a directory that contains `.yml` files for the DAG's tasks. The `create_dag` function can take any keyword arguments from Airflow's DAG class, as well as dictionaries for task group defaults (`task_group_defaults`) and external dependency sensor defaults (`wait_for_defaults`).
 
 An example of the entire `.py` file that generates your DAG looks like this:
 
@@ -50,13 +50,13 @@ dag = create_dag(
   )
 ```
 
-Note you must also import Airflow.
+Note you must import Airflow.
 
 The resulting DAG will be named after the directory, in this case, `hello_world`. By default, gusty will create a `latest_only` DAG, where every job in the DAG will only run for the most recent run date, regardless of if a backfill is called. This behavior is disabled above using `latest_only=False`. As with anything in gusty, all of these parameters can also be specified in `METADATA.yml` files.
 
 Examples how to create a directory of DAG task files can be found in [the gusty repo's example folder](https://github.com/chriscardillo/gusty/tree/master/examples).
 
-### Containerized Demo
+## Containerized Demo
 
 As an additional resource, you can check out a containerized demo of gusty and Airflow over at the [gusty-demo repo](https://github.com/chriscardillo/gusty-demo), which illustrates how gusty and a few custom operators can make SQL queries, Jupyter notebooks, and RMarkdown documents all work together in the same data pipeline.
 
