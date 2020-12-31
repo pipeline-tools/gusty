@@ -1,0 +1,4 @@
+tooltip: "Everyone likes juice with coffee"
+suffix_group_id: True
+dependencies:
+  - coffee

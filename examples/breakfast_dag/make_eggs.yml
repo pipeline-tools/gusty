@@ -1,2 +1,0 @@
-operator: airflow.operators.bash.BashOperator
-bash_command: sleep 5 & echo eggs are ready
