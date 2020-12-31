@@ -14,7 +14,7 @@ In addition to parsing YAML files, gusty also parses YAML front matter in `.ipyn
 
 Lastly, gusty's `create_dag` function can be passed any keyword argument from Airflow's DAG class, as well as dictionaries for task group defaults and external dependency sensor defaults. And if you'd rather, gusty can pick up per-DAG and per-task-group specifications via YAML files titled `METADATA.yml` - which will override any defaults passed to `create_dag` - so you can specify defaults *and* override those defaults with metadata.
 
-gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can specify task group dependencies and external external_dependencies in each task group's `METADATA.yml` file.
+gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can specify task group dependencies and external_dependencies in each task group's `METADATA.yml` file.
 
 In short, gusty allows you to focus on the tasks in a pipeline instead of the scaffolding.
 
