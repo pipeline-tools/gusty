@@ -8,13 +8,13 @@
 
 gusty allows you to manage your Airflow DAGs, tasks, and task groups with greater ease. It can automatically generate dependencies between tasks and external dependencies for tasks in other DAGs.
 
-The gusty approach to Airflow is that individual tasks are represented as YAML, where an operator and its arguments, along with dependencies and external dependencies, are specified. By passing a directory path of YAML task specifications to `create_dag`, you can have your DAGs create themselves.
+The gusty approach to Airflow is that individual tasks are represented as YAML, where an operator and its arguments, along with dependencies and external dependencies, are specified. By passing a directory path of YAML task specifications to gusty's `create_dag` function, you can have your DAGs create themselves.
 
 In addition to parsing YAML files, gusty also parses YAML front matter in `.ipynb` and `.Rmd` files, allowing you to include Python and R notebook formats in your data pipeline straightaway.
 
 Lastly, gusty's `create_dag` function can be passed any keyword argument from Airflow's DAG class, as well as dictionaries for task group defaults and external dependency sensor defaults. And if you'd rather, gusty can pick up per-DAG and per-task-group specifications via YAML files titled `METADATA.yml` - which will override any defaults passed to `create_dag` - so you can specify defaults *and* override those defaults with metadata.
 
-gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can even specify task group dependencies and external external_dependencies in `METADATA.yml`.
+gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can specify task group dependencies and external external_dependencies in `METADATA.yml`.
 
 In short, gusty allows you to focus on the tasks in a pipeline instead of the scaffolding.
 
@@ -88,6 +88,8 @@ An example of the entire `.py` file that generates your DAG looks like this:
 
 ```py
 import airflow
+from datetime import timedelta
+from airflow.utils.dates import days_ago
 from gusty import create_dag
 
 dag = create_dag(
