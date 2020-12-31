@@ -1,0 +1,7 @@
+prefix_group_id: False
+dependencies:
+  - top_level_task
+external_dependencies:
+  - a_whole_dag: all
+  - external_dag: external_task
+  

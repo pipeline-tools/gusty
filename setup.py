@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.2.1",
+    version="0.3.0",
     author="Chris Cardillo",
     author_email="cfcardillo23@gmail.com",
     description="An opinionated framework for ETL built on top of Airflow",
@@ -15,12 +15,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
           'apache-airflow',
-          'jinja2',
           'inflection',
           'nbformat',
-          'python-frontmatter',
-          'sshtunnel',
-          'pysftp'
+          'python-frontmatter'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

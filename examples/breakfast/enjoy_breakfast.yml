@@ -1,0 +1,5 @@
+operator: airflow.operators.dummy.DummyOperator
+dependencies:
+  - juice
+  - coffee
+  - griddle

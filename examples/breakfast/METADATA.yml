@@ -1,0 +1,16 @@
+description: "For making the most important meal of the day"
+schedule_interval: "0 0 * * *"
+tags:
+  - delicious
+  - nutritious
+  - important
+default_args:
+    owner: Roy Choi
+    depends_on_past: False
+    start_date: !days_ago 1
+    email: roy@gusty.com
+    email_on_failure: False
+    email_on_retry: False
+    retries: 1
+    retry_delay: !timedelta 'minutes: 5'
+    sla: !timedelta 'hours: 2'

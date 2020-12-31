@@ -1,0 +1,6 @@
+operator: airflow.operators.dummy.DummyOperator
+retries: 100
+dependencies:
+  - dependable_task
+external_dependencies:
+  - a_whole_dag: all
