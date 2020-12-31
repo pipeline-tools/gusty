@@ -8,7 +8,7 @@
 
 gusty allows you to manage your Airflow DAGs, tasks, and task groups with greater ease. It can automatically generate dependencies between tasks and external dependencies for tasks in other DAGs.
 
-The gusty approach to Airflow is that individual tasks are represented as YAML, where an operator and its arguments, along with dependencies and external dependencies, are specified. By passing a directory path of YAML task specifications to gusty's `create_dag` function, you can have your DAGs create themselves.
+The gusty approach to Airflow is that individual tasks are represented as YAML, where an operator and its arguments, along with its dependencies and external dependencies, are specified in a `.yml` file. By passing a directory path of these YAML task specifications to gusty's `create_dag` function, you can have your DAGs create themselves.
 
 In addition to parsing YAML files, gusty also parses YAML front matter in `.ipynb` and `.Rmd` files, allowing you to include Python and R notebook formats in your data pipeline straightaway.
 
@@ -17,6 +17,50 @@ Lastly, gusty's `create_dag` function can be passed any keyword argument from Ai
 gusty works with both Airflow 1.x and Airflow 2.x, and automatically generates task groups in Airflow 2.x. Plus, you can specify task group dependencies and external external_dependencies in `METADATA.yml`.
 
 In short, gusty allows you to focus on the tasks in a pipeline instead of the scaffolding.
+
+## Up and running with `create_dag`
+
+gusty's core function is `create_dag`. To have gusty generate a DAG, provide a path to a directory that contains `.yml` files for the DAG's tasks. The `create_dag` function can take any keyword arguments from Airflow's DAG class, as well as a dictionaries for task group defaults (task_group_defaults) and external dependency sensor defaults (wait_for_defaults).
+
+An example of the entire `.py` file that generates your DAG looks like this:
+
+```py
+import airflow
+from datetime import timedelta
+from airflow.utils.dates import days_ago
+from gusty import create_dag
+
+dag = create_dag(
+  '/usr/local/airflow/dags/hello_world',
+  description="A dag created without metadata",
+  schedule_interval="0 0 * * *",
+  default_args={
+      "owner": "gusty",
+      "depends_on_past": False,
+      "start_date": days_ago(1),
+      "email": "gusty@gusty.com",
+      "email_on_failure": False,
+      "email_on_retry": False,
+      "retries": 3,
+      "retry_delay": timedelta(minutes=5),
+  },
+  task_group_defaults={"prefix_group_id": True},
+  wait_for_defaults={"retries": 10},
+  latest_only=False
+  )
+```
+
+Note you must also import Airflow.
+
+The resulting DAG will be named after the directory, in this case, `hello_world`. By default, gusty will create a `latest_only` DAG, where every job in the DAG will only run for the most recent run date, regardless of if a backfill is called. This behavior is disabled above using `latest_only=False`. As with anything in gusty, all of these parameters can also be specified in `METADATA.yml` files.
+
+Examples how to create a directory of DAG task files can be found in [the gusty repo's example folder](https://github.com/chriscardillo/gusty/tree/master/examples).
+
+### Containerized Demo
+
+As an additional resource, you can check out a containerized demo of gusty and Airflow over at the [gusty-demo repo](https://github.com/chriscardillo/gusty-demo), which illustrates how gusty and a few custom operators can make SQL queries, Jupyter notebooks, and RMarkdown documents all work together in the same data pipeline.
+
+For more details on the gusty package, please see below.
 
 ## Hello World in YAML
 
@@ -53,9 +97,9 @@ external_dependencies:
 
 To wait for an entire external DAG to run successfully just use the format `dag_id: all` instead.
 
-### DAGs
+### DAGs as YAML
 
-As mentioned, your DAGs can also be represented as `.yml` files. Specifically, DAGs should be represented in a file called `METADATA.yml`. Similar to the basic Airflow tutorial, our DAG might look something like this:
+As mentioned, your DAGs can also be represented as `.yml` files. Specifically, DAGs should be represented in a file called `METADATA.yml`. Similar to the basic Airflow tutorial, our DAG's `.yml` might look something like this:
 
 ```yml
 description: "A Gusty version of the DAG described by this Airflow tutorial: https://airflow.apache.org/docs/stable/tutorial.html"
@@ -78,54 +122,30 @@ default_args:
 #   trigger_rule: all_success
 ```
 
-By default, gusty will create a `latest_only` DAG, where every job in the DAG will only run for the most recent run date, regardless of if a backfill is called. You can disable this behavior by adding `latest_only: False` to the block above. This can also be passed as a keyword argument in `create_dag`
+### Task Groups
 
-### create_dag
+As of Airflow 2.0.0, task groups provide Airflow users with another layer of organization. gusty fully supports task groups, and creating a task group is as easy as adding a new folder within your DAG's main folder, and adding task `.yml` files to that subfolder. gusty will take care of the rest.
 
-To have gusty generate a DAG, you can use the `create_dag` function, which just needs an (absolute) path to a directory that contains  `.yml` files for the DAG's tasks. If you haven't specified any `METADATA.yml` in the DAG directory, you'll have to pass in DAG-related arguments, as you would with any other use of Airflow's DAG class.
+By default, gusty turns off prefixing task names with task group names, but you can enable this functionality by either adding `prefix_group_id: True` to a task group's `METADATA.yml`, or adding `task_group_defaults={"prefix_group_id": True}` to your call to `create_dag`. As mentioned, you can set defaults in your call to `create_dag`, then override those defaults using per-task-group `METADATA.yml` files.
 
-An example of the entire `.py` file that generates your DAG looks like this:
+gusty also accepts a `suffix_group_id` parameter, which will place the task group name at the end of the task name, if that's what you want!
 
-```py
-import airflow
-from datetime import timedelta
-from airflow.utils.dates import days_ago
-from gusty import create_dag
+In short, if it's available in a task group, it's available in gusty.
 
-dag = create_dag(
-  '/usr/local/airflow/dags/hello_world',
-  description="A dag created without metadata",
-  schedule_interval="0 0 * * *",
-  default_args={
-      "owner": "gusty",
-      "depends_on_past": False,
-      "start_date": days_ago(1),
-      "email": "gusty@gusty.com",
-      "email_on_failure": False,
-      "email_on_retry": False,
-      "retries": 3,
-      "retry_delay": timedelta(minutes=5),
-  },
-  latest_only=False
-  )
-```
+### External Task Sensors
 
-Note how you must also import Airflow here. The resulting DAG will be named after the directory, in this case, `hello_world`.
+When you specify external dependencies, gusty will use Airflow's `ExternalTaskSensor` to create `wait_for_` tasks in your DAG. Using the `wait_for_defaults` parameter in `create_dag`, you can specify the behavior of these `ExternalTaskSensor` tasks, things like `mode` ("poke"/"reschedule") and `poke_interval`.
 
 ## Operators
 
-### Airflow Operators
+### Calling Airflow Operators
 
 gusty will take parameterized `.yml` for any operator, given a string that includes the module path and the operator class, such as `airflow.operators.bash.BashOperator` or `airflow.providers.amazon.aws.transfers.s3_to_redshift.S3ToRedshiftOperator`. In theory, if it's available in a module, you can use a `.yml` to define it.
 
-### Custom Operators
+### Calling Custom Operators
 
 gusty will also work with any of your custom operators, so long as those operators are located in an `operators` directory in your designated `AIRFLOW_HOME`.
 
 In order for your local operators to import properly, they must follow the pattern of having a snake_case file name and a CamelCase operator name, for example the filename of an operator called `YourOperator` must be called `your_operator.py`.
 
 Just as the BashOperator above was accessed via with full module path prepended, `airflow.operators.bash.BashOperator`, your local operators are accessed via the `local` keyword, e.g. `local.YourOperator`.
-
-## Demo
-
-You can use a containerized demo of gusty and Airflow over at the [gusty-demo](https://github.com/chriscardillo/gusty-demo), and see all of the above in practice.
