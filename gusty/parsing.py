@@ -73,7 +73,7 @@ def read_yaml_spec(file):
             file_parsed.content, Loader=GustyYAMLLoader
         )
 
-    assert "operator" in yaml_file or "sensor" in yaml_file, (
+    assert "operator" in yaml_file, (
         "No operator or sensor specified in yaml spec " + file
     )
 

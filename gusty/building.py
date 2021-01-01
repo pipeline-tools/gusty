@@ -93,11 +93,8 @@ def build_task(spec, level_id, schematic):
     """
     Given a task specification ("spec"), locate the operator and instantiate the object with args from the spec.
     """
-    operator = (
-        get_operator(spec["operator"])
-        if "operator" in spec.keys()
-        else get_operator(spec["sensor"])
-    )
+    operator = get_operator(spec["operator"])
+
     args = {
         k: v
         for k, v in spec.items()
