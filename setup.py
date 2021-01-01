@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.3.0",
+    version="0.3.1",
     author="Chris Cardillo",
     author_email="cfcardillo23@gmail.com",
     description="An opinionated framework for ETL built on top of Airflow",

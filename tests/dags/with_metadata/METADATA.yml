@@ -14,3 +14,6 @@ default_args:
     retry_delay: !timedelta 'minutes: 5'
     sla: !timedelta 'hours: 2'
 latest_only: False
+external_dependencies:
+  - top_level_external: all
+  - a_whole_dag: all

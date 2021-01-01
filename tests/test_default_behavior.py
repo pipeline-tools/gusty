@@ -48,6 +48,7 @@ def dag(no_metadata_dir):
             "retries": 3,
             "retry_delay": timedelta(minutes=5),
         },
+        external_dependencies=[{"external_dag": "a_root_level_external"}],
     )
     return dag
 
@@ -122,3 +123,25 @@ def test_tasks_created(dag, dag_files):
 def test_args_passed(dag):
     top_level_task = dag.task_dict["top_level_task"]
     assert top_level_task.__dict__["bash_command"] == "echo hello"
+
+
+def test_sensor_support(dag):
+    assert dag.task_dict["sensor_task"].__dict__["delta"] == timedelta(seconds=2)
+
+
+def test_root_external_dependencies_accepted(dag):
+    assert (
+        "wait_for_a_root_level_external"
+        in dag.task_dict["latest_only"].__dict__["_downstream_task_ids"]
+    )
+
+
+def test_root_external_dependencies_latest_only_order(dag):
+    # Bad test name, but bascially nothing should be upstream of latest only,
+    # And only the DAG-level external dependency is after latest_only
+    latest_only = dag.task_dict["latest_only"].__dict__
+    latest_only_downstream_tasks = latest_only["_downstream_task_ids"]
+    latest_only_upstream_tasks = latest_only["_upstream_task_ids"]
+    assert (
+        len(latest_only_upstream_tasks) == 0 and len(latest_only_downstream_tasks) == 1
+    )

@@ -73,7 +73,9 @@ def read_yaml_spec(file):
             file_parsed.content, Loader=GustyYAMLLoader
         )
 
-    assert "operator" in yaml_file, "No operator specified in yaml spec " + file
+    assert "operator" in yaml_file or "sensor" in yaml_file, (
+        "No operator or sensor specified in yaml spec " + file
+    )
 
     task_id = os.path.splitext(os.path.basename(file))[0]
     yaml_file["task_id"] = task_id.lower().strip()

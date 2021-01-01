@@ -77,6 +77,13 @@ def get_top_level_dag(schematic):
     return top_level_dag
 
 
+def parse_external_dependencies(external_dependencies):
+    """
+    Document
+    """
+    return dict(j for i in external_dependencies for j in i.items())
+
+
 #######################
 ## Builder Functions ##
 #######################
@@ -86,13 +93,18 @@ def build_task(spec, level_id, schematic):
     """
     Given a task specification ("spec"), locate the operator and instantiate the object with args from the spec.
     """
-    operator = get_operator(spec["operator"])
+    operator = (
+        get_operator(spec["operator"])
+        if "operator" in spec.keys()
+        else get_operator(spec["sensor"])
+    )
     args = {
         k: v
         for k, v in spec.items()
         if k in operator.template_fields
         or k
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
+        or k in inspect.signature(operator.__init__).parameters.keys()
     }
     args["task_id"] = spec["task_id"]
     args["dag"] = get_top_level_dag(schematic)
@@ -214,7 +226,6 @@ class GustyBuilder:
         # It is important for gusty to keep a record  of the tasks created.
         # We keep a running list of all_tasks, as well.
         self.wait_for_tasks = {}
-        self.latest_only_task = {}
         self.all_tasks = {}
 
     def parse_metadata(self, id):
@@ -253,16 +264,38 @@ class GustyBuilder:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
         self.schematic[id]["metadata"] = metadata_defaults
+
         # dependencies get explicity set at the level-"level" for each level
-        # and must be pulled out separately. They can only be passed in via level_metadata,
-        # not in defaults
+        # and must be pulled out separately from other metadata.
+        # metadata_default_dependencies allows for root-level default external dependencies
+        # to be set at the root DAG level in create_dag. Any dependencies set in METADATA.yml
+        # will override any defaults set in metadata_default_dependencies
         level_dependencies = {
             k: v
             for k, v in level_metadata.items()
             if k in k in ["dependencies", "external_dependencies"]
         }
+        metadata_default_dependencies = {
+            k: v
+            for k, v in metadata_defaults.items()
+            if k in k in ["external_dependencies"]
+        }
         if len(level_dependencies) > 0:
             self.schematic[id].update(level_dependencies)
+        # metadata_default_dependencies is really meant for the root level only
+        elif (
+            len(metadata_default_dependencies) > 0
+            and self.schematic[id]["parent_id"] is None
+            and "external_dependencies" in metadata_default_dependencies.keys()
+        ):
+            root_externals = metadata_default_dependencies["external_dependencies"]
+            assert isinstance(
+                root_externals, list
+            ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""
+            assert all(
+                [isinstance(dep, dict) for dep in root_externals]
+            ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""
+            self.schematic[id].update({"external_dependencies": root_externals})
 
     def create_structure(self, id):
         """
@@ -445,8 +478,8 @@ class GustyBuilder:
                     external_dependency
                     for external_dependency in task_spec_external_dependencies[task_id]
                 ]
-                task_external_dependencies = dict(
-                    j for i in task_external_dependencies for j in i.items()
+                task_external_dependencies = parse_external_dependencies(
+                    task_external_dependencies
                 )
                 for (
                     external_dag_id,
@@ -482,8 +515,8 @@ class GustyBuilder:
         level_parent_id = self.schematic[id]["parent_id"]
         if level_parent_id is not None:
             if len(level_external_dependencies) > 0:
-                level_external_dependencies = dict(
-                    j for i in level_external_dependencies for j in i.items()
+                level_external_dependencies = parse_external_dependencies(
+                    level_external_dependencies
                 )
                 for (
                     external_dag_id,
@@ -519,8 +552,64 @@ class GustyBuilder:
         """
         level_metadata = self.schematic[id]["metadata"]
         level_parent_id = self.schematic[id]["parent_id"]
+        level_external_dependencies = self.schematic[id]["external_dependencies"]
         # parent level only
         if level_parent_id is None:
+            # What are valid downstream tasks for root-level dependencies
+            level_tasks = self.schematic[id]["tasks"]
+            child_levels = {
+                level["name"]: level["structure"]
+                for level_id, level in self.schematic.items()
+                if level["parent_id"] == id
+            }
+            valid_dependency_objects = {
+                **level_tasks,
+                **child_levels,
+                **self.wait_for_tasks,
+            }
+
+            # Set root-level external dependencies
+            if len(level_external_dependencies) > 0:
+                root_external_dependencies = {}
+                level_external_dependencies = parse_external_dependencies(
+                    level_external_dependencies
+                )
+                for (
+                    external_dag_id,
+                    external_task_id,
+                ) in level_external_dependencies.items():
+                    wait_for_task_name = (
+                        "wait_for_DAG_{x}".format(x=external_dag_id)
+                        if external_task_id == "all"
+                        else "wait_for_{x}".format(x=external_task_id)
+                    )
+                    if wait_for_task_name in self.wait_for_tasks.keys():
+                        wait_for_task = self.wait_for_tasks[wait_for_task_name]
+                        root_external_dependencies.update(
+                            {wait_for_task_name: wait_for_task}
+                        )
+                    else:
+                        wait_for_task = ExternalTaskSensor(
+                            dag=get_top_level_dag(self.schematic),
+                            task_id=wait_for_task_name,
+                            external_dag_id=external_dag_id,
+                            external_task_id=(
+                                external_task_id if external_task_id != "all" else None
+                            ),
+                            **self.wait_for_defaults
+                        )
+                        self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
+                        root_external_dependencies.update(
+                            {wait_for_task_name: wait_for_task}
+                        )
+                for name, dependency in valid_dependency_objects.items():
+                    if len(dependency.upstream_task_ids) == 0:
+                        for ext_name, ext_dep in root_external_dependencies.items():
+                            if name != ext_name:
+                                dependency.set_upstream(ext_dep)
+                valid_dependency_objects.update(**root_external_dependencies)
+
+            # Set latest only if latest only
             if level_metadata is not None:
                 level_latest_only = (
                     level_metadata["latest_only"]
@@ -531,17 +620,6 @@ class GustyBuilder:
                 latest_only_operator = LatestOnlyOperator(
                     task_id="latest_only", dag=get_top_level_dag(self.schematic)
                 )
-                level_tasks = self.schematic[id]["tasks"]
-                child_levels = {
-                    level["name"]: level["structure"]
-                    for level_id, level in self.schematic.items()
-                    if level["parent_id"] == id
-                }
-                valid_dependency_objects = {
-                    **level_tasks,
-                    **child_levels,
-                    **self.wait_for_tasks,
-                }
                 for name, dependency in valid_dependency_objects.items():
                     if len(dependency.upstream_task_ids) == 0:
                         dependency.set_upstream(latest_only_operator)
