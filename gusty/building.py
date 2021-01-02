@@ -591,7 +591,7 @@ class GustyBuilder:
                         ]
                     ):
                         for root_name, root_dep in valid_root_tasks.items():
-                            if name != root_name:
+                            if name != root_name and name not in valid_root_tasks.keys():
                                 dependency.set_upstream(root_dep)
 
             # Set root-level external dependencies
