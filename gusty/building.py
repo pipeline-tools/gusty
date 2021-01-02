@@ -578,13 +578,19 @@ class GustyBuilder:
                 }
 
                 for task_id, task in valid_root_tasks.items():
-                    assert len(task.upstream_task_ids) == 0, (
-                        "Task %s in DAG %s is listed as a root dependency, but has dependencies listed: %s"
-                        % (task_id, self.schematic[id]["structure"]._dag_id, ", ".join(task.upstream_task_ids))
+                    assert (
+                        len(task.upstream_task_ids) == 0
+                    ), "Task {id} in DAG {dag} is listed as a root task, but has dependencies listed: {dep_list}".format(
+                        id=task_id,
+                        dag=self.schematic[id]["structure"]._dag_id,
+                        dep_list=", ".join(task.upstream_task_ids),
                     )
-                    assert len(task.downstream_task_ids) == 0, (
-                        "Task %s in DAG %s is listed as a root dependency, but other tasks explicity depend on it: %s"
-                        % (task_id, self.schematic[id]["structure"]._dag_id, ", ".join(task.downstream_task_ids))
+                    assert (
+                        len(task.downstream_task_ids) == 0
+                    ), "Task {id} in DAG {dag} is listed as a root task, but other tasks explicity depend on it: {dep_list}".format(
+                        id=task_id,
+                        dag=self.schematic[id]["structure"]._dag_id,
+                        dep_list=", ".join(task.downstream_task_ids),
                     )
 
                 for name, dependency in valid_dependency_objects.items():
