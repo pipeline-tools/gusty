@@ -136,11 +136,19 @@ In short, if it's available in a task group, it's available in gusty.
 
 When you specify external dependencies, gusty will use Airflow's `ExternalTaskSensor` to create `wait_for_` tasks in your DAG. Using the `wait_for_defaults` parameter in `create_dag`, you can specify the behavior of these `ExternalTaskSensor` tasks, things like `mode` ("poke"/"reschedule") and `poke_interval`.
 
+You can also specify external dependencies at the DAG level if you want, and gusty will ensure that DAG-level external dependencies sit at the root of your DAG.
+
+### Root Tasks
+
+gusty also features the ability for you to specify "root tasks" for your DAG, where a root task is defined as "some task that should happen before any other task in the DAG". To enable this, you just have to provide a list of `root_tasks` to the DAG's `METADATA.yml` or in `create_dag`. Root tasks will only work if they have no upstream or downstream dependencies, which enables gusty to place these tasks at the root of your DAG.
+
 ## Operators
 
 ### Calling Airflow Operators
 
 gusty will take parameterized `.yml` for any operator, given a string that includes the module path and the operator class, such as `airflow.operators.bash.BashOperator` or `airflow.providers.amazon.aws.transfers.s3_to_redshift.S3ToRedshiftOperator`. In theory, if it's available in a module, you can use a `.yml` to define it.
+
+Since sensors are also operators, you can utilize them with gusty, too!
 
 ### Calling Custom Operators
 
