@@ -579,8 +579,12 @@ class GustyBuilder:
 
                 for task_id, task in valid_root_tasks.items():
                     assert len(task.upstream_task_ids) == 0, (
-                        "Task %s in DAG %s is listed as a root dependency, but has dependencies listed."
-                        % (task_id, self.schematic[id]["structure"]._dag_id)
+                        "Task %s in DAG %s is listed as a root dependency, but has dependencies listed: %s"
+                        % (task_id, self.schematic[id]["structure"]._dag_id, ", ".join(task.upstream_task_ids))
+                    )
+                    assert len(task.downstream_task_ids) == 0, (
+                        "Task %s in DAG %s is listed as a root dependency, but other tasks explicity depend on it: %s"
+                        % (task_id, self.schematic[id]["structure"]._dag_id, ", ".join(task.downstream_task_ids))
                     )
 
                 for name, dependency in valid_dependency_objects.items():
@@ -591,7 +595,10 @@ class GustyBuilder:
                         ]
                     ):
                         for root_name, root_dep in valid_root_tasks.items():
-                            if name != root_name and name not in valid_root_tasks.keys():
+                            if (
+                                name != root_name
+                                and name not in valid_root_tasks.keys()
+                            ):
                                 dependency.set_upstream(root_dep)
 
             # Set root-level external dependencies
