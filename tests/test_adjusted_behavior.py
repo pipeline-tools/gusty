@@ -98,7 +98,14 @@ def test_prefixed_dependencies_work(dag):
     )
 
 
-def test_root_level_dependency(dag):
-    assert "wait_for_DAG_top_level_external" in [
-        dep.__dict__["task_id"] for dep in dag.roots
-    ]
+def test_root_level_external_dependency(dag):
+    root_dict = [dep.__dict__["task_id"] for dep in dag.roots]
+    assert "wait_for_DAG_top_level_external" in root_dict
+    assert len(root_dict) == 1
+
+
+def test_root_dependency(dag):
+    # The root_task_sensor task is not depended on by 
+    root_dict = [dep.__dict__["task_id"] for dep in dag.roots]
+    root_sensor_task = dag.task_dict["root_sensor_task"]
+    assert len(root_sensor_task.__dict__["_downstream_task_ids"]) > 0

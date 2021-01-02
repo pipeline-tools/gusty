@@ -544,10 +544,13 @@ class GustyBuilder:
         """
         Finally, we look at the root level for a latest only spec. If latest_only, we create
         latest only and wire up any tasks and groups from the parent level to these deps if needed.
-
-        (In a future release, external dependencies and other sensors will also be available at the root level)
         """
         level_metadata = self.schematic[id]["metadata"]
+        level_root_tasks = (
+            level_metadata["root_tasks"]
+            if "root_tasks" in level_metadata.keys()
+            else None
+        )
         level_parent_id = self.schematic[id]["parent_id"]
         level_external_dependencies = self.schematic[id]["external_dependencies"]
         # parent level only
@@ -564,6 +567,32 @@ class GustyBuilder:
                 **child_levels,
                 **self.wait_for_tasks,
             }
+
+            # Set any root-level tasks
+            if level_root_tasks is not None:
+                valid_root_tasks = {**level_tasks}
+                valid_root_tasks = {
+                    id: task
+                    for id, task in valid_root_tasks.items()
+                    if id in level_root_tasks
+                }
+
+                for task_id, task in valid_root_tasks.items():
+                    assert len(task.upstream_task_ids) == 0, (
+                        "Task %s in DAG %s is listed as a root dependency, but has dependencies listed."
+                        % (task_id, self.schematic[id]["structure"]._dag_id)
+                    )
+
+                for name, dependency in valid_dependency_objects.items():
+                    if len(dependency.upstream_task_ids) == 0 or all(
+                        [
+                            dep_id.startswith("wait_for_")
+                            for dep_id in dependency.upstream_task_ids
+                        ]
+                    ):
+                        for root_name, root_dep in valid_root_tasks.items():
+                            if name != root_name:
+                                dependency.set_upstream(root_dep)
 
             # Set root-level external dependencies
             if len(level_external_dependencies) > 0:
