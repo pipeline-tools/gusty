@@ -294,6 +294,20 @@ class GustyBuilder:
             ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""
             self.schematic[id].update({"external_dependencies": root_externals})
 
+        # ignore subfolders
+        if self.schematic[id]["parent_id"] is None:
+            ignore_subfolders = (
+                self.schematic[id]["metadata"]["ignore_subfolders"]
+                if "ignore_subfolders" in self.schematic[id]["metadata"].keys()
+                else False
+            )
+            if ignore_subfolders:
+                [
+                    self.levels.remove(level_id)
+                    for level_id in self.levels
+                    if level_id != id
+                ]
+
     def create_structure(self, id):
         """
         Given a level of the DAG, a structure such as a DAG or a TaskGroup will be initialized.
@@ -372,6 +386,9 @@ class GustyBuilder:
                 if level["parent_id"] == level_parent_id and level_id != id
             }  # these follow the format {level_name: structure_object}
             valid_dependency_objects = {**parent_tasks, **sibling_levels}
+            valid_dependency_objects = {
+                k: v for k, v in valid_dependency_objects.items() if v is not None
+            }
             for dependency in level_dependencies:
                 if dependency in valid_dependency_objects.keys():
                     level_structure.set_upstream(valid_dependency_objects[dependency])
@@ -392,6 +409,9 @@ class GustyBuilder:
             if level["parent_id"] == id and level_id != id
         }
         valid_dependency_objects = {**self.all_tasks, **sibling_levels}
+        valid_dependency_objects = {
+            k: v for k, v in valid_dependency_objects.items() if v is not None
+        }
         for task_id, task in level_tasks.items():
             # task_dependencies allows users to add a dependencies attribute to
             # their custom operators, so that dependencies could be automatically detected
@@ -566,6 +586,10 @@ class GustyBuilder:
                 **level_tasks,
                 **child_levels,
                 **self.wait_for_tasks,
+            }
+
+            valid_dependency_objects = {
+                k: v for k, v in valid_dependency_objects.items() if v is not None
             }
 
             # Set any root-level tasks
