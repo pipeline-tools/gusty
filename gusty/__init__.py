@@ -39,5 +39,6 @@ def create_dag(
     [setup.create_task_dependencies(level) for level in setup.levels]
     [setup.create_task_external_dependencies(level) for level in setup.levels]
     [setup.create_level_external_dependencies(level) for level in setup.levels]
+    [setup.create_leaf_tasks(level) for level in setup.levels]
     [setup.create_root_dependencies(level) for level in setup.levels]
     return setup.return_dag()

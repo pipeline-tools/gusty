@@ -109,3 +109,10 @@ def test_root_dependency(dag):
     root_dict = [dep.__dict__["task_id"] for dep in dag.roots]
     root_sensor_task = dag.task_dict["root_sensor_task"]
     assert len(root_sensor_task.__dict__["_downstream_task_ids"]) > 0
+
+
+def test_leaf_tasks(dag):
+    assert len(dag.leaves) == 1
+    leaf_task = dag.leaves[0].__dict__
+    assert len(leaf_task["_downstream_task_ids"]) == 0
+    assert leaf_task["task_id"] == "final_task"

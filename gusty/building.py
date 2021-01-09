@@ -687,5 +687,67 @@ class GustyBuilder:
                     if len(dependency.upstream_task_ids) == 0:
                         dependency.set_upstream(latest_only_operator)
 
+    def create_leaf_tasks(self, id):
+        level_parent_id = self.schematic[id]["parent_id"]
+        if level_parent_id is None:
+            level_metadata = self.schematic[id]["metadata"]
+            level_leaf_tasks = (
+                level_metadata["leaf_tasks"]
+                if "leaf_tasks" in level_metadata.keys()
+                else None
+            )
+            level_root_tasks = (
+                level_metadata["root_tasks"]
+                if "root_tasks" in level_metadata.keys()
+                else []
+            )
+            if level_leaf_tasks is not None:
+                level_tasks = self.schematic[id]["tasks"]
+                child_levels = {
+                    level["name"]: level["structure"]
+                    for level_id, level in self.schematic.items()
+                    if level["parent_id"] == id
+                }
+                valid_dependency_objects = {
+                    **level_tasks,
+                    **child_levels,
+                }
+                valid_dependency_objects = {
+                    k: v for k, v in valid_dependency_objects.items() if v is not None
+                }
+
+                valid_leaf_tasks = {**level_tasks}
+                valid_leaf_tasks = {
+                    id: task
+                    for id, task in valid_leaf_tasks.items()
+                    if id in level_leaf_tasks
+                }
+
+                for task_id, task in valid_leaf_tasks.items():
+                    assert (
+                        len(task.upstream_task_ids) == 0
+                    ), "Task {id} in DAG {dag} is listed as a leaf task, but has dependencies listed: {dep_list}".format(
+                        id=task_id,
+                        dag=self.schematic[id]["structure"]._dag_id,
+                        dep_list=", ".join(task.upstream_task_ids),
+                    )
+                    assert (
+                        len(task.downstream_task_ids) == 0
+                    ), "Task {id} in DAG {dag} is listed as a leaf task, but other tasks explicity depend on it: {dep_list}".format(
+                        id=task_id,
+                        dag=self.schematic[id]["structure"]._dag_id,
+                        dep_list=", ".join(task.downstream_task_ids),
+                    )
+
+                for name, dependency in valid_dependency_objects.items():
+                    if len(dependency.downstream_task_ids) == 0:
+                        for leaf_name, leaf_dep in valid_leaf_tasks.items():
+                            if (
+                                name != leaf_name
+                                and name not in valid_leaf_tasks.keys()
+                                and name not in level_root_tasks
+                            ):
+                                dependency.set_downstream(leaf_dep)
+
     def return_dag(self):
         return get_top_level_dag(self.schematic)
