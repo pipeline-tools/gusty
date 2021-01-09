@@ -747,7 +747,7 @@ class GustyBuilder:
                                 and name not in valid_leaf_tasks.keys()
                                 and name not in level_root_tasks
                             ):
-                                dependency.set_downstream(leaf_dep)
+                                leaf_dep.set_upstream(dependency)
 
     def return_dag(self):
         return get_top_level_dag(self.schematic)
