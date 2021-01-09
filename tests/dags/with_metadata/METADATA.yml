@@ -18,4 +18,6 @@ external_dependencies:
   - top_level_external: all
   - a_whole_dag: all
 root_tasks:
-  - root_sensor_task  
+  - root_sensor_task
+leaf_tasks:
+  - final_task

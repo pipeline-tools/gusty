@@ -1,0 +1,2 @@
+operator: airflow.operators.bash.BashOperator
+bash_command: echo final
