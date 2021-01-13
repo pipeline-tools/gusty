@@ -98,8 +98,7 @@ def build_task(spec, level_id, schematic):
     args = {
         k: v
         for k, v in spec.items()
-        if k in operator.template_fields
-        or k
+        if k
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
         or k in inspect.signature(operator.__init__).parameters.keys()
     }
@@ -294,19 +293,20 @@ class GustyBuilder:
             ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""
             self.schematic[id].update({"external_dependencies": root_externals})
 
-        # ignore subfolders
-        if self.schematic[id]["parent_id"] is None:
-            ignore_subfolders = (
-                self.schematic[id]["metadata"]["ignore_subfolders"]
-                if "ignore_subfolders" in self.schematic[id]["metadata"].keys()
-                else False
-            )
-            if ignore_subfolders:
-                [
-                    self.levels.remove(level_id)
-                    for level_id in self.levels
-                    if level_id != id
-                ]
+    def check_metadata(self, id):
+        if id in self.levels:
+            # ignore subfolders
+            if self.schematic[id]["parent_id"] is None:
+                ignore_subfolders = self.schematic[id]["metadata"].get(
+                    "ignore_subfolders", False
+                )
+                if ignore_subfolders:
+                    self.schematic = {
+                        k: v
+                        for k, v in self.schematic.items()
+                        if self.schematic[k]["parent_id"] is None
+                    }
+                    self.levels = [level_id for level_id in self.schematic.keys()]
 
     def create_structure(self, id):
         """

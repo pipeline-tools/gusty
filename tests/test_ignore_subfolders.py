@@ -52,3 +52,7 @@ def dag(no_metadata_dir):
 
 def test_ignore_subfolders(dag):
     assert "ignore_this_task" not in dag.task_dict.keys()
+
+
+def test_ignore_skiplevel(dag):
+    assert "ignore_this_too" not in dag.task_dict.keys()
