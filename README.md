@@ -44,6 +44,8 @@ def python_callable():
 
 ### Easy Dependencies
 
+#### Declarative Dependencies
+
 Every task file type supports `dependencies` and `external_dependencies` parameters, which gusty will use to automatically assign dependencies between tasks and create external task sensors for any external dependencies listed for a given task.
 
 For .yml, .ipynb, and .Rmd task file types, dependencies and external_dependencies would be defined using YAML syntax:
@@ -75,6 +77,10 @@ def python_callable():
   print(phrase)
 ```
 
+#### Dynamic Dependencies
+
+gusty can also detect and generate dependencies through a task object's `dependencies` attribute. This means you can also **dynamically** set dependencies. One popular example of this option would be if your operator runs SQL, you can parse that SQL for table names, and attach a list of those table names to the operator's `dependencies` attribute. If those table names listed in the `dependencies` attribute are also task ids in the DAG, gusty will be able to automatically set these dependencies for you!
+
 ### DAG and Task Group Control
 
 Both DAG and TaskGroup objects are created automatically simply by being directories and subfolders, respectively. The directory path you provide to gusty's `create_dag` function will become your DAG (and DAG name), and any subfolder in that DAG by default will be turned into a Task Group.
@@ -83,7 +89,7 @@ gusty offers a few compatible methods for configuring DAGs and Task Groups that 
 
 #### Metadata
 
-A special file name in any directory or subfolder is `METADATA.yml`, which gusty will use to determine
+A special file name in any directory or subfolder is `METADATA.yml`, which gusty will use to determine how to configure that DAG or TaskGroup object.
 
 Here is an example of a `METADATA.yml` file you might place in a DAG directory:
 
@@ -112,11 +118,11 @@ dependencies:
 
 As seen in the above example, gusty will also accept `dependencies` and `external_dependencies` in a Task Group's `METADATA.yml`. This means gusty can wire up your Task Group dependencies as well!
 
-Note that by default, gusty disables the TaskGroup `prefix_group_id` argument by default, as it's one of gusty's few opinions that tasks should explicitly named unless you say otherwise. gusty also offers a `suffix_group_id` argument for Task Groups!
+Note that gusty disables the TaskGroup `prefix_group_id` argument by default, as it's one of gusty's few opinions that tasks should explicitly named unless you say otherwise. gusty also offers a `suffix_group_id` argument for Task Groups!
 
 #### create_dag
 
-While `METADATA.yml` will always be the primary source of truth for a DAG or TaskGroup's configuration, gusty's `create_dag` function also accepts any parameters that can be passed to Airflow's DAG class, as well as a dictionary of `task_group_defaults` to set default behavior for any Task Group created by gusty.
+While `METADATA.yml` will always be the primary source of truth for a DAG or TaskGroup's configuration, gusty's `create_dag` function also accepts any parameters that can be passed to Airflow's DAG class, as well as a dictionary of `task_group_defaults` to set default behavior for any TaskGroup created by gusty.
 
 Here's an example of using `create_dag`, where instead of metadata we use `create_dag` arguments:
 
@@ -147,7 +153,7 @@ dag = create_dag(
 )
 ```
 
-You might notice that `task_group_defaults` does not include dependencies. For Task Groups, dependencies must be set using Task Group-specific metadata.
+You might notice that `task_group_defaults` does not include dependencies. For Task Groups, dependencies must be set using TaskGroup-specific metadata.
 
 Default arguments in `create_dag` and a DAG or Task Group's `METADATA.yml` can be mixed and matched. `METADATA.yml` will always override defaults set in `create_dag`.
 
@@ -155,20 +161,20 @@ Default arguments in `create_dag` and a DAG or Task Group's `METADATA.yml` can b
 
 gusty features some additional helpful features at the DAG-level to help you design your DAGs with ease:
 
-  - **root_tasks** - A list of task ids which should represent the roots of a DAG. For example, an HTTP sensor might have to succeed before any downstream tasks in the DAGs run.
-  - **leaf_tasks** - A list of task ids which should represent the leaves of a DAG. For example, at the end of the DAG run, you might save a report to S3.
-  - **external_dependencies** - You can also set external dependencies at the DAG level! Making your DAG wait on other DAGs works just like in the external dependencies examples above.
-  - **ignore_subfolders** - If you don't want subfolders to generate Task Groups, set this to `True`.
-  - **latest_only** - On by default, installs a LatestOnlyOperator at the absolute root of the DAG, skipping all tasks in the DAG if the DAG run is not the current run. You can read more about the LatestOnlyOperator in [Airflow's documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#latest-run-only).
+  - **`root_tasks`** - A list of task ids which should represent the roots of a DAG. For example, an HTTP sensor might have to succeed before any downstream tasks in the DAG run.
+  - **`leaf_tasks`** - A list of task ids which should represent the leaves of a DAG. For example, at the end of the DAG run, you might save a report to S3.
+  - **`external_dependencies`** - You can also set external dependencies at the DAG level! Making your DAG wait on other DAGs works just like in the external dependencies examples above.
+  - **`ignore_subfolders`** - If you don't want subfolders to generate Task Groups, set this to `True`.
+  - **`latest_only`** - On by default, installs a `LatestOnlyOperator` at the absolute root of the DAG, skipping all tasks in the DAG if the DAG run is not the current run. You can read more about the LatestOnlyOperator in [Airflow's documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#latest-run-only).
 
-  Any of arguments can be placed in `create_dag` or `METADATA.yml`!
+  Any of these arguments can be placed in `create_dag` or `METADATA.yml`!
 
 
 ### Local Operator Support
 
 gusty also works with your local operators, so long as they are located inside of an `operators` folder located inside of your `AIRFLOW_HOME`.
 
-In order for gusty to support your operators as expected, your operator name must be CamelCase and the file in which it lives must be snake_case.
+In order for gusty to support your operators as expected, your operator name must be CamelCase and the file in which the operator lives must be snake_case.
 
 For example, if we wanted use a `HelloOperator`, this operator would need to be stored in a file called `hello_operator.py` in inside of the `operators` folder located inside of your `AIRFLOW_HOME`.
 
