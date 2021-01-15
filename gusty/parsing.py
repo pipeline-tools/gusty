@@ -1,6 +1,19 @@
-import os, yaml, frontmatter, nbformat
+import os, yaml, importlib.util, inspect, frontmatter, nbformat
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
+from gusty.importing import airflow_version
+from airflow.models import BaseOperator
+
+
+def parse_py_as_module(task_id, file):
+    mod_file = importlib.util.spec_from_file_location(task_id, file)
+    mod = importlib.util.module_from_spec(mod_file)
+    mod_file.loader.exec_module(mod)
+    assert (
+        "python_callable" in mod.__dict__
+    ), "python_callable not found in {file}".format(file=file)
+
+    return mod
 
 
 class GustyYAMLLoader(yaml.UnsafeLoader):
@@ -51,6 +64,8 @@ def read_yaml_spec(file):
     Reading in yaml specs / frontmatter.
     """
 
+    task_id = os.path.splitext(os.path.basename(file))[0]
+
     if file.endswith(".ipynb"):
         # Find first yaml cell in jupyter notebook and parse yaml
         nb_cells = nbformat.read(file, as_version=4)["cells"]
@@ -66,6 +81,49 @@ def read_yaml_spec(file):
             yaml_cell.replace("```yaml", "").replace("```yml", "").replace("```", "")
         )
 
+    elif file.endswith(".py"):
+        yaml_file = {}
+
+        # Add operator
+        if airflow_version > 1:
+            yaml_file["operator"] = "airflow.operators.python.PythonOperator"
+        else:
+            yaml_file["operator"] = "airflow.operators.python_operator.PythonOperator"
+
+        # Add callable
+        mod = parse_py_as_module(task_id, file)
+        yaml_file["python_callable"] = mod.python_callable
+
+        # Add dependencies
+        mod_contents = mod.__dict__.keys()
+        if "dependencies" in mod_contents:
+            yaml_file["dependencies"] = getattr(mod, "dependencies")
+            assert isinstance(
+                yaml_file["dependencies"], list
+            ), "dependencies needs to be a list of strings in {file}".format(file=file)
+            assert all(
+                [isinstance(dep, str) for dep in yaml_file["dependencies"]]
+            ), "external_dependencies needs to be a list of strings in {file}".format(
+                file=file
+            )
+        if "external_dependencies" in mod_contents:
+            yaml_file["external_dependencies"] = getattr(mod, "external_dependencies")
+            assert isinstance(
+                yaml_file["external_dependencies"], list
+            ), "external_dependencies needs to be a list of dicts in {file}".format(
+                file=file
+            )
+            assert all(
+                [isinstance(dep, dict) for dep in yaml_file["external_dependencies"]]
+            ), "external_dependencies needs to be a list of dicts in {file}".format(
+                file=file
+            )
+
+        # Pass through any BaseOperator defaults found in the .py
+        for default in inspect.signature(BaseOperator.__init__).parameters.keys():
+            if default in mod_contents:
+                yaml_file[default] = getattr(mod, default)
+
     else:
         # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
         file_parsed = frontmatter.load(file)
@@ -75,7 +133,6 @@ def read_yaml_spec(file):
 
     assert "operator" in yaml_file, "No operator specified in yaml spec " + file
 
-    task_id = os.path.splitext(os.path.basename(file))[0]
     yaml_file["task_id"] = task_id.lower().strip()
     assert (
         yaml_file["task_id"] != "all"
