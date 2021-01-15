@@ -1,0 +1,16 @@
+description: "For testing the generation of PythonOperator from .py files"
+schedule_interval: "0 0 * * *"
+default_args:
+    owner: Gusy Testing
+    depends_on_past: False
+    start_date: !days_ago 1
+    email: testing@gusty.com
+    email_on_failure: False
+    email_on_retry: False
+    retry_delay: !timedelta 'minutes: 5'
+    sla: !timedelta 'hours: 2'
+latest_only: False
+root_tasks:
+  - simple_root
+leaf_tasks:
+  - simple_leaf
