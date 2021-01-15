@@ -1,4 +1,4 @@
-import os, yaml, importlib.util, inspect, frontmatter, nbformat
+import os, yaml, ast, importlib.util, inspect, frontmatter, nbformat
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
 from gusty.importing import airflow_version
@@ -6,14 +6,25 @@ from airflow.models import BaseOperator
 
 
 def parse_py_as_module(task_id, file):
-    mod_file = importlib.util.spec_from_file_location(task_id, file)
-    mod = importlib.util.module_from_spec(mod_file)
-    mod_file.loader.exec_module(mod)
-    assert (
-        "python_callable" in mod.__dict__
-    ), "python_callable not found in {file}".format(file=file)
+    with open(file) as f:
+        tree = ast.parse(f.read())
+        class Visitor(ast.NodeVisitor):
+            def __init__(self):
+                self.has_callable = None
+            def visit_FunctionDef(self, node):
+                ast.NodeVisitor.generic_visit(self, node)
+                if node.name == "python_callable":
+                    self.has_callable = True
+        v = Visitor()
+        v.visit(tree)
+        if v.has_callable:
+            mod_file = importlib.util.spec_from_file_location(task_id, file)
+            mod = importlib.util.module_from_spec(mod_file)
+            mod_file.loader.exec_module(mod)
+            return mod
+        else:
+            assert False, "python_callable not found in {file}".format(file=file)
 
-    return mod
 
 
 class GustyYAMLLoader(yaml.UnsafeLoader):
