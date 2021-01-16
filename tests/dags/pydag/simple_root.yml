@@ -1,0 +1,2 @@
+operator: airflow.sensors.time_delta.TimeDeltaSensor
+delta: !timedelta 'seconds: 2'
