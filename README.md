@@ -81,9 +81,9 @@ def python_callable():
 
 gusty can also detect and generate dependencies through a task object's `dependencies` attribute. This means you can also **dynamically** set dependencies. One popular example of this option would be if your operator runs SQL, you can parse that SQL for table names, and attach a list of those table names to the operator's `dependencies` attribute. If those table names listed in the `dependencies` attribute are also task ids in the DAG, gusty will be able to automatically set these dependencies for you!
 
-### DAG and Task Group Control
+### DAG and TaskGroup Control
 
-Both DAG and TaskGroup objects are created automatically simply by being directories and subfolders, respectively. The directory path you provide to gusty's `create_dag` function will become your DAG (and DAG name), and any subfolder in that DAG by default will be turned into a Task Group.
+Both DAG and TaskGroup objects are created automatically simply by being directories and subfolders, respectively. The directory path you provide to gusty's `create_dag` function will become your DAG (and DAG name), and any subfolder in that DAG by default will be turned into a TaskGroup.
 
 gusty offers a few compatible methods for configuring DAGs and Task Groups that we'll cover below.
 
@@ -116,7 +116,7 @@ dependencies:
   - hello_world
 ```
 
-As seen in the above example, gusty will also accept `dependencies` and `external_dependencies` in a Task Group's `METADATA.yml`. This means gusty can wire up your Task Group dependencies as well!
+As seen in the above example, gusty will also accept `dependencies` and `external_dependencies` in a TaskGroup's `METADATA.yml`. This means gusty can wire up your TaskGroup dependencies as well!
 
 Note that gusty disables the TaskGroup `prefix_group_id` argument by default, as it's one of gusty's few opinions that tasks should explicitly named unless you say otherwise. gusty also offers a `suffix_group_id` argument for Task Groups!
 
@@ -124,7 +124,7 @@ Note that gusty disables the TaskGroup `prefix_group_id` argument by default, as
 
 While `METADATA.yml` will always be the primary source of truth for a DAG or TaskGroup's configuration, gusty's `create_dag` function also accepts any parameters that can be passed to Airflow's DAG class, as well as a dictionary of `task_group_defaults` to set default behavior for any TaskGroup created by gusty.
 
-Here's an example of using `create_dag`, where instead of metadata we use `create_dag` arguments:
+Here's an example using `create_dag`, where instead of metadata we use `create_dag` arguments:
 
 ```py
 import airflow
@@ -155,11 +155,11 @@ dag = create_dag(
 
 You might notice that `task_group_defaults` does not include dependencies. For Task Groups, dependencies must be set using TaskGroup-specific metadata.
 
-Default arguments in `create_dag` and a DAG or Task Group's `METADATA.yml` can be mixed and matched. `METADATA.yml` will always override defaults set in `create_dag`.
+Default arguments in `create_dag` and a DAG or TaskGroup's `METADATA.yml` can be mixed and matched. `METADATA.yml` will always override defaults set in `create_dag`.
 
 #### DAG-level Features
 
-gusty features some additional helpful features at the DAG-level to help you design your DAGs with ease:
+gusty features additional helpful arguments at the DAG-level to help you design your DAGs with ease:
 
   - **`root_tasks`** - A list of task ids which should represent the roots of a DAG. For example, an HTTP sensor might have to succeed before any downstream tasks in the DAG run.
   - **`leaf_tasks`** - A list of task ids which should represent the leaves of a DAG. For example, at the end of the DAG run, you might save a report to S3.
@@ -186,6 +186,12 @@ name: World
 ```
 
 The `local.` syntax is what gusty uses to know to look in your local operators folder for the operator.
+
+## One Approach, Not the Only Approach
+
+One good thing about gusty is that if you choose to use this package, gusty doesn't have to be the **only** way that you create DAGs. You can use gusty's `create_dag` to generate DAGs out of directories where applicable, and then implement more traditional methods of creating Airflow DAGs where the tried and true methods feel like a better approach.
+
+So feel free to give the gusty approach a try, because you don't have to commit to it everywhere. But when you try it, don't be surprised if you are blown away.
 
 ## Containerized Demo
 
