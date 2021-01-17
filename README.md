@@ -21,7 +21,7 @@ gusty will turn every file in a DAG directory into a task. gusty supports four d
 | File Type | How It Works                                                                                                   |
 | --------- | -------------------------------------------------------------------------------------------------------------- |
 | .yml      | Declare an `operator` and pass in any operator parameters using YAML                                           |
-| .py       | Simply define a function named `python_callable` and gusty will automatically turn it into a `PythonOperator`  |
+| .py       | Simply write Python code and by default gusty will execute your file using a `PythonOperator`                  |
 | .ipynb    | Put a YAML block at the top of your notebook and specify an `operator` that renders your Jupyter Notebook      |
 | .Rmd      | Use the YAML block at the top of your notebook and specify an `operator` that renders your R Markdown Document |
 
@@ -34,12 +34,11 @@ bash_command: echo hello world
 
 The resulting task would be a `BashOperator` with the task id `hello_world`.
 
-Here is the same approach using a Python file instead, named `hello_world.py`, which gusty will automatically turn into a `PythonOperator`:
+Here is the same approach using a Python file instead, named `hello_world.py`, which gusty will automatically turn into a `PythonOperator` by default:
 
 ```py
-def python_callable():
-  phrase = "hello world"
-  print(phrase)
+phrase = "hello world"
+print(phrase)
 ```
 
 ### Easy Dependencies
@@ -62,20 +61,27 @@ external_dependencies:
 
 For external dependencies, the keyword `all` can be used when the task should wait on an entire external DAG to run successfully.
 
-For a .py task file type, we can define these dependencies simply as variables:
+For a .py task file type, we can define these dependencies with some raw markdown at the top of the file:
 
 ```py
-dependencies = [
-  "same_dag_task"
-]
-external_dependencies = [
-  {"another_dag": "another_task"},
-  {"a_whole_dag": "all"}
-]
-def python_callable():
+# ---
+# dependencies:
+#   - same_dag_task
+# external_dependencies:
+#   - another_dag: another_task
+#   - a_whole_dag: all
+# python_callable: say_hello
+# ---
+
+def say_hello():
   phrase = "hello world"
   print(phrase)
 ```
+
+You will also note that we wrapped our previous Python code in a function called `say_hello`, and passed this function's name to the `python_callable` argument. By default, with no `operator` and no `python_callable` specified, gusty will pass a simple function that runs your .py file to the `PythonOperator`. If you pass an explicit `python_callable` by name, gusty will search your .py for that function and pass that function to the `PythonOperator` instead.
+
+.py files are capable of accepting an `operator` parameter in the raw markdown, just like any other task file type, which means you can use any other relevant operators (e.g. the `PythonVirtualenvOperator`) to execute your Python code as needed.
+
 
 #### Dynamic Dependencies
 

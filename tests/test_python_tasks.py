@@ -1,5 +1,6 @@
 import pytest
 from gusty import create_dag
+from airflow.operators.dummy import DummyOperator
 
 ###############
 ## FIXTURES ##
@@ -54,3 +55,17 @@ def test_py_task_external_dependencies(py_task):
 def test_py_task_dependencies(py_task):
     assert "direct_dep" in py_task.__dict__["_upstream_task_ids"]
     assert "simple_leaf" in py_task.__dict__["_downstream_task_ids"]
+
+
+def test_py_dummy(dag):
+    """
+    This really tests to ensure that in theory the contents of the .py could
+    be run by other operators as needed.
+    """
+    task = dag.task_dict["py_but_dummy"]
+    assert isinstance(task, DummyOperator)
+
+
+def test_automatic_py(dag, py_task):
+    task = dag.task_dict["simple_leaf"]
+    assert type(py_task) == type(task)

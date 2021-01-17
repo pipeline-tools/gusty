@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.4.0",
+    version="0.5.0",
     author="Chris Cardillo",
     author_email="cfcardillo23@gmail.com",
-    description="An opinionated framework for ETL built on top of Airflow",
+    description="Making DAG construction easier",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/chriscardillo/gusty",
@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
           'apache-airflow',
           'inflection',
+          'jupytext',
           'nbformat',
           'python-frontmatter'
     ],
