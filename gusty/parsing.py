@@ -1,30 +1,83 @@
-import os, yaml, ast, importlib.util, inspect, frontmatter, nbformat
+import os, yaml, ast, importlib.util, inspect, frontmatter, nbformat, jupytext
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
-from gusty.importing import airflow_version
-from airflow.models import BaseOperator
+from gusty.importing import airflow_version, get_operator
+
+if airflow_version > 1:
+    from airflow.operators.python import PythonOperator
+else:
+    from airflow.operators.python_operator import PythonOperator
 
 
 def parse_py_as_module(task_id, file):
-    with open(file) as f:
-        tree = ast.parse(f.read())
-        class Visitor(ast.NodeVisitor):
-            def __init__(self):
-                self.has_callable = None
-            def visit_FunctionDef(self, node):
-                ast.NodeVisitor.generic_visit(self, node)
-                if node.name == "python_callable":
-                    self.has_callable = True
-        v = Visitor()
-        v.visit(tree)
-        if v.has_callable:
-            mod_file = importlib.util.spec_from_file_location(task_id, file)
-            mod = importlib.util.module_from_spec(mod_file)
-            mod_file.loader.exec_module(mod)
-            return mod
-        else:
-            assert False, "python_callable not found in {file}".format(file=file)
+    yaml_front = {}
+    if airflow_version > 1:
+        yaml_front.update({"operator": "airflow.operators.python.PythonOperator"})
+    else:
+        yaml_front.update(
+            {"operator": "airflow.operators.python_operator.PythonOperator"}
+        )
 
+    spec = jupytext.read(file)["cells"][0]
+
+    # if spec contains metadata header...
+    if spec["cell_type"] == "raw":
+        assert (
+            spec["source"] is not None
+        ), "You need a comment block starting and ending with '# ---' at the top of {file}".format(
+            file=file
+        )
+        assert (
+            "---" in spec["source"],
+        ), "You need a comment block starting and ending with '# ---' at the top of {file}".format(
+            file=file
+        )
+        source = spec["source"].replace("---", "")
+        settings = yaml.load(source, Loader=GustyYAMLLoader)
+        yaml_front.update(**settings)
+
+        # search for a python callable if one is specified for PythonOperator and children
+        if issubclass(get_operator(yaml_front["operator"]), PythonOperator):
+            if "python_callable" in yaml_front.keys():
+                with open(file) as f:
+                    tree = ast.parse(f.read())
+
+                    class Visitor(ast.NodeVisitor):
+                        def __init__(self):
+                            self.has_callable = None
+
+                        def visit_FunctionDef(self, node):
+                            ast.NodeVisitor.generic_visit(self, node)
+                            if node.name == yaml_front["python_callable"]:
+                                self.has_callable = True
+
+                    v = Visitor()
+                    v.visit(tree)
+                    if v.has_callable:
+                        mod_file = importlib.util.spec_from_file_location(task_id, file)
+                        mod = importlib.util.module_from_spec(mod_file)
+                        mod_file.loader.exec_module(mod)
+                        yaml_front.update(
+                            {
+                                "python_callable": getattr(
+                                    mod, yaml_front["python_callable"]
+                                )
+                            }
+                        )
+                    else:
+                        assert (
+                            False
+                        ), "{file} specifies python_callable {callable} but {callable} not found in {file}".format(
+                            file=file, callable=yaml_front["python_callable"]
+                        )
+            # Default to sourcing this file for a PythonOperator
+            else:
+                yaml_front.update({"python_callable": lambda: exec(open(file).read())})
+    # If no metadata then we also default to sourcing this file for a PythonOperator
+    else:
+        yaml_front.update({"python_callable": lambda: exec(open(file).read())})
+
+    return yaml_front
 
 
 class GustyYAMLLoader(yaml.UnsafeLoader):
@@ -93,47 +146,7 @@ def read_yaml_spec(file):
         )
 
     elif file.endswith(".py"):
-        yaml_file = {}
-
-        # Add operator
-        if airflow_version > 1:
-            yaml_file["operator"] = "airflow.operators.python.PythonOperator"
-        else:
-            yaml_file["operator"] = "airflow.operators.python_operator.PythonOperator"
-
-        # Add callable
-        mod = parse_py_as_module(task_id, file)
-        yaml_file["python_callable"] = mod.python_callable
-
-        # Add dependencies
-        mod_contents = mod.__dict__.keys()
-        if "dependencies" in mod_contents:
-            yaml_file["dependencies"] = getattr(mod, "dependencies")
-            assert isinstance(
-                yaml_file["dependencies"], list
-            ), "dependencies needs to be a list of strings in {file}".format(file=file)
-            assert all(
-                [isinstance(dep, str) for dep in yaml_file["dependencies"]]
-            ), "external_dependencies needs to be a list of strings in {file}".format(
-                file=file
-            )
-        if "external_dependencies" in mod_contents:
-            yaml_file["external_dependencies"] = getattr(mod, "external_dependencies")
-            assert isinstance(
-                yaml_file["external_dependencies"], list
-            ), "external_dependencies needs to be a list of dicts in {file}".format(
-                file=file
-            )
-            assert all(
-                [isinstance(dep, dict) for dep in yaml_file["external_dependencies"]]
-            ), "external_dependencies needs to be a list of dicts in {file}".format(
-                file=file
-            )
-
-        # Pass through any BaseOperator defaults found in the .py
-        for default in inspect.signature(BaseOperator.__init__).parameters.keys():
-            if default in mod_contents:
-                yaml_file[default] = getattr(mod, default)
+        yaml_file = parse_py_as_module(task_id, file)
 
     else:
         # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
@@ -150,5 +163,27 @@ def read_yaml_spec(file):
     ), "Task name 'all' is not allowed. Please change your task name."
 
     yaml_file["file_path"] = file
+
+    # Check dependencies
+    if "dependencies" in yaml_file.keys():
+        assert isinstance(
+            yaml_file["dependencies"], list
+        ), "dependencies needs to be a list of strings in {file}".format(file=file)
+        assert all(
+            [isinstance(dep, str) for dep in yaml_file["dependencies"]]
+        ), "external_dependencies needs to be a list of strings in {file}".format(
+            file=file
+        )
+    if "external_dependencies" in yaml_file.keys():
+        assert isinstance(
+            yaml_file["external_dependencies"], list
+        ), "external_dependencies needs to be a list of dicts in {file}".format(
+            file=file
+        )
+        assert all(
+            [isinstance(dep, dict) for dep in yaml_file["external_dependencies"]]
+        ), "external_dependencies needs to be a list of dicts in {file}".format(
+            file=file
+        )
 
     return yaml_file

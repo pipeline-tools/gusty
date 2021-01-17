@@ -66,6 +66,7 @@ jupyter-client==6.1.7
 jupyter-console==6.2.0
 jupyter-core==4.7.0
 jupyterlab-pygments==0.1.2
+jupytext==1.9.1
 lazy-object-proxy==1.4.3
 lockfile==0.12.2
 lxml==4.6.2
