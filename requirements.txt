@@ -26,7 +26,7 @@ colorlog==4.0.2
 commonmark==0.9.1
 connexion==2.7.0
 croniter==0.3.36
-cryptography==3.3.1
+cryptography==3.3.2
 decorator==4.4.2
 defusedxml==0.6.0
 dill==0.3.3
