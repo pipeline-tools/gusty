@@ -44,7 +44,13 @@ def get_operator_module(operator_string):
 
 
 # Add $AIRFLOW_HOME/operators directory to path for local.operator syntax to work
-CUSTOM_OPERATORS_DIR = os.path.join(os.environ.get("AIRFLOW_HOME", ""), "operators")
+
+gusty_home = os.environ.get("GUSTY_HOME", "")
+if gusty_home == "":
+    CUSTOM_OPERATORS_DIR = os.path.join(os.environ.get("AIRFLOW_HOME", ""), "operators")
+else:
+    CUSTOM_OPERATORS_DIR = os.path.join(gusty_home, "operators")
+
 sys.path.append(CUSTOM_OPERATORS_DIR)
 module_paths = [("", [CUSTOM_OPERATORS_DIR])]
 pairs = [
