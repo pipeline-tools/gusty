@@ -1,4 +1,4 @@
-import os, sys, pkgutil, itertools, airflow
+import os, sys, pkgutil, itertools, airflow, importlib
 from inflection import underscore
 
 ############
@@ -73,7 +73,5 @@ def get_operator(operator_string):
         else get_operator_module(operator_string)
     )
 
-    import_stmt = "from %s import %s" % (module_name, operator_name)
-
-    exec(import_stmt)
-    return eval(operator_name)
+    operator = getattr(importlib.import_module(module_name), operator_name)
+    return operator

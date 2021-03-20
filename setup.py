@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.5.1",
+    version="0.5.2",
     author="Chris Cardillo",
     author_email="cfcardillo23@gmail.com",
     description="Making DAG construction easier",
@@ -18,7 +18,8 @@ setuptools.setup(
           'inflection',
           'jupytext',
           'nbformat',
-          'python-frontmatter'
+          'python-frontmatter',
+          'PyYaml'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
