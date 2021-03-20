@@ -3,7 +3,7 @@
 [![Versions](https://img.shields.io/badge/python-3.6+-blue)](https://pypi.org/project/gusty/)
 [![PyPi](https://img.shields.io/pypi/v/gusty.svg)](https://pypi.org/project/gusty/)
 ![build](https://github.com/chriscardillo/gusty/workflows/build/badge.svg)
-[![coverage](https://codecov.io/github/chriscardillo/gusty/coverage.svg?branch=master)](https://codecov.io/github/chriscardillo/gusty?branch=master)
+[![coverage](https://codecov.io/github/chriscardillo/gusty/coverage.svg?branch=main)](https://codecov.io/github/chriscardillo/gusty?branch=main)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 gusty allows you to control your Airflow DAGs, Task Groups, and Tasks with greater ease. gusty manages collections of tasks, represented as any number of YAML, Python, Jupyter Notebook, or R Markdown files. A directory of task files is instantly rendered into a DAG by passing a file path to gusty's `create_dag` function.
