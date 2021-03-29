@@ -103,7 +103,7 @@ psycopg2==2.8.6
 psycopg2-binary==2.8.6
 ptyprocess==0.6.0
 pycparser==2.20
-Pygments==2.7.3
+Pygments==2.7.4
 PyJWT==1.7.1
 PyNaCl==1.4.0
 pyparsing==2.4.7
