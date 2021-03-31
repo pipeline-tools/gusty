@@ -118,7 +118,7 @@ python-slugify==4.0.1
 python3-openid==3.2.0
 pytz==2020.4
 pytzdata==2020.1
-PyYAML==5.3.1
+PyYAML==5.4
 pyzmq==20.0.0
 qtconsole==5.0.1
 QtPy==1.9.0
