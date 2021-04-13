@@ -99,8 +99,8 @@ def build_task(spec, level_id, schematic):
         k: v
         for k, v in spec.items()
         if k
-        in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
-        or k in inspect.signature(operator.__init__).parameters.keys()
+        in inspect.signature(airflow.models.BaseOperator).parameters.keys()
+        or k in inspect.signature(operator).parameters.keys()
     }
     args["task_id"] = spec["task_id"]
     args["dag"] = get_top_level_dag(schematic)
