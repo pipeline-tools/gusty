@@ -577,6 +577,21 @@ class GustyBuilder:
         if level_parent_id is None:
             # What are valid downstream tasks for root-level dependencies
             level_tasks = self.schematic[id]["tasks"]
+            # Special case - consider task groups masquerading as tasks (e.g. composite task groups)
+            if airflow_version > 1:
+                level_tasks_tasks = {
+                    k: v for k, v in level_tasks.items() if not isinstance(v, TaskGroup)
+                }
+                level_tasks_groups = {
+                    k: v for k, v in level_tasks.items() if isinstance(v, TaskGroup)
+                }
+                # Remove task groups that depend on other task groups from valid_dependency_objects
+                level_tasks_groups = {
+                    k: v
+                    for k, v in level_tasks_groups.items()
+                    if len(v.upstream_group_ids) == 0
+                }
+                level_tasks = {**level_tasks_tasks, **level_tasks_groups}
             if airflow_version > 1:
                 child_levels = {
                     level["name"]: level["structure"]
