@@ -577,11 +577,19 @@ class GustyBuilder:
         if level_parent_id is None:
             # What are valid downstream tasks for root-level dependencies
             level_tasks = self.schematic[id]["tasks"]
-            child_levels = {
-                level["name"]: level["structure"]
-                for level_id, level in self.schematic.items()
-                if level["parent_id"] == id
-            }
+            if airflow_version > 1:
+                child_levels = {
+                    level["name"]: level["structure"]
+                    for level_id, level in self.schematic.items()
+                    if level["parent_id"] == id
+                    and len(level["structure"].upstream_group_ids) == 0
+                }
+            else:
+                child_levels = {
+                    level["name"]: level["structure"]
+                    for level_id, level in self.schematic.items()
+                    if level["parent_id"] == id
+                }
             valid_dependency_objects = {
                 **level_tasks,
                 **child_levels,
