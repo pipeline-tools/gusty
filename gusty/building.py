@@ -104,7 +104,7 @@ def build_task(spec, level_id, schematic):
     args = {
         k: v
         for k, v in spec.items()
-        if k 
+        if k
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
         or k in _get_operator_parameters(operator)
     }
