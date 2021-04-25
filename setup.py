@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.5.4",
+    version="0.5.5",
     author="Chris Cardillo",
     author_email="cfcardillo23@gmail.com",
     description="Making DAG construction easier",
