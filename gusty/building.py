@@ -88,12 +88,14 @@ def parse_external_dependencies(external_dependencies):
 ## Builder Functions ##
 #######################
 
+
 def _get_operator_parameters(operator):
     params = getattr(operator, "_gusty_parameters", None)
     if params is not None:
         return params
 
     return inspect.signature(operator.__init__).parameters.keys()
+
 
 def build_task(spec, level_id, schematic):
     """
