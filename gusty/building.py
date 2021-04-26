@@ -89,6 +89,14 @@ def parse_external_dependencies(external_dependencies):
 #######################
 
 
+def _get_operator_parameters(operator):
+    params = getattr(operator, "_gusty_parameters", None)
+    if params is not None:
+        return params
+
+    return inspect.signature(operator.__init__).parameters.keys()
+
+
 def build_task(spec, level_id, schematic):
     """
     Given a task specification ("spec"), locate the operator and instantiate the object with args from the spec.
@@ -100,7 +108,7 @@ def build_task(spec, level_id, schematic):
         for k, v in spec.items()
         if k
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
-        or k in inspect.signature(operator.__init__).parameters.keys()
+        or k in _get_operator_parameters(operator)
     }
     args["task_id"] = spec["task_id"]
     args["dag"] = get_top_level_dag(schematic)

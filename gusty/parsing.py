@@ -36,43 +36,38 @@ def parse_py_as_module(task_id, file):
         settings = yaml.load(source, Loader=GustyYAMLLoader)
         yaml_front.update(**settings)
 
-        # search for a python callable if one is specified for PythonOperator and children
-        if issubclass(get_operator(yaml_front["operator"]), PythonOperator):
-            if "python_callable" in yaml_front.keys():
-                with open(file) as f:
-                    tree = ast.parse(f.read())
+        # search for a python callable if one is specified
+        if "python_callable" in yaml_front.keys():
+            with open(file) as f:
+                tree = ast.parse(f.read())
 
-                    class Visitor(ast.NodeVisitor):
-                        def __init__(self):
-                            self.has_callable = None
+                class Visitor(ast.NodeVisitor):
+                    def __init__(self):
+                        self.has_callable = None
 
-                        def visit_FunctionDef(self, node):
-                            ast.NodeVisitor.generic_visit(self, node)
-                            if node.name == yaml_front["python_callable"]:
-                                self.has_callable = True
+                    def visit_FunctionDef(self, node):
+                        ast.NodeVisitor.generic_visit(self, node)
+                        if node.name == yaml_front["python_callable"]:
+                            self.has_callable = True
 
-                    v = Visitor()
-                    v.visit(tree)
-                    if v.has_callable:
-                        mod_file = importlib.util.spec_from_file_location(task_id, file)
-                        mod = importlib.util.module_from_spec(mod_file)
-                        mod_file.loader.exec_module(mod)
-                        yaml_front.update(
-                            {
-                                "python_callable": getattr(
-                                    mod, yaml_front["python_callable"]
-                                )
-                            }
-                        )
-                    else:
-                        assert (
-                            False
-                        ), "{file} specifies python_callable {callable} but {callable} not found in {file}".format(
-                            file=file, callable=yaml_front["python_callable"]
-                        )
-            # Default to sourcing this file for a PythonOperator
-            else:
-                yaml_front.update({"python_callable": lambda: exec(open(file).read())})
+                v = Visitor()
+                v.visit(tree)
+                if v.has_callable:
+                    mod_file = importlib.util.spec_from_file_location(task_id, file)
+                    mod = importlib.util.module_from_spec(mod_file)
+                    mod_file.loader.exec_module(mod)
+                    yaml_front.update(
+                        {"python_callable": getattr(mod, yaml_front["python_callable"])}
+                    )
+                else:
+                    assert (
+                        False
+                    ), "{file} specifies python_callable {callable} but {callable} not found in {file}".format(
+                        file=file, callable=yaml_front["python_callable"]
+                    )
+        # Default to sourcing this file for a PythonOperator
+        else:
+            yaml_front.update({"python_callable": lambda: exec(open(file).read())})
     # If no metadata then we also default to sourcing this file for a PythonOperator
     else:
         yaml_front.update({"python_callable": lambda: exec(open(file).read())})
