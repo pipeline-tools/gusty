@@ -40,7 +40,7 @@ def create_schematic(dag_dir, parsers=default_parsers):
             "spec_paths": [
                 os.path.abspath(os.path.join(dir, file))
                 for file in files
-                if file.endswith(tuple(list(parsers.keys())))
+                if file.endswith(tuple(parsers.keys()))
                 and file != "METADATA.yml"
                 and not file.startswith(("_", "."))
             ],
