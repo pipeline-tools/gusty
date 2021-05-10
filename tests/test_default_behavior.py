@@ -5,7 +5,7 @@ from airflow.models import BaseOperator
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
 from gusty.building import create_schematic
-from gusty.importing import valid_extensions
+from gusty.parsing import default_parsers
 from gusty import create_dag
 
 
@@ -105,7 +105,7 @@ def test_external_dependencies(dag):
 def test_tasks_created(dag, dag_files):
     def replace_extension(file):
         final = None
-        for extension in valid_extensions:
+        for extension in default_parsers.keys():
             if file.endswith(extension):
                 final = file.replace(extension, "")
         return final
