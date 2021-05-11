@@ -188,11 +188,11 @@ class GustyBuilder:
 
         self.parsers = default_parsers.copy()
 
-        if len(kwargs["custom_parse"]) > 0:
+        if len(kwargs["parse_hooks"]) > 0:
             assert isinstance(
-                kwargs["custom_parse"], dict
-            ), "custom_parse should be a dict of file extensions and handler functions for file_path."
-            self.parsers.update(kwargs["custom_parse"])
+                kwargs["parse_hooks"], dict
+            ), "parse_hooks should be a dict of file extensions and handler functions for file_path."
+            self.parsers.update(kwargs["parse_hooks"])
 
         self.schematic = create_schematic(dag_dir, self.parsers)
 

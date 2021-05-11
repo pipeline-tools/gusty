@@ -7,7 +7,7 @@ def create_dag(
     task_group_defaults={},
     wait_for_defaults={},
     latest_only=True,
-    custom_parse={},
+    parse_hooks={},
     **kwargs
 ):
     """
@@ -23,7 +23,7 @@ def create_dag(
         task_group_defaults (dict): Any parameter that could be passed to Airflow's TaskGroup class
         wait_for_defaults (dict): Any parameter that could be passed to Airflow's ExternalTaskSensor (which is what gusty users to create external_dependency tasks)
         latest_only (bool): When True, creates a latest_only operator at the root of the DAG, which will ensure tasks only run for the most recent run date
-        custom_parse (dict): Keys are file extensions (beginning with periods), values are functions that parse a given file path for a the associated file extension.
+        parse_hooks (dict): Keys are file extensions (beginning with periods), values are functions that parse a given file path for a the associated file extension.
         kwargs: Any additional keyword argument that can be passed to Airflow's DAG class, e.g. default_args, schedule_interval, description
 
     Returns:
@@ -35,7 +35,7 @@ def create_dag(
         task_group_defaults=task_group_defaults,
         wait_for_defaults=wait_for_defaults,
         latest_only=latest_only,
-        custom_parse=custom_parse,
+        parse_hooks=parse_hooks,
         **kwargs
     )
     [setup.parse_metadata(level) for level in setup.levels]

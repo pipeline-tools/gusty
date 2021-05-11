@@ -32,7 +32,7 @@ def dag(parsing_dag_dir):
             "retry_delay": timedelta(minutes=5),
         },
         ignore_subfolders=True,
-        custom_parse={
+        parse_hooks={
             ".py": lambda file_path: {
                 "operator": "airflow.operators.python.PythonOperator",
                 "python_callable": lambda: "this was custom",
@@ -44,7 +44,7 @@ def dag(parsing_dag_dir):
 
 @pytest.fixture(scope="session")
 def custom_task(dag):
-    custom_task = dag.task_dict["a_custom_parse"]
+    custom_task = dag.task_dict["a_parse_hook_task"]
     return custom_task
 
 
@@ -67,7 +67,7 @@ def test_read_yaml_spec():
     assert "bash_command" in yaml_spec.keys()
 
 
-def test_custom_parse(custom_task):
+def test_parse_hooks(custom_task):
     callable = custom_task.__dict__["python_callable"]
     res = callable()
     assert res == "this was custom"
