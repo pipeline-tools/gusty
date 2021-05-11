@@ -6,7 +6,7 @@
 [![coverage](https://codecov.io/github/chriscardillo/gusty/coverage.svg?branch=main)](https://codecov.io/github/chriscardillo/gusty?branch=main)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-gusty allows you to control your Airflow DAGs, Task Groups, and Tasks with greater ease. gusty manages collections of tasks, represented as any number of YAML, Python, Jupyter Notebook, or R Markdown files. A directory of task files is instantly rendered into a DAG by passing a file path to gusty's `create_dag` function.
+gusty allows you to control your Airflow DAGs, Task Groups, and Tasks with greater ease. gusty manages collections of tasks, represented as any number of YAML, Python, SQL, Jupyter Notebook, or R Markdown files. A directory of task files is instantly rendered into a DAG by passing a file path to gusty's `create_dag` function.
 
 gusty also manages dependencies (within one DAG) and external dependencies (dependencies on tasks in other DAGs) for each task file you define. All you have to do is provide a list of `dependencies` or `external_dependencies` inside of a task file, and gusty will automatically set each task's dependencies and create external task sensors for any external dependencies listed.
 
@@ -14,16 +14,17 @@ gusty works with both Airflow 1.x and Airflow 2.x, and has even more features, a
 
 ## What's in gusty?
 
-### Four Ways to Make Tasks
+### Five Ways to Make Tasks
 
-gusty will turn every file in a DAG directory into a task. gusty supports four different file types, which offer convenient ways to specify an operator and operator parameters for task creation.
+gusty will turn every file in a DAG directory into a task. By default gusty supports five different file types, which offer convenient ways to specify an operator and operator parameters for task creation.
 
-| File Type | How It Works                                                                                                   |
-| --------- | -------------------------------------------------------------------------------------------------------------- |
-| .yml      | Declare an `operator` and pass in any operator parameters using YAML                                           |
-| .py       | Simply write Python code and by default gusty will execute your file using a `PythonOperator`                  |
-| .ipynb    | Put a YAML block at the top of your notebook and specify an `operator` that renders your Jupyter Notebook      |
-| .Rmd      | Use the YAML block at the top of your notebook and specify an `operator` that renders your R Markdown Document |
+| File Type | How It Works                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| .yml      | Declare an `operator` and pass in any operator parameters using YAML                                                          |
+| .py       | Simply write Python code and by default gusty will execute your file using a `PythonOperator`. Other options available        |
+| .sql      | Declare an `operator` in a YAML header, then write SQL in the main .sql file. The SQL automatically gets sent to the operator |
+| .ipynb    | Put a YAML block at the top of your notebook and specify an `operator` that renders your Jupyter Notebook                     |
+| .Rmd      | Use the YAML block at the top of your notebook and specify an `operator` that renders your R Markdown Document                |
 
 Here is quick example of a YAML task file, which might be called something like `hello_world.yml`:
 
@@ -39,6 +40,19 @@ Here is the same approach using a Python file instead, named `hello_world.py`, w
 ```py
 phrase = "hello world"
 print(phrase)
+```
+
+Lastly, here's an example of a slightly different `.sql` example:
+
+```sql
+---
+operator: airflow.providers.sqlite.operators.sqlite.SqliteOperator
+---
+
+SELECT
+  column_1,
+  column_2
+FROM your_table
 ```
 
 ### Easy Dependencies
