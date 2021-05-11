@@ -42,7 +42,7 @@ phrase = "hello world"
 print(phrase)
 ```
 
-Lastly, here's an example of a slightly different `.sql` example:
+Lastly, here's a slightly different `.sql` example:
 
 ```sql
 ---
