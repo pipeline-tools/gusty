@@ -88,10 +88,10 @@ def parse_py(file_path):
 
 def parse_ipynb(file_path):
     # Find first yaml cell in jupyter notebook and parse yaml
-    nb_cells = nbformat.read(file_path, as_version=4)["cells"]
+    file_contents = nbformat.read(file_path, as_version=4)["cells"]
     yaml_cell = [
         cell
-        for cell in nb_cells
+        for cell in file_contents
         if cell["cell_type"] == "markdown"
         and cell["source"].startswith(("```yaml", "```yml"))
     ]
