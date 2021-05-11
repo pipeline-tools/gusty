@@ -1,5 +1,5 @@
 import os
-from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb
+from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
 
 default_parsers = {
     ".yml": parse_generic,
@@ -7,6 +7,7 @@ default_parsers = {
     ".Rmd": parse_generic,
     ".py": parse_py,
     ".ipynb": parse_ipynb,
+    ".sql": parse_sql,
 }
 
 

@@ -1,5 +1,6 @@
 import pytest
 from airflow import DAG
+from gusty.parsing.parsers import parse_sql
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
 from gusty import create_dag
@@ -36,7 +37,7 @@ def dag(parsing_dag_dir):
             ".py": lambda file_path: {
                 "operator": "airflow.operators.python.PythonOperator",
                 "python_callable": lambda: "this was custom",
-            }
+            },
         },
     )
     return dag
@@ -45,6 +46,12 @@ def dag(parsing_dag_dir):
 @pytest.fixture(scope="session")
 def custom_task(dag):
     custom_task = dag.task_dict["a_custom_parse"]
+    return custom_task
+
+
+@pytest.fixture(scope="session")
+def sql_task(dag):
+    custom_task = dag.task_dict["sql_task"]
     return custom_task
 
 
@@ -65,3 +72,7 @@ def test_custom_parse(custom_task):
     callable = custom_task.__dict__["python_callable"]
     res = callable()
     assert res == "this was custom"
+
+
+def test_sql_parse(sql_task):
+    assert sql_task.sql == "SELECT *\nFROM gusty_table"

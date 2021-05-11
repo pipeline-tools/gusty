@@ -102,3 +102,10 @@ def parse_ipynb(file_path):
     )
 
     return yaml_file
+
+
+def parse_sql(file_path):
+    file_parsed = frontmatter.load(file_path)
+    yaml_file = file_parsed.metadata
+    yaml_file["sql"] = file_parsed.content
+    return yaml_file
