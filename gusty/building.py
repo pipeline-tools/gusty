@@ -1,7 +1,8 @@
 import os, yaml, inspect, airflow
 from airflow import DAG
-from gusty.parsing import GustyYAMLLoader, read_yaml_spec
-from gusty.importing import airflow_version, valid_extensions, get_operator
+from gusty.parsing import parse, default_parsers
+from gusty.parsing.loaders import GustyYAMLLoader
+from gusty.importing import airflow_version, get_operator
 
 ###########################
 ## Version Compatability ##
@@ -23,7 +24,7 @@ else:
 #########################
 
 
-def create_schematic(dag_dir):
+def create_schematic(dag_dir, parsers=default_parsers):
     """
     Given a dag directory, identify requirements (e.g spec_paths, metadata) for each "level" of the DAG.
     """
@@ -39,7 +40,7 @@ def create_schematic(dag_dir):
             "spec_paths": [
                 os.path.abspath(os.path.join(dir, file))
                 for file in files
-                if file.endswith(valid_extensions)
+                if file.endswith(tuple(parsers.keys()))
                 and file != "METADATA.yml"
                 and not file.startswith(("_", "."))
             ],
@@ -184,7 +185,16 @@ class GustyBuilder:
         "structure" (DAG or TaskGroup), tasks, dependencies, and external_dependencies, so on,
         until the DAG is complete.
         """
-        self.schematic = create_schematic(dag_dir)
+
+        self.parsers = default_parsers.copy()
+
+        if len(kwargs["parse_hooks"]) > 0:
+            assert isinstance(
+                kwargs["parse_hooks"], dict
+            ), "parse_hooks should be a dict of file extensions and handler functions for file_path."
+            self.parsers.update(kwargs["parse_hooks"])
+
+        self.schematic = create_schematic(dag_dir, self.parsers)
 
         # DAG defaults - everything that's not task_group_defaults or wait_for_defaults
         # is considered DAG default metadata
@@ -338,7 +348,7 @@ class GustyBuilder:
         """
         level_metadata = self.schematic[id]["metadata"]
         level_spec_paths = self.schematic[id]["spec_paths"]
-        level_specs = [read_yaml_spec(spec_path) for spec_path in level_spec_paths]
+        level_specs = [parse(spec_path, self.parsers) for spec_path in level_spec_paths]
         if airflow_version > 1:
             level_structure = self.schematic[id]["structure"]
             level_name = self.schematic[id]["name"]

@@ -6,7 +6,6 @@ from inflection import underscore
 ############
 
 airflow_version = int(str(airflow.__version__)[0])
-valid_extensions = (".yml", ".Rmd", ".ipynb", ".py")
 
 ###########################
 ## Operator Import Logic ##

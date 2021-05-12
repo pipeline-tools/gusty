@@ -1,11 +1,8 @@
 import pytest
 import os
 from airflow import DAG
-from airflow.models import BaseOperator
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
-from gusty.building import create_schematic
-from gusty.importing import valid_extensions
 from gusty import create_dag
 
 
