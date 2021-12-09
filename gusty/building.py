@@ -1,5 +1,6 @@
 import os, yaml, inspect, airflow
 from airflow import DAG
+from gusty.errors import NonexistentDagDirError
 from gusty.parsing import parse, default_parsers
 from gusty.parsing.loaders import GustyYAMLLoader
 from gusty.importing import airflow_version, get_operator
@@ -185,6 +186,11 @@ class GustyBuilder:
         "structure" (DAG or TaskGroup), tasks, dependencies, and external_dependencies, so on,
         until the DAG is complete.
         """
+
+        if not os.path.isdir(dag_dir):
+            raise NonexistentDagDirError(
+                "DAG directory {dag_dir} does not exist".format(dag_dir=dag_dir)
+            )
 
         self.parsers = default_parsers.copy()
 
