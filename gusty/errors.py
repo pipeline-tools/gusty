@@ -1,0 +1,2 @@
+class NonexistentDagDirError(Exception):
+    pass
