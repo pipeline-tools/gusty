@@ -1,4 +1,4 @@
-apache-airflow==2.2.2
+apache-airflow==2.2.3
 inflection==0.5.1
 jupytext==1.13.0
 nbformat==5.1.3
