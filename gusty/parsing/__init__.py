@@ -1,4 +1,6 @@
 import os
+import inspect
+from gusty.parsing.loaders import generate_loader
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
 
 default_parsers = {
@@ -11,16 +13,22 @@ default_parsers = {
 }
 
 
-def parse(file_path, parse_dict=default_parsers):
+def parse(file_path, parse_dict=default_parsers, loader=None):
     """
     Reading in yaml specs / frontmatter.
     """
+
+    if loader is None:
+        loader = generate_loader()
 
     path, extension = os.path.splitext(file_path)
 
     parser = parse_dict[extension]
 
-    yaml_file = parser(file_path)
+    if "loader" in inspect.signature(parser).parameters.keys():
+        yaml_file = parser(file_path, loader=loader)
+    else:
+        yaml_file = parser(file_path)
 
     assert "operator" in yaml_file, "No operator specified in yaml spec " + file_path
 

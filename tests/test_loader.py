@@ -2,7 +2,17 @@ import pytest
 from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
 from gusty import create_dag
-from gusty.parsing.loaders import GustyYAMLLoader
+
+
+def custom_days_ago():
+    return days_ago(17)
+
+
+def custom_retries(*args):
+    retries = 0
+    for a in args:
+        retries += a
+    return retries
 
 
 @pytest.fixture(scope="session")
@@ -27,6 +37,10 @@ def dag(loader_dir):
             "retry_delay": timedelta(minutes=5),
         },
         latest_only=False,
+        dag_constructors={
+            "!custom_days_ago": custom_days_ago,
+            "!custom_retries": custom_retries,
+        },
     )
     return dag
 
@@ -34,6 +48,11 @@ def dag(loader_dir):
 @pytest.fixture(scope="session")
 def task(dag):
     return dag.__dict__["task_dict"]["loader_task"]
+
+
+@pytest.fixture(scope="session")
+def custom_task(dag):
+    return dag.__dict__["task_dict"]["custom_task"]
 
 
 def test_datetime(task):
@@ -54,3 +73,13 @@ def test_timedelta(task):
 def test_retries(task):
     retries = task.__dict__["retries"]
     assert retries == 7
+
+
+def test_custom_days_ago(custom_task):
+    start_date = custom_task.__dict__["start_date"]
+    assert start_date == days_ago(17)
+
+
+def test_custom_retries(custom_task):
+    retries = custom_task.__dict__["retries"]
+    assert retries == 9

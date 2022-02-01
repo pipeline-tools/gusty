@@ -8,6 +8,7 @@ def create_dag(
     wait_for_defaults={},
     latest_only=True,
     parse_hooks={},
+    dag_constructors={},
     **kwargs
 ):
     """
@@ -36,6 +37,7 @@ def create_dag(
         wait_for_defaults=wait_for_defaults,
         latest_only=latest_only,
         parse_hooks=parse_hooks,
+        dag_constructors=dag_constructors,
         **kwargs
     )
     [setup.parse_metadata(level) for level in setup.levels]

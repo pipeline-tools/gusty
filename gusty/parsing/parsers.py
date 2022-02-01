@@ -1,5 +1,5 @@
 import yaml, ast, importlib.util, frontmatter, nbformat, jupytext
-from gusty.parsing.loaders import GustyYAMLLoader
+from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version
 
 if airflow_version > 1:
@@ -8,17 +8,20 @@ else:
     from airflow.operators.python_operator import PythonOperator
 
 
-def parse_generic(file_path):
+def parse_generic(file_path, loader=None):
+    if loader is None:
+        loader = generate_loader()
     # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
     file_contents = frontmatter.load(file_path)
-    job_spec = file_contents.metadata or yaml.load(
-        file_contents.content, Loader=GustyYAMLLoader
-    )
+    job_spec = file_contents.metadata or yaml.load(file_contents.content, Loader=loader)
 
     return job_spec
 
 
-def parse_py(file_path):
+def parse_py(file_path, loader=None):
+    if loader is None:
+        loader = generate_loader()
+
     job_spec = {}
     if airflow_version > 1:
         job_spec.update({"operator": "airflow.operators.python.PythonOperator"})
@@ -42,7 +45,7 @@ def parse_py(file_path):
             file_path=file_path
         )
         source = file_contents["source"].replace("---", "")
-        settings = yaml.load(source, Loader=GustyYAMLLoader)
+        settings = yaml.load(source, Loader=loader)
         job_spec.update(**settings)
 
         # search for a python callable if one is specified
@@ -86,7 +89,9 @@ def parse_py(file_path):
     return job_spec
 
 
-def parse_ipynb(file_path):
+def parse_ipynb(file_path, loader=None):
+    if loader is None:
+        loader = generate_loader()
     # Find first yaml cell in jupyter notebook and parse yaml
     file_contents = nbformat.read(file_path, as_version=4)["cells"]
     yaml_cell = [
@@ -97,8 +102,9 @@ def parse_ipynb(file_path):
     ]
     assert len(yaml_cell) > 0, "Please add a yaml block to %s" % file_path
     yaml_cell = yaml_cell[0]["source"]
-    job_spec = yaml.safe_load(
-        yaml_cell.replace("```yaml", "").replace("```yml", "").replace("```", "")
+    job_spec = yaml.load(
+        yaml_cell.replace("```yaml", "").replace("```yml", "").replace("```", ""),
+        Loader=loader,
     )
 
     return job_spec

@@ -2,7 +2,7 @@ import os, yaml, inspect, airflow
 from airflow import DAG
 from gusty.errors import NonexistentDagDirError
 from gusty.parsing import parse, default_parsers
-from gusty.parsing.loaders import GustyYAMLLoader
+from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version, get_operator
 
 ###########################
@@ -200,6 +200,8 @@ class GustyBuilder:
             ), "parse_hooks should be a dict of file extensions and handler functions for file_path."
             self.parsers.update(kwargs["parse_hooks"])
 
+        self.loader = generate_loader(kwargs["dag_constructors"])
+
         self.schematic = create_schematic(dag_dir, self.parsers)
 
         # DAG defaults - everything that's not task_group_defaults or wait_for_defaults
@@ -263,7 +265,7 @@ class GustyBuilder:
         level_metadata_path = self.schematic[id]["metadata_path"]
         if os.path.exists(level_metadata_path or ""):
             with open(level_metadata_path) as inf:
-                level_metadata = yaml.load(inf, GustyYAMLLoader)
+                level_metadata = yaml.load(inf, self.loader)
 
             # special case - default_args provided in both metadata_defaults and level_metadata
             if (
@@ -354,7 +356,10 @@ class GustyBuilder:
         """
         level_metadata = self.schematic[id]["metadata"]
         level_spec_paths = self.schematic[id]["spec_paths"]
-        level_specs = [parse(spec_path, self.parsers) for spec_path in level_spec_paths]
+        level_specs = [
+            parse(spec_path, self.parsers, self.loader)
+            for spec_path in level_spec_paths
+        ]
         if airflow_version > 1:
             level_structure = self.schematic[id]["structure"]
             level_name = self.schematic[id]["name"]
