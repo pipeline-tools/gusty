@@ -52,6 +52,12 @@ def custom_task(dag):
     return dag.__dict__["task_dict"]["custom_task"]
 
 
+@pytest.fixture(scope="session")
+def sql_task(dag):
+    sql_task = dag.task_dict["sql_task"]
+    return sql_task
+
+
 def test_datetime(task):
     start_date = task.__dict__["start_date"]
     assert start_date.date() == datetime(2022, 1, 15).date()
@@ -80,3 +86,13 @@ def test_custom_days_ago(custom_task):
 def test_custom_retries(custom_task):
     retries = custom_task.__dict__["retries"]
     assert retries == 9
+
+
+def test_sql_task_start(sql_task):
+    start_date = sql_task.__dict__["start_date"]
+    assert start_date == days_ago(24)
+
+
+def test_sql_task_end(sql_task):
+    end_date = sql_task.__dict__["end_date"]
+    assert end_date == days_ago(17)
