@@ -58,6 +58,12 @@ def generate_loader(custom_constructors={}):
         "!timedelta": timedelta,
         "!datetime": datetime,
     }
+
+    if isinstance(custom_constructors, list) and len(custom_constructors) > 0:
+        custom_constructors = {
+            ("!" + func.__name__): func for func in custom_constructors
+        }
+
     if len(custom_constructors) > 0:
         dag_yaml_tags.update(custom_constructors)
     for tag, func in dag_yaml_tags.items():

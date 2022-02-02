@@ -37,10 +37,7 @@ def dag(loader_dir):
             "retry_delay": timedelta(minutes=5),
         },
         latest_only=False,
-        dag_constructors={
-            "!custom_days_ago": custom_days_ago,
-            "!custom_retries": custom_retries,
-        },
+        dag_constructors=[custom_days_ago, custom_retries],
     )
     return dag
 
