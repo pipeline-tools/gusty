@@ -3,4 +3,10 @@ retries: 100
 dependencies:
   - dependable_task
 external_dependencies:
-  - a_whole_dag: all
+  a_whole_dag:
+    tasks:
+      - all
+  another_dag:
+    tasks:
+      - another_task_1
+      - another_task_2

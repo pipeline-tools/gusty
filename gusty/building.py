@@ -83,7 +83,14 @@ def parse_external_dependencies(external_dependencies):
     """
     Document
     """
-    deps = [j for i in external_dependencies for j in i.items()]
+    if isinstance(external_dependencies, dict):
+        deps = []
+        for dag_name, dag_details in external_dependencies.items():
+            for task_name in dag_details["tasks"]:
+                deps.append((dag_name, task_name))
+
+    else:
+        deps = [j for i in external_dependencies for j in i.items()]
     return deps
 
 
@@ -521,12 +528,8 @@ class GustyBuilder:
                 if spec["task_id"] == task_id and "external_dependencies" in spec.keys()
             }
             if len(task_spec_external_dependencies) > 0:
-                task_external_dependencies = [
-                    external_dependency
-                    for external_dependency in task_spec_external_dependencies[task_id]
-                ]
                 task_external_dependencies = parse_external_dependencies(
-                    task_external_dependencies
+                    task_spec_external_dependencies[task_id]
                 )
                 for dag_task_pair in task_external_dependencies:
                     external_dag_id, external_task_id = dag_task_pair
