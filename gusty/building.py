@@ -20,6 +20,21 @@ else:
     from airflow.sensors.external_task_sensor import ExternalTaskSensor
 
 
+#####################
+## Wait for Params ##
+#####################
+
+AVAILABLE_WAIT_FOR_PARAMS = [
+    "poke_interval",
+    "timeout",
+    "retries",
+    "mode",
+    "soft_fail",
+    "execution_delta",
+    "execution_date_fn",
+    "check_existence",
+]
+
 #########################
 ## Schematic Functions ##
 #########################
@@ -92,6 +107,19 @@ def parse_external_dependencies(external_dependencies):
     else:
         deps = [j for i in external_dependencies for j in i.items()]
     return deps
+
+
+def parse_wait_for_overrides(external_dependencies):
+    if isinstance(external_dependencies, dict):
+        dags = external_dependencies.keys()
+        dag_wait_for_overrides = {}
+        for dag in dags:
+            wait_for_specs = external_dependencies[dag].copy()
+            wait_for_specs = {k: v for k, v in wait_for_specs.items() if k != "tasks"}
+            dag_wait_for_overrides.update({dag: wait_for_specs})
+        return dag_wait_for_overrides
+    else:
+        return {}
 
 
 #######################
@@ -233,16 +261,7 @@ class GustyBuilder:
             user_wait_for_defaults = {
                 k: v
                 for k, v in kwargs["wait_for_defaults"].items()
-                if k
-                in [
-                    "poke_interval",
-                    "timeout",
-                    "retries",
-                    "mode",
-                    "soft_fail",
-                    "execution_date_fn",
-                    "check_existence",
-                ]
+                if k in AVAILABLE_WAIT_FOR_PARAMS
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
 
@@ -531,8 +550,11 @@ class GustyBuilder:
                 task_external_dependencies = parse_external_dependencies(
                     task_spec_external_dependencies[task_id]
                 )
+                wait_for_overrides = parse_wait_for_overrides(
+                    task_spec_external_dependencies[task_id]
+                )
                 for dag_task_pair in task_external_dependencies:
-                    external_dag_id, external_task_id = dag_task_pair
+                    (external_dag_id, external_task_id) = dag_task_pair
                     wait_for_task_name = (
                         "wait_for_DAG_{x}".format(x=external_dag_id)
                         if external_task_id == "all"
@@ -542,6 +564,13 @@ class GustyBuilder:
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         task.set_upstream(wait_for_task)
                     else:
+                        ext_task_defaults = self.wait_for_defaults.copy()
+                        ext_task_overrides = wait_for_overrides.get(external_dag_id, {})
+                        if "execution_delta" in ext_task_overrides:
+                            if "execution_date_fn" in ext_task_defaults:
+                                ext_task_defaults.pop("execution_date_fn")
+                        ext_task_defaults.update(ext_task_overrides)
+
                         wait_for_task = ExternalTaskSensor(
                             dag=get_top_level_dag(self.schematic),
                             task_id=wait_for_task_name,
@@ -549,7 +578,7 @@ class GustyBuilder:
                             external_task_id=(
                                 external_task_id if external_task_id != "all" else None
                             ),
-                            **self.wait_for_defaults
+                            **ext_task_defaults
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         task.set_upstream(wait_for_task)
@@ -563,11 +592,14 @@ class GustyBuilder:
         level_parent_id = self.schematic[id]["parent_id"]
         if level_parent_id is not None:
             if len(level_external_dependencies) > 0:
-                level_external_dependencies = parse_external_dependencies(
+                level_external_dependencies_parsed = parse_external_dependencies(
                     level_external_dependencies
                 )
-                for dag_task_pair in level_external_dependencies:
-                    external_dag_id, external_task_id = dag_task_pair
+                wait_for_overrides = parse_wait_for_overrides(
+                    level_external_dependencies
+                )
+                for dag_task_pair in level_external_dependencies_parsed:
+                    (external_dag_id, external_task_id) = dag_task_pair
                     wait_for_task_name = (
                         "wait_for_DAG_{x}".format(x=external_dag_id)
                         if external_task_id == "all"
@@ -577,6 +609,13 @@ class GustyBuilder:
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         level_structure.set_upstream(wait_for_task)
                     else:
+                        ext_task_defaults = self.wait_for_defaults.copy()
+                        ext_task_overrides = wait_for_overrides.get(external_dag_id, {})
+                        if "execution_delta" in ext_task_overrides:
+                            if "execution_date_fn" in ext_task_defaults:
+                                ext_task_defaults.pop("execution_date_fn")
+                        ext_task_defaults.update(ext_task_overrides)
+
                         wait_for_task = ExternalTaskSensor(
                             dag=get_top_level_dag(self.schematic),
                             task_id=wait_for_task_name,
@@ -584,7 +623,7 @@ class GustyBuilder:
                             external_task_id=(
                                 external_task_id if external_task_id != "all" else None
                             ),
-                            **self.wait_for_defaults
+                            **ext_task_defaults
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         level_structure.set_upstream(wait_for_task)
@@ -686,11 +725,14 @@ class GustyBuilder:
             # Set root-level external dependencies
             if len(level_external_dependencies) > 0:
                 root_external_dependencies = {}
-                level_external_dependencies = parse_external_dependencies(
+                level_external_dependencies_parsed = parse_external_dependencies(
                     level_external_dependencies
                 )
-                for dag_task_pair in level_external_dependencies:
-                    external_dag_id, external_task_id = dag_task_pair
+                wait_for_overrides = parse_wait_for_overrides(
+                    level_external_dependencies
+                )
+                for dag_task_pair in level_external_dependencies_parsed:
+                    (external_dag_id, external_task_id) = dag_task_pair
                     wait_for_task_name = (
                         "wait_for_DAG_{x}".format(x=external_dag_id)
                         if external_task_id == "all"
@@ -702,6 +744,12 @@ class GustyBuilder:
                             {wait_for_task_name: wait_for_task}
                         )
                     else:
+                        ext_task_defaults = self.wait_for_defaults.copy()
+                        ext_task_overrides = wait_for_overrides.get(external_dag_id, {})
+                        if "execution_delta" in ext_task_overrides:
+                            if "execution_date_fn" in ext_task_defaults:
+                                ext_task_defaults.pop("execution_date_fn")
+                        ext_task_defaults.update(ext_task_overrides)
                         wait_for_task = ExternalTaskSensor(
                             dag=get_top_level_dag(self.schematic),
                             task_id=wait_for_task_name,
@@ -709,7 +757,7 @@ class GustyBuilder:
                             external_task_id=(
                                 external_task_id if external_task_id != "all" else None
                             ),
-                            **self.wait_for_defaults
+                            **ext_task_defaults
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         root_external_dependencies.update(

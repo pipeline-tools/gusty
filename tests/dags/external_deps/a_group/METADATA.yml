@@ -1,0 +1,5 @@
+external_dependencies:
+  task_group_external:
+    execution_delta: !timedelta 'minutes: 89'
+    tasks:
+      - some_task
