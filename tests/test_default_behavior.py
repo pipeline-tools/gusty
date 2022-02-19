@@ -100,6 +100,7 @@ def test_external_dependencies(dag):
     dependable_task_dependencies = dependable_task.__dict__["_upstream_task_ids"]
     assert "wait_for_DAG_a_whole_dag" in dependable_task_dependencies
     assert "wait_for_external_task" in dependable_task_dependencies
+    assert "wait_for_external_task_2" in dependable_task_dependencies
 
 
 def test_tasks_created(dag, dag_files):

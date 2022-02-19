@@ -83,7 +83,8 @@ def parse_external_dependencies(external_dependencies):
     """
     Document
     """
-    return dict(j for i in external_dependencies for j in i.items())
+    deps = [j for i in external_dependencies for j in i.items()]
+    return deps
 
 
 #######################
@@ -527,10 +528,8 @@ class GustyBuilder:
                 task_external_dependencies = parse_external_dependencies(
                     task_external_dependencies
                 )
-                for (
-                    external_dag_id,
-                    external_task_id,
-                ) in task_external_dependencies.items():
+                for dag_task_pair in task_external_dependencies:
+                    external_dag_id, external_task_id = dag_task_pair
                     wait_for_task_name = (
                         "wait_for_DAG_{x}".format(x=external_dag_id)
                         if external_task_id == "all"
@@ -564,10 +563,8 @@ class GustyBuilder:
                 level_external_dependencies = parse_external_dependencies(
                     level_external_dependencies
                 )
-                for (
-                    external_dag_id,
-                    external_task_id,
-                ) in level_external_dependencies.items():
+                for dag_task_pair in level_external_dependencies:
+                    external_dag_id, external_task_id = dag_task_pair
                     wait_for_task_name = (
                         "wait_for_DAG_{x}".format(x=external_dag_id)
                         if external_task_id == "all"
@@ -689,10 +686,8 @@ class GustyBuilder:
                 level_external_dependencies = parse_external_dependencies(
                     level_external_dependencies
                 )
-                for (
-                    external_dag_id,
-                    external_task_id,
-                ) in level_external_dependencies.items():
+                for dag_task_pair in level_external_dependencies:
+                    external_dag_id, external_task_id = dag_task_pair
                     wait_for_task_name = (
                         "wait_for_DAG_{x}".format(x=external_dag_id)
                         if external_task_id == "all"
