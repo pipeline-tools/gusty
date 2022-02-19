@@ -2,3 +2,4 @@ operator: airflow.operators.dummy.DummyOperator
 external_dependencies:
   - a_whole_dag: all
   - external_dag: external_task
+  - external_dag: external_task_2

@@ -51,18 +51,7 @@ def parse(file_path, parse_dict=default_parsers, loader=None):
         )
         assert all(
             [isinstance(dep, str) for dep in yaml_file["dependencies"]]
-        ), "external_dependencies needs to be a list of strings in {file_path}".format(
-            file_path=file_path
-        )
-    if "external_dependencies" in yaml_file.keys():
-        assert isinstance(
-            yaml_file["external_dependencies"], list
-        ), "external_dependencies needs to be a list of dicts in {file_path}".format(
-            file_path=file_path
-        )
-        assert all(
-            [isinstance(dep, dict) for dep in yaml_file["external_dependencies"]]
-        ), "external_dependencies needs to be a list of dicts in {file_path}".format(
+        ), "dependencies needs to be a list of strings in {file_path}".format(
             file_path=file_path
         )
 

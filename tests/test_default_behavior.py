@@ -100,6 +100,17 @@ def test_external_dependencies(dag):
     dependable_task_dependencies = dependable_task.__dict__["_upstream_task_ids"]
     assert "wait_for_DAG_a_whole_dag" in dependable_task_dependencies
     assert "wait_for_external_task" in dependable_task_dependencies
+    assert "wait_for_external_task_2" in dependable_task_dependencies
+
+
+def test_external_dependencies_dict_tasks(dag):
+    ext_dep_dict_spec_task = dag.task_dict["task_overrides_retries"]
+    ext_dep_dict_spec_task_dependencies = ext_dep_dict_spec_task.__dict__[
+        "_upstream_task_ids"
+    ]
+    assert "wait_for_DAG_a_whole_dag" in ext_dep_dict_spec_task_dependencies
+    assert "wait_for_another_task_1" in ext_dep_dict_spec_task_dependencies
+    assert "wait_for_another_task_2" in ext_dep_dict_spec_task_dependencies
 
 
 def test_tasks_created(dag, dag_files):

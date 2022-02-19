@@ -1,12 +1,8 @@
 operator: airflow.operators.dummy.DummyOperator
-retries: 100
-dependencies:
-  - dependable_task
 external_dependencies:
-  a_whole_dag:
-    tasks:
-      - all
-  another_dag:
+  task_level_external:
+    retries: 95
+    execution_delta: !timedelta 'minutes: 95'
     tasks:
       - another_task_1
       - another_task_2

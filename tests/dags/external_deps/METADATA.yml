@@ -1,0 +1,16 @@
+description: "For testing dictionaries for external_dependencies"
+schedule_interval: "0 0 * * *"
+default_args:
+    owner: Meta Owner
+    depends_on_past: False
+    start_date: !days_ago 1
+    email: meta@gusty.com
+    email_on_failure: False
+    email_on_retry: False
+    retry_delay: !timedelta 'minutes: 5'
+    sla: !timedelta 'hours: 2'
+external_dependencies:
+  top_level_external:
+    execution_delta: !timedelta 'minutes: 88'
+    tasks:
+      - all
