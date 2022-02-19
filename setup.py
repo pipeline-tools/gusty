@@ -13,17 +13,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/chriscardillo/gusty",
     packages=setuptools.find_packages(),
-    install_requires=[
-          'apache-airflow',
-          'inflection',
-          'jupytext',
-          'nbformat',
-          'PyYaml'
-    ],
+    install_requires=["apache-airflow", "inflection", "jupytext", "nbformat", "PyYaml"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )
