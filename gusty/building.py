@@ -4,6 +4,7 @@ from gusty.errors import NonexistentDagDirError
 from gusty.parsing import parse, default_parsers
 from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version, get_operator
+from gusty.external_sensor import create_external_sensor, make_external_task_name
 
 ###########################
 ## Version Compatability ##
@@ -14,11 +15,8 @@ if airflow_version > 1:
 
 if airflow_version > 1:
     from airflow.operators.latest_only import LatestOnlyOperator
-    from airflow.sensors.external_task import ExternalTaskSensor
 else:
     from airflow.operators.latest_only_operator import LatestOnlyOperator
-    from airflow.sensors.external_task_sensor import ExternalTaskSensor
-
 
 #####################
 ## Wait for Params ##
@@ -555,30 +553,22 @@ class GustyBuilder:
                 )
                 for dag_task_pair in task_external_dependencies:
                     (external_dag_id, external_task_id) = dag_task_pair
-                    wait_for_task_name = (
-                        "wait_for_DAG_{x}".format(x=external_dag_id)
-                        if external_task_id == "all"
-                        else "wait_for_{x}".format(x=external_task_id)
+
+                    wait_for_task_name = make_external_task_name(
+                        external_dag_id, external_task_id
                     )
+
                     if wait_for_task_name in self.wait_for_tasks.keys():
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         task.set_upstream(wait_for_task)
                     else:
-                        ext_task_defaults = self.wait_for_defaults.copy()
-                        ext_task_overrides = wait_for_overrides.get(external_dag_id, {})
-                        if "execution_delta" in ext_task_overrides:
-                            if "execution_date_fn" in ext_task_defaults:
-                                ext_task_defaults.pop("execution_date_fn")
-                        ext_task_defaults.update(ext_task_overrides)
-
-                        wait_for_task = ExternalTaskSensor(
-                            dag=get_top_level_dag(self.schematic),
-                            task_id=wait_for_task_name,
-                            external_dag_id=external_dag_id,
-                            external_task_id=(
-                                external_task_id if external_task_id != "all" else None
-                            ),
-                            **ext_task_defaults
+                        wait_for_task = create_external_sensor(
+                            get_top_level_dag(self.schematic),
+                            external_dag_id,
+                            external_task_id,
+                            self.wait_for_defaults,
+                            wait_for_overrides,
+                            wait_for_task_name,
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         task.set_upstream(wait_for_task)
@@ -600,30 +590,22 @@ class GustyBuilder:
                 )
                 for dag_task_pair in level_external_dependencies_parsed:
                     (external_dag_id, external_task_id) = dag_task_pair
-                    wait_for_task_name = (
-                        "wait_for_DAG_{x}".format(x=external_dag_id)
-                        if external_task_id == "all"
-                        else "wait_for_{x}".format(x=external_task_id)
+
+                    wait_for_task_name = make_external_task_name(
+                        external_dag_id, external_task_id
                     )
+
                     if wait_for_task_name in self.wait_for_tasks.keys():
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         level_structure.set_upstream(wait_for_task)
                     else:
-                        ext_task_defaults = self.wait_for_defaults.copy()
-                        ext_task_overrides = wait_for_overrides.get(external_dag_id, {})
-                        if "execution_delta" in ext_task_overrides:
-                            if "execution_date_fn" in ext_task_defaults:
-                                ext_task_defaults.pop("execution_date_fn")
-                        ext_task_defaults.update(ext_task_overrides)
-
-                        wait_for_task = ExternalTaskSensor(
-                            dag=get_top_level_dag(self.schematic),
-                            task_id=wait_for_task_name,
-                            external_dag_id=external_dag_id,
-                            external_task_id=(
-                                external_task_id if external_task_id != "all" else None
-                            ),
-                            **ext_task_defaults
+                        wait_for_task = create_external_sensor(
+                            get_top_level_dag(self.schematic),
+                            external_dag_id,
+                            external_task_id,
+                            self.wait_for_defaults,
+                            wait_for_overrides,
+                            wait_for_task_name,
                         )
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         level_structure.set_upstream(wait_for_task)
@@ -733,32 +715,26 @@ class GustyBuilder:
                 )
                 for dag_task_pair in level_external_dependencies_parsed:
                     (external_dag_id, external_task_id) = dag_task_pair
-                    wait_for_task_name = (
-                        "wait_for_DAG_{x}".format(x=external_dag_id)
-                        if external_task_id == "all"
-                        else "wait_for_{x}".format(x=external_task_id)
+
+                    wait_for_task_name = make_external_task_name(
+                        external_dag_id, external_task_id
                     )
+
                     if wait_for_task_name in self.wait_for_tasks.keys():
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         root_external_dependencies.update(
                             {wait_for_task_name: wait_for_task}
                         )
                     else:
-                        ext_task_defaults = self.wait_for_defaults.copy()
-                        ext_task_overrides = wait_for_overrides.get(external_dag_id, {})
-                        if "execution_delta" in ext_task_overrides:
-                            if "execution_date_fn" in ext_task_defaults:
-                                ext_task_defaults.pop("execution_date_fn")
-                        ext_task_defaults.update(ext_task_overrides)
-                        wait_for_task = ExternalTaskSensor(
-                            dag=get_top_level_dag(self.schematic),
-                            task_id=wait_for_task_name,
-                            external_dag_id=external_dag_id,
-                            external_task_id=(
-                                external_task_id if external_task_id != "all" else None
-                            ),
-                            **ext_task_defaults
+                        wait_for_task = create_external_sensor(
+                            get_top_level_dag(self.schematic),
+                            external_dag_id,
+                            external_task_id,
+                            self.wait_for_defaults,
+                            wait_for_overrides,
+                            wait_for_task_name,
                         )
+
                         self.wait_for_tasks.update({wait_for_task_name: wait_for_task})
                         root_external_dependencies.update(
                             {wait_for_task_name: wait_for_task}
