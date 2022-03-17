@@ -260,6 +260,10 @@ class GustyBuilder:
                 k: v
                 for k, v in kwargs["wait_for_defaults"].items()
                 if k in AVAILABLE_WAIT_FOR_PARAMS
+                or k
+                in inspect.signature(
+                    airflow.models.BaseOperator.__init__
+                ).parameters.keys()
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
 
