@@ -254,7 +254,7 @@ class GustyBuilder:
         )
 
         # external dependency / wait_for_defaults
-        self.wait_for_defaults = {"poke_interval": 10, "timeout": 60, "retries": 60}
+        self.wait_for_defaults = {"poke_interval": 10, "timeout": 3600, "retries": 60}
         if "wait_for_defaults" in kwargs.keys():
             user_wait_for_defaults = {
                 k: v
