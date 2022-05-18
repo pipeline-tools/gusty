@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.8.2",
+    version="0.8.3",
     author="Chris Cardillo, Michael Chow, David Robinson",
     author_email="cfcardillo23@gmail.com",
     description="Making DAG construction easier",
@@ -13,7 +13,14 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/chriscardillo/gusty",
     packages=setuptools.find_packages(),
-    install_requires=["apache-airflow", "inflection", "jupytext", "nbformat", "PyYaml"],
+    install_requires=[
+        "apache-airflow",
+        "inflection",
+        "jupytext",
+        "nbformat",
+        "pendulum",
+        "PyYaml",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
