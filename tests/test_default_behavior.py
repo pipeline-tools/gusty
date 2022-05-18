@@ -3,7 +3,7 @@ import os
 from airflow import DAG
 from airflow.models import BaseOperator
 from datetime import datetime, timedelta
-from airflow.utils.dates import days_ago
+from gusty.utils import days_ago
 from gusty.building import create_schematic
 from gusty.parsing import default_parsers
 from gusty import create_dag
