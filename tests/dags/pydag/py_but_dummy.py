@@ -1,4 +1,4 @@
 # ---
-# operator: airflow.operators.dummy.DummyOperator
+# operator: airflow.operators.empty.EmptyOperator
 # ---
 print("another one")

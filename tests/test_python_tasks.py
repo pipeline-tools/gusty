@@ -1,6 +1,6 @@
 import pytest
 from gusty import create_dag
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 
 ###############
 ## FIXTURES ##
@@ -63,7 +63,7 @@ def test_py_dummy(dag):
     be run by other operators as needed.
     """
     task = dag.task_dict["py_but_dummy"]
-    assert isinstance(task, DummyOperator)
+    assert isinstance(task, EmptyOperator)
 
 
 def test_automatic_py(dag, py_task):
