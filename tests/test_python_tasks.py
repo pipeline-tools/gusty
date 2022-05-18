@@ -49,12 +49,12 @@ def test_py_task_overrides(py_task):
 
 
 def test_py_task_external_dependencies(py_task):
-    assert "wait_for_DAG_a_whole_dag" in py_task.__dict__["_upstream_task_ids"]
+    assert "wait_for_DAG_a_whole_dag" in py_task.__dict__["upstream_task_ids"]
 
 
 def test_py_task_dependencies(py_task):
-    assert "direct_dep" in py_task.__dict__["_upstream_task_ids"]
-    assert "simple_leaf" in py_task.__dict__["_downstream_task_ids"]
+    assert "direct_dep" in py_task.__dict__["upstream_task_ids"]
+    assert "simple_leaf" in py_task.__dict__["downstream_task_ids"]
 
 
 def test_py_dummy(dag):

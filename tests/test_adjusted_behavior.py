@@ -94,7 +94,7 @@ def test_prefixed_dependencies_work(dag):
     #      but the user only specified "task" in the depedencies block.
     assert (
         "prefixes.prefixes_check"
-        in dag.task_dict["prefixes.prefixes_dep_check"].__dict__["_upstream_task_ids"]
+        in dag.task_dict["prefixes.prefixes_dep_check"].__dict__["upstream_task_ids"]
     )
 
 
@@ -108,11 +108,11 @@ def test_root_dependency(dag):
     # The root_task_sensor task is not depended on by anything, nor does it depend on anything
     root_dict = [dep.__dict__["task_id"] for dep in dag.roots]
     root_sensor_task = dag.task_dict["root_sensor_task"]
-    assert len(root_sensor_task.__dict__["_downstream_task_ids"]) > 0
+    assert len(root_sensor_task.__dict__["downstream_task_ids"]) > 0
 
 
 def test_leaf_tasks(dag):
     assert len(dag.leaves) == 1
     leaf_task = dag.leaves[0].__dict__
-    assert len(leaf_task["_downstream_task_ids"]) == 0
+    assert len(leaf_task["downstream_task_ids"]) == 0
     assert leaf_task["task_id"] == "final_task"

@@ -91,13 +91,13 @@ def test_task_overrides_defaults(dag):
 
 def test_top_level_depends_on_second_level(dag):
     top_level_task = dag.task_dict["top_level_task"]
-    top_level_task_dependencies = top_level_task.__dict__["_upstream_task_ids"]
+    top_level_task_dependencies = top_level_task.__dict__["upstream_task_ids"]
     assert "dependable_task" in top_level_task_dependencies
 
 
 def test_external_dependencies(dag):
     dependable_task = dag.task_dict["dependable_task"]
-    dependable_task_dependencies = dependable_task.__dict__["_upstream_task_ids"]
+    dependable_task_dependencies = dependable_task.__dict__["upstream_task_ids"]
     assert "wait_for_DAG_a_whole_dag" in dependable_task_dependencies
     assert "wait_for_external_task" in dependable_task_dependencies
     assert "wait_for_external_task_2" in dependable_task_dependencies
@@ -106,7 +106,7 @@ def test_external_dependencies(dag):
 def test_external_dependencies_dict_tasks(dag):
     ext_dep_dict_spec_task = dag.task_dict["task_overrides_retries"]
     ext_dep_dict_spec_task_dependencies = ext_dep_dict_spec_task.__dict__[
-        "_upstream_task_ids"
+        "upstream_task_ids"
     ]
     assert "wait_for_DAG_a_whole_dag" in ext_dep_dict_spec_task_dependencies
     assert "wait_for_another_task_1" in ext_dep_dict_spec_task_dependencies
@@ -143,7 +143,7 @@ def test_sensor_support(dag):
 def test_root_external_dependencies_accepted(dag):
     assert (
         "wait_for_a_root_level_external"
-        in dag.task_dict["latest_only"].__dict__["_downstream_task_ids"]
+        in dag.task_dict["latest_only"].__dict__["downstream_task_ids"]
     )
 
 
@@ -151,8 +151,8 @@ def test_root_external_dependencies_latest_only_order(dag):
     # Bad test name, but bascially nothing should be upstream of latest only,
     # And only the DAG-level external dependency is after latest_only
     latest_only = dag.task_dict["latest_only"].__dict__
-    latest_only_downstream_tasks = latest_only["_downstream_task_ids"]
-    latest_only_upstream_tasks = latest_only["_upstream_task_ids"]
+    latest_only_downstream_tasks = latest_only["downstream_task_ids"]
+    latest_only_upstream_tasks = latest_only["upstream_task_ids"]
     assert (
         len(latest_only_upstream_tasks) == 0 and len(latest_only_downstream_tasks) == 1
     )
