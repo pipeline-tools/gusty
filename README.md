@@ -192,7 +192,7 @@ gusty features additional helpful arguments at the DAG-level to help you design 
 
 ### Local Operator Support
 
-gusty also works with your local operators, so long as they are located inside of an `operators` folder located inside of your `AIRFLOW_HOME`.
+While you can store your local operators in Airflow's `plugins` directory and reference an operator's `plugins` path accordingly, gusty also allows you to alternatively keep local operators inside of an `operators` folder located inside of your `AIRFLOW_HOME`.
 
 In order for gusty to support your operators as expected, your operator name must be CamelCase and the file in which the operator lives must be snake_case.
 
