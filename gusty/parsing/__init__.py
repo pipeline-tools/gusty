@@ -55,4 +55,15 @@ def parse(file_path, parse_dict=default_parsers, loader=None):
             file_path=file_path
         )
 
+    multi_task_spec = yaml_file.get("multi_task_spec")
+
+    if multi_task_spec:
+        multi_specs = []
+        for task_id, spec in multi_task_spec.items():
+            base_spec = yaml_file.copy()
+            base_spec["task_id"] = task_id
+            base_spec.update(spec)
+            multi_specs.append(base_spec)
+        return multi_specs
+
     return yaml_file

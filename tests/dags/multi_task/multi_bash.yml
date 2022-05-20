@@ -1,0 +1,9 @@
+operator: airflow.operators.bash.BashOperator
+bash_command: echo default
+multi_task_spec:
+  bash_a:
+    bash_command: echo a
+  bash_b:
+    bash_command: echo b
+  bash_c:
+    some_param: some_arg
