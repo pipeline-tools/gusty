@@ -56,3 +56,26 @@ def test_multiple_tasks_changed(dag):
 def test_multiple_tasks_defaults(dag):
     bash_c_cmd = dag.task_dict["bash_c"].__dict__["bash_command"]
     assert bash_c_cmd == "echo default"
+
+
+def test_multiple_python_tasks_exist(dag):
+    assert "python_a" in dag.task_dict.keys()
+    assert "python_b" in dag.task_dict.keys()
+
+
+def test_multiple_python_task_results(dag):
+    callable_a = dag.task_dict["python_a"].__dict__["python_callable"]
+    callable_b = dag.task_dict["python_b"].__dict__["python_callable"]
+    assert callable_a() == "a"
+    assert callable_b() == "b"
+
+
+def test_combined_multi_partials(dag):
+    python_email_a = dag.task_dict["python_a"].__dict__["email"]
+    python_email_b = dag.task_dict["python_b"].__dict__["email"]
+    assert python_email_a == "gusty@gusty.com"
+    assert python_email_b == "multi@gusty.com"
+
+
+def test_correct_task_count(dag):
+    assert len(dag.task_dict) == 5
