@@ -207,6 +207,43 @@ name: World
 
 The `local.` syntax is what gusty uses to know to look in your local operators folder for the operator.
 
+### Multi-Task Generation
+
+Sometimes task definitions can be repetitive. To account for this, gusty allows for a `multi_task_spec` block in any frontmatter. This allows you to generate multiple similar tasks with a single task definition file! For example, let's say you wanted to create two bash tasks, each containing a different `bash_command`. You can define these two tasks in a single task definition file like so:
+
+```yml
+operator: airflow.operators.bash.BashOperator
+bash_command: echo default
+multi_task_spec:
+  bash_task_1:
+    bash_command: echo first_task
+  bash_task_2:
+    bash_command: echo second_task
+```
+
+gusty will convert the above into two task instances, `bash_task_1` and `bash_task_2`, each with a unique `bash_command`.
+
+Additionally, for the special case of `python_callable` in a .py file, you can specify `python_callable_partials`:
+
+```py
+# ---
+# python_callable: main
+# python_callable_partials:
+#   python_task_1:
+#       my_kwarg: a
+#   python_task_2:
+#       my_kwarg: b
+# ---
+
+
+def main(my_kwarg):
+    return my_kwarg
+```
+
+gusty will convert the above in two task instances, `python_task_1` and `python_task_2`. `python_task_1` will return `"a"` and `python_task_2` will return `"b"`.
+
+`multi_task_spec` and `python_callable_partials` are non-exclusive, so you can mix and match configuration as needed.
+
 ## One Approach, Not the Only Approach
 
 One good thing about gusty is that if you choose to use this package, gusty doesn't have to be the **only** way that you create DAGs. You can use gusty's `create_dag` to generate DAGs out of directories where applicable, and then implement more traditional methods of creating Airflow DAGs where the tried and true methods feel like a better approach.
