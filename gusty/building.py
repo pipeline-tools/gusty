@@ -206,6 +206,13 @@ def build_structure(schematic, parent_id, name, metadata):
     return structure
 
 
+def flatten_nested_lists(x):
+    if isinstance(x, list):
+        return [a for i in x for a in flatten_nested_lists(i)]
+    else:
+        return [x]
+
+
 ##################
 ## GustyBuilder ##
 ##################
@@ -389,6 +396,7 @@ class GustyBuilder:
             parse(spec_path, self.parsers, self.loader)
             for spec_path in level_spec_paths
         ]
+        level_specs = flatten_nested_lists(level_specs)
         if airflow_version > 1:
             level_structure = self.schematic[id]["structure"]
             level_name = self.schematic[id]["name"]
