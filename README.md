@@ -213,7 +213,6 @@ Sometimes task definitions can be repetitive. To account for this, gusty allows 
 
 ```yml
 operator: airflow.operators.bash.BashOperator
-bash_command: echo default
 multi_task_spec:
   bash_task_1:
     bash_command: echo first_task
