@@ -87,6 +87,16 @@ def test_wait_for_defaults(dag):
     assert all(wait_for_tasks_adjusted)
 
 
+def test_metadata_wait_for_defaults(dag):
+    wait_for_task = [
+        task
+        for task_id, task in dag.task_dict.items()
+        if task_id.startswith("wait_for_")
+    ][0]
+
+    assert wait_for_task.__dict__["timeout"] == 1234
+
+
 def test_prefixed_dependencies_work(dag):
     # if a user turns task group prefixes/suffixes on, gusty should proactively check
     # for prefixed/suffixed dependencies in addition to whatever is provided in a task's spec

@@ -318,6 +318,13 @@ class GustyBuilder:
                 # updated and resolved attached back to level_metadata
                 level_metadata.update({"default_args": metadata_default_args})
 
+            # special case - wait_for_defaults
+            if (
+                self.schematic[id]["parent_id"] is None
+                and "wait_for_defaults" in level_metadata.keys()
+            ):
+                self.wait_for_defaults.update(level_metadata["wait_for_defaults"])
+
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)

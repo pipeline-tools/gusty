@@ -21,3 +21,5 @@ root_tasks:
   - root_sensor_task
 leaf_tasks:
   - final_task
+wait_for_defaults:
+  timeout: 1234
