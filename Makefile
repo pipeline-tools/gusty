@@ -27,4 +27,4 @@ browse-coverage:
 
 fmt:
 	black .
-	flake8
+	# flake8
