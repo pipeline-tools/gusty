@@ -1,3 +1,4 @@
+ABSQL==0.1.5
 apache-airflow==2.3.1
 inflection==0.5.1
 jupytext==1.13.7
