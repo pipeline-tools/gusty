@@ -1,8 +1,13 @@
 import os, yaml, inspect, airflow
 from airflow import DAG
+from absql import Runner
 from gusty.errors import NonexistentDagDirError
 from gusty.parsing import parse, default_parsers
-from gusty.parsing.loaders import generate_loader
+from gusty.parsing.loaders import (
+    generate_loader,
+    default_constructors,
+    handle_user_constructors,
+)
 from gusty.importing import airflow_version, get_operator
 from gusty.external_sensor import create_external_sensor, make_external_task_name
 
@@ -241,7 +246,19 @@ class GustyBuilder:
             ), "parse_hooks should be a dict of file extensions and handler functions for file_path."
             self.parsers.update(kwargs["parse_hooks"])
 
-        self.loader = generate_loader(kwargs["dag_constructors"])
+        # Create dag_constructors
+        dag_constructors = default_constructors.copy()
+        if kwargs["dag_constructors"]:
+            dag_constructors.update(
+                handle_user_constructors(kwargs["dag_constructors"])
+            )
+
+        # Generate loader with dag_constructors
+        self.loader = generate_loader(dag_constructors)
+
+        # Generate runner with dag_constructors
+        runner_context = {k.strip("!"): v for k, v in dag_constructors.items()}
+        self.runner = Runner(**runner_context)
 
         self.schematic = create_schematic(dag_dir, self.parsers)
 
@@ -400,7 +417,7 @@ class GustyBuilder:
         level_metadata = self.schematic[id]["metadata"]
         level_spec_paths = self.schematic[id]["spec_paths"]
         level_specs = [
-            parse(spec_path, self.parsers, self.loader)
+            parse(spec_path, self.parsers, self.loader, self.runner)
             for spec_path in level_spec_paths
         ]
         level_specs = flatten_nested_lists(level_specs)

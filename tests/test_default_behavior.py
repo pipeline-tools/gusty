@@ -34,6 +34,12 @@ def dag_files(no_metadata_dir):
 
 @pytest.fixture(scope="session")
 def dag(no_metadata_dir):
+    def simple_constructor(hello=True):
+        if hello:
+            return "hello"
+        else:
+            return "goodbye"
+
     dag = create_dag(
         no_metadata_dir,
         description="A dag created without metadata",
@@ -49,6 +55,7 @@ def dag(no_metadata_dir):
             "retry_delay": timedelta(minutes=5),
         },
         external_dependencies=[{"external_dag": "a_root_level_external"}],
+        dag_constructors=[simple_constructor],
     )
     return dag
 
@@ -156,3 +163,8 @@ def test_root_external_dependencies_latest_only_order(dag):
     assert (
         len(latest_only_upstream_tasks) == 0 and len(latest_only_downstream_tasks) == 1
     )
+
+
+def test_constructors(dag):
+    assert dag.task_dict["sensor_task"].__dict__["email"] == "goodbye"
+    assert dag.task_dict["sensor_task"].__dict__["owner"] == "hello"
