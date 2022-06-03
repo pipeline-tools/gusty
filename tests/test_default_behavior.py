@@ -170,3 +170,9 @@ def test_constructors(dag):
     assert dag.task_dict["sensor_task"].__dict__["owner"] == "hello"
     # Below is generated a default func available in absql
     assert dag.task_dict["sensor_task"].__dict__["doc"] == "default_absql_func"
+
+
+def test_context_rendering_omits_sql(dag):
+    sql_task = dag.task_dict["sql_task"]
+    assert sql_task.__dict__["doc"] == "hello"
+    assert sql_task.__dict__["sql"] == "SELECT date FROM my_table WHERE date = {{ date }}"
