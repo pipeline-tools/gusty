@@ -1,6 +1,7 @@
 import os
 import inspect
 from functools import partial
+from absql.utils import get_function_arg_names
 from gusty.parsing.loaders import generate_loader
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
 
@@ -14,7 +15,7 @@ default_parsers = {
 }
 
 
-def parse(file_path, parse_dict=default_parsers, loader=None):
+def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
     """
     Reading in yaml specs / frontmatter.
     """
@@ -25,11 +26,12 @@ def parse(file_path, parse_dict=default_parsers, loader=None):
     path, extension = os.path.splitext(file_path)
 
     parser = parse_dict[extension]
+    if "loader" in get_function_arg_names(parser):
+        parser = partial(parser, loader=loader)
+    if "runner" in get_function_arg_names(parser):
+        parser = partial(parser, runner=runner)
 
-    if "loader" in inspect.signature(parser).parameters.keys():
-        yaml_file = parser(file_path, loader=loader)
-    else:
-        yaml_file = parser(file_path)
+    yaml_file = parser(file_path)
 
     assert "operator" in yaml_file, "No operator specified in yaml spec " + file_path
 
