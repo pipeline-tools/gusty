@@ -168,3 +168,5 @@ def test_root_external_dependencies_latest_only_order(dag):
 def test_constructors(dag):
     assert dag.task_dict["sensor_task"].__dict__["email"] == "goodbye"
     assert dag.task_dict["sensor_task"].__dict__["owner"] == "hello"
+    # Below is generated a default func available in absql
+    assert dag.task_dict["sensor_task"].__dict__["doc"] == "default_absql_func"
