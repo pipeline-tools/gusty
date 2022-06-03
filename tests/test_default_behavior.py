@@ -175,4 +175,10 @@ def test_constructors(dag):
 def test_context_rendering_omits_sql(dag):
     sql_task = dag.task_dict["sql_task"]
     assert sql_task.__dict__["doc"] == "hello"
-    assert sql_task.__dict__["sql"] == "SELECT date FROM my_table WHERE date = {{ date }}"
+    assert (
+        sql_task.__dict__["sql"] == "SELECT date FROM my_table WHERE date = {{ date }}"
+    )
+
+
+def test_context_rendering_py(dag):
+    assert dag.task_dict["py_task"].__dict__["python_callable"]() == "hey"
