@@ -1,4 +1,3 @@
-import yaml
 from absql.files.loader import generate_loader as generate_absql_loader
 from datetime import datetime, timedelta
 from gusty.utils import days_ago

@@ -1,13 +1,8 @@
-import yaml, ast, importlib.util, nbformat, jupytext, re
+import yaml, ast, importlib.util, nbformat, jupytext
 from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version
 from absql.files.parsers import frontmatter_load
 from gusty.parsing.utils import render_frontmatter
-
-if airflow_version > 1:
-    from airflow.operators.python import PythonOperator
-else:
-    from airflow.operators.python_operator import PythonOperator
 
 
 def parse_generic(file_path, loader=None, runner=None):

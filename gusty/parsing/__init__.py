@@ -1,5 +1,4 @@
 import os
-import inspect
 from functools import partial
 from absql.utils import get_function_arg_names
 from gusty.parsing.loaders import generate_loader
