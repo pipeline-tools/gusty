@@ -2,23 +2,27 @@ import yaml, ast, importlib.util, nbformat, jupytext, re
 from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version
 from absql.files.parsers import frontmatter_load
+from gusty.parsing.utils import render_frontmatter
 
 if airflow_version > 1:
     from airflow.operators.python import PythonOperator
 else:
     from airflow.operators.python_operator import PythonOperator
 
-def parse_generic(file_path, loader=None):
+
+def parse_generic(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
     # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
     file_contents = frontmatter_load(file_path, loader=loader)
     job_spec = file_contents["metadata"] or file_contents["content"]
 
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec
 
 
-def parse_py(file_path, loader=None):
+def parse_py(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
 
@@ -86,10 +90,12 @@ def parse_py(file_path, loader=None):
     else:
         job_spec.update({"python_callable": lambda: exec(open(file_path).read())})
 
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec
 
 
-def parse_ipynb(file_path, loader=None):
+def parse_ipynb(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
     # Find first yaml cell in jupyter notebook and parse yaml
@@ -107,13 +113,18 @@ def parse_ipynb(file_path, loader=None):
         Loader=loader,
     )
 
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec
 
 
-def parse_sql(file_path, loader=None):
+def parse_sql(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
     file_contents = frontmatter_load(file_path, loader=loader)
     job_spec = file_contents["metadata"]
     job_spec["sql"] = file_contents["content"]
+
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec
