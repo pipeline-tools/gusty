@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from functools import partial
 from absql.utils import get_function_arg_names
 from gusty.parsing.loaders import generate_loader
@@ -43,6 +44,9 @@ def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
     ), "Task name 'all' is not allowed. Please change your task name."
 
     yaml_file["file_path"] = file_path
+
+    # gusty will also attach the absql_runner
+    yaml_file["absql_runner"] = deepcopy(runner)
 
     # Check dependencies
     if "dependencies" in yaml_file.keys():
