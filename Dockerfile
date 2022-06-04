@@ -15,8 +15,8 @@ RUN pip3 install pytest
 RUN pip3 install pytest-cov
 
 # Dev Requirements
-ADD requirements.txt .
-RUN pip3 install -r requirements.txt
+ADD dev-requirements.txt .
+RUN pip3 install -r dev-requirements.txt
 
 # Airflow env
 ENV AIRFLOW_HOME='/usr/local/airflow'
