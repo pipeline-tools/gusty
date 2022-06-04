@@ -38,7 +38,7 @@ def parse_py(file_path, loader=None, runner=None):
         ), "You need a comment block starting and ending with '# ---' at the top of {file_path}".format(
             file_path=file_path
         )
-        assert (
+        assert (  # noqa
             "---" in file_contents["source"],
         ), "You need a comment block starting and ending with '# ---' at the top of {file_path}".format(
             file_path=file_path
@@ -75,7 +75,7 @@ def parse_py(file_path, loader=None, runner=None):
                 else:
                     assert (
                         False
-                    ), "{file_path} specifies python_callable {callable} but {callable} not found in {file_path}".format(
+                    ), "{file_path} specifies python_callable {callable} but {callable} not found in {file_path}".format(  # noqa
                         file_path=file_path, callable=job_spec["python_callable"]
                     )
         # Default to sourcing this file for a PythonOperator

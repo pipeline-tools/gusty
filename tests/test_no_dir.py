@@ -18,7 +18,7 @@ def nonexistent_dir():
 
 
 def test_missing_dag_error(nonexistent_dir):
-    with pytest.raises(NonexistentDagDirError) as e:
+    with pytest.raises(NonexistentDagDirError) as e:  # noqa
         create_dag(nonexistent_dir)
 
 

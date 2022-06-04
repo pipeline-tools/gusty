@@ -140,7 +140,8 @@ def _get_operator_parameters(operator):
 
 def build_task(spec, level_id, schematic):
     """
-    Given a task specification ("spec"), locate the operator and instantiate the object with args from the spec.
+    Given a task specification ("spec"), locate the operator and
+    instantiate the object with args from the spec.
     """
     operator = get_operator(spec["operator"])
 
@@ -373,10 +374,10 @@ class GustyBuilder:
             root_externals = metadata_default_dependencies["external_dependencies"]
             assert isinstance(
                 root_externals, list
-            ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""
+            ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""  # noqa
             assert all(
                 [isinstance(dep, dict) for dep in root_externals]
-            ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""
+            ), """Root external dependencies set in create_dag must be a list of dicts following the pattern {"dag_id": "task_id"}"""  # noqa
             self.schematic[id].update({"external_dependencies": root_externals})
 
     def check_metadata(self, id):
@@ -457,10 +458,10 @@ class GustyBuilder:
     def create_level_dependencies(self, id):
         """
         For a given level id, identify what would be considered a valid set of dependencies within the DAG
-        for that level, and then set any specified dependencies upstream of that level. An example here would be
-        a DAG has two .yml jobs and one subfolder, which (the subfolder) is turned into a TaskGroup. That TaskGroup
-        can validly depend on the two .yml jobs, so long as either of those task_ids are defined within the dependencies
-        section of the TaskGroup's METADATA.yml
+        for that level, and then set any specified dependencies upstream of that level. An example here would
+        be a DAG has two .yml jobs and one subfolder, which (the subfolder) is turned into a TaskGroup. That
+        TaskGroup can validly depend on the two .yml jobs, so long as either of those task_ids are defined
+        within the dependencies section of the TaskGroup's METADATA.yml
         """
         level_structure = self.schematic[id]["structure"]
         level_dependencies = self.schematic[id]["dependencies"]
@@ -568,9 +569,10 @@ class GustyBuilder:
 
     def create_task_external_dependencies(self, id):
         """
-        As with create_task_dependencies, for a given level id, parse all of the external dependencies in a task's
-        spec, then create and add those "wait_for_" tasks upstream of a given task. Note the Builder class must keep
-        a record of all "wait_for_" tasks as to not recreate the same task twice.
+        As with create_task_dependencies, for a given level id, parse all of the
+        external dependencies in a task's spec, then create and add those "wait_for_"
+        tasks upstream of a given task. Note the Builder class must keep a record of all
+        "wait_for_" tasks as to not recreate the same task twice.
         """
         level_specs = self.schematic[id]["specs"]
         level_tasks = self.schematic[id]["tasks"]
@@ -713,14 +715,14 @@ class GustyBuilder:
                 for task_id, task in valid_root_tasks.items():
                     assert (
                         len(task.upstream_task_ids) == 0
-                    ), "Task {id} in DAG {dag} is listed as a root task, but has dependencies listed: {dep_list}".format(
+                    ), "Task {id} in DAG {dag} is listed as a root task, but has dependencies listed: {dep_list}".format(  # noqa
                         id=task_id,
                         dag=self.schematic[id]["structure"]._dag_id,
                         dep_list=", ".join(task.upstream_task_ids),
                     )
                     assert (
                         len(task.downstream_task_ids) == 0
-                    ), "Task {id} in DAG {dag} is listed as a root task, but other tasks explicity depend on it: {dep_list}".format(
+                    ), "Task {id} in DAG {dag} is listed as a root task, but other tasks explicity depend on it: {dep_list}".format(  # noqa
                         id=task_id,
                         dag=self.schematic[id]["structure"]._dag_id,
                         dep_list=", ".join(task.downstream_task_ids),
@@ -836,14 +838,14 @@ class GustyBuilder:
                 for task_id, task in valid_leaf_tasks.items():
                     assert (
                         len(task.upstream_task_ids) == 0
-                    ), "Task {id} in DAG {dag} is listed as a leaf task, but has dependencies listed: {dep_list}".format(
+                    ), "Task {id} in DAG {dag} is listed as a leaf task, but has dependencies listed: {dep_list}".format(  # noqa
                         id=task_id,
                         dag=self.schematic[id]["structure"]._dag_id,
                         dep_list=", ".join(task.upstream_task_ids),
                     )
                     assert (
                         len(task.downstream_task_ids) == 0
-                    ), "Task {id} in DAG {dag} is listed as a leaf task, but other tasks explicity depend on it: {dep_list}".format(
+                    ), "Task {id} in DAG {dag} is listed as a leaf task, but other tasks explicity depend on it: {dep_list}".format(  # noqa
                         id=task_id,
                         dag=self.schematic[id]["structure"]._dag_id,
                         dep_list=", ".join(task.downstream_task_ids),

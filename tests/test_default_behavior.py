@@ -2,7 +2,7 @@ import pytest
 import os
 from airflow import DAG
 from airflow.models import BaseOperator
-from datetime import datetime, timedelta
+from datetime import timedelta
 from gusty.utils import days_ago
 from gusty.building import create_schematic
 from gusty.parsing import default_parsers
@@ -130,7 +130,6 @@ def test_tasks_created(dag, dag_files):
 
     expected_tasks = [*map(os.path.basename, dag_files)]
     expected_tasks = [*map(replace_extension, expected_tasks)]
-    tasks_present = [task in dag.task_dict.keys() for task in expected_tasks]
     tasks_are_operators = [
         isinstance(dag.task_dict[task], BaseOperator) for task in expected_tasks
     ]

@@ -116,7 +116,6 @@ def test_root_level_external_dependency(dag):
 
 def test_root_dependency(dag):
     # The root_task_sensor task is not depended on by anything, nor does it depend on anything
-    root_dict = [dep.__dict__["task_id"] for dep in dag.roots]
     root_sensor_task = dag.task_dict["root_sensor_task"]
     assert len(root_sensor_task.__dict__["downstream_task_ids"]) > 0
 
