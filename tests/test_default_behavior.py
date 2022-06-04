@@ -2,7 +2,7 @@ import pytest
 import os
 from airflow import DAG
 from airflow.models import BaseOperator
-from datetime import datetime, timedelta
+from datetime import timedelta
 from gusty.utils import days_ago
 from gusty.building import create_schematic
 from gusty.parsing import default_parsers
@@ -34,6 +34,12 @@ def dag_files(no_metadata_dir):
 
 @pytest.fixture(scope="session")
 def dag(no_metadata_dir):
+    def simple_constructor(hello=True):
+        if hello:
+            return "hello"
+        else:
+            return "goodbye"
+
     dag = create_dag(
         no_metadata_dir,
         description="A dag created without metadata",
@@ -49,6 +55,7 @@ def dag(no_metadata_dir):
             "retry_delay": timedelta(minutes=5),
         },
         external_dependencies=[{"external_dag": "a_root_level_external"}],
+        dag_constructors=[simple_constructor],
     )
     return dag
 
@@ -123,7 +130,6 @@ def test_tasks_created(dag, dag_files):
 
     expected_tasks = [*map(os.path.basename, dag_files)]
     expected_tasks = [*map(replace_extension, expected_tasks)]
-    tasks_present = [task in dag.task_dict.keys() for task in expected_tasks]
     tasks_are_operators = [
         isinstance(dag.task_dict[task], BaseOperator) for task in expected_tasks
     ]
@@ -156,3 +162,22 @@ def test_root_external_dependencies_latest_only_order(dag):
     assert (
         len(latest_only_upstream_tasks) == 0 and len(latest_only_downstream_tasks) == 1
     )
+
+
+def test_constructors(dag):
+    assert dag.task_dict["sensor_task"].__dict__["email"] == "goodbye"
+    assert dag.task_dict["sensor_task"].__dict__["owner"] == "hello"
+    # Below is generated a default func available in absql
+    assert dag.task_dict["sensor_task"].__dict__["doc"] == "default_absql_func"
+
+
+def test_context_rendering_omits_sql(dag):
+    sql_task = dag.task_dict["sql_task"]
+    assert sql_task.__dict__["doc"] == "hello"
+    assert (
+        sql_task.__dict__["sql"] == "SELECT date FROM my_table WHERE date = {{ date }}"
+    )
+
+
+def test_context_rendering_py(dag):
+    assert dag.task_dict["py_task"].__dict__["python_callable"]() == "hey"

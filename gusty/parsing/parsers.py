@@ -1,46 +1,23 @@
-import yaml, ast, importlib.util, nbformat, jupytext, re
+import yaml, ast, importlib.util, nbformat, jupytext
 from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version
-
-if airflow_version > 1:
-    from airflow.operators.python import PythonOperator
-else:
-    from airflow.operators.python_operator import PythonOperator
+from absql.files.parsers import frontmatter_load
+from gusty.parsing.utils import render_frontmatter
 
 
-def frontmatter_load(file_path, loader=None):
-    """
-    Loads YAML frontmatter. Expects a YAML block at the top of the file
-    that starts and ends with "---". In use in favor of frontmatter.load
-    so that custom dag_constructors (via PyYaml) can be used uniformly across
-    all file types.
-    """
-    if loader is None:
-        loader = generate_loader()
-    FM_BOUNDARY = re.compile(r"^-{3,}\s*$", re.MULTILINE)
-    with open(file_path, "r") as file:
-        text = "".join(file.readlines())
-        if text.startswith("---"):
-            _, metadata, content = FM_BOUNDARY.split(text, 2)
-            metadata = yaml.load(metadata, Loader=loader)
-            content = content.strip("\n")
-        else:
-            metadata = None
-            content = yaml.load(text, Loader=loader)
-    return {"metadata": metadata, "content": content}
-
-
-def parse_generic(file_path, loader=None):
+def parse_generic(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
     # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
-    file_contents = frontmatter_load(file_path)
+    file_contents = frontmatter_load(file_path, loader=loader)
     job_spec = file_contents["metadata"] or file_contents["content"]
+
+    job_spec = render_frontmatter(job_spec, runner)
 
     return job_spec
 
 
-def parse_py(file_path, loader=None):
+def parse_py(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
 
@@ -61,7 +38,7 @@ def parse_py(file_path, loader=None):
         ), "You need a comment block starting and ending with '# ---' at the top of {file_path}".format(
             file_path=file_path
         )
-        assert (
+        assert (  # noqa
             "---" in file_contents["source"],
         ), "You need a comment block starting and ending with '# ---' at the top of {file_path}".format(
             file_path=file_path
@@ -98,7 +75,7 @@ def parse_py(file_path, loader=None):
                 else:
                     assert (
                         False
-                    ), "{file_path} specifies python_callable {callable} but {callable} not found in {file_path}".format(
+                    ), "{file_path} specifies python_callable {callable} but {callable} not found in {file_path}".format(  # noqa
                         file_path=file_path, callable=job_spec["python_callable"]
                     )
         # Default to sourcing this file for a PythonOperator
@@ -108,10 +85,12 @@ def parse_py(file_path, loader=None):
     else:
         job_spec.update({"python_callable": lambda: exec(open(file_path).read())})
 
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec
 
 
-def parse_ipynb(file_path, loader=None):
+def parse_ipynb(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
     # Find first yaml cell in jupyter notebook and parse yaml
@@ -129,13 +108,18 @@ def parse_ipynb(file_path, loader=None):
         Loader=loader,
     )
 
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec
 
 
-def parse_sql(file_path, loader=None):
+def parse_sql(file_path, loader=None, runner=None):
     if loader is None:
         loader = generate_loader()
     file_contents = frontmatter_load(file_path, loader=loader)
     job_spec = file_contents["metadata"]
     job_spec["sql"] = file_contents["content"]
+
+    job_spec = render_frontmatter(job_spec, runner)
+
     return job_spec

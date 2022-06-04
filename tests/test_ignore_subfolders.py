@@ -1,7 +1,5 @@
 import pytest
-import os
-from airflow import DAG
-from datetime import datetime, timedelta
+from datetime import timedelta
 from gusty.utils import days_ago
 from gusty import create_dag
 

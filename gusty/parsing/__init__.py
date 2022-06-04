@@ -1,6 +1,7 @@
 import os
-import inspect
+from copy import deepcopy
 from functools import partial
+from absql.utils import get_function_arg_names
 from gusty.parsing.loaders import generate_loader
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
 
@@ -14,7 +15,7 @@ default_parsers = {
 }
 
 
-def parse(file_path, parse_dict=default_parsers, loader=None):
+def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
     """
     Reading in yaml specs / frontmatter.
     """
@@ -25,11 +26,12 @@ def parse(file_path, parse_dict=default_parsers, loader=None):
     path, extension = os.path.splitext(file_path)
 
     parser = parse_dict[extension]
+    if "loader" in get_function_arg_names(parser):
+        parser = partial(parser, loader=loader)
+    if "runner" in get_function_arg_names(parser):
+        parser = partial(parser, runner=runner)
 
-    if "loader" in inspect.signature(parser).parameters.keys():
-        yaml_file = parser(file_path, loader=loader)
-    else:
-        yaml_file = parser(file_path)
+    yaml_file = parser(file_path)
 
     assert "operator" in yaml_file, "No operator specified in yaml spec " + file_path
 
@@ -42,6 +44,9 @@ def parse(file_path, parse_dict=default_parsers, loader=None):
     ), "Task name 'all' is not allowed. Please change your task name."
 
     yaml_file["file_path"] = file_path
+
+    # gusty will also attach the absql_runner
+    yaml_file["absql_runner"] = deepcopy(runner)
 
     # Check dependencies
     if "dependencies" in yaml_file.keys():

@@ -252,3 +252,41 @@ So feel free to give the gusty approach a try, because you don't have to commit 
 ## Containerized Demo
 
 As an additional resource, you can check out a containerized demo of gusty and Airflow over at the [gusty-demo repo](https://github.com/chriscardillo/gusty-demo), which illustrates how gusty and a few custom operators can make SQL queries, Jupyter notebooks, and RMarkdown documents all work together in the same data pipeline.
+
+
+## Development
+
+The below assumes you have [Docker](https://www.docker.com/) installed.
+
+### Starting for the First Time
+
+First, `git clone` this repository.
+
+Then:
+
+```bash
+export GUSTY_DEV_HOME="~/path/to/this/project"
+cd $GUSTY_DEV_HOME
+make build-image
+make run-image
+```
+
+The above will build the development image under the name `gusty-testing` and run a container called `gusty-testing`.
+
+From here, you can:
+
+- `make exec` - Exec into a terminal in the running container.
+- `make test` - Runs `pytest` in a temporary container.
+- `make coverage` - Runs `pytest` and generates a coverage report.
+- `make browse-coverage` - Opens up the coverage report in your browser.
+- `make stop-container` - Stop the running container.
+- `make start-container` - Start a stopped container.
+
+### Rebuilding the Image
+
+```bash
+make stop-container # if you have a running container
+docker rm gusty-testing
+make build-image
+make run-image
+```

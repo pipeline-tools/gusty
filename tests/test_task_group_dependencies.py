@@ -1,6 +1,6 @@
 import pytest
 from gusty import create_dag
-from datetime import datetime, timedelta
+from datetime import timedelta
 from gusty.utils import days_ago
 
 ###############

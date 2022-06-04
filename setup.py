@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.9.1",
+    version="0.10.0",
     author="Chris Cardillo, Michael Chow, David Robinson",
     author_email="cfcardillo23@gmail.com",
     description="Making DAG construction easier",
@@ -14,6 +14,7 @@ setuptools.setup(
     url="https://github.com/chriscardillo/gusty",
     packages=setuptools.find_packages(),
     install_requires=[
+        "ABSQL",
         "apache-airflow",
         "inflection",
         "jupytext",
