@@ -286,7 +286,7 @@ From here, you can:
 
 ```bash
 make stop-container # if you have a running container
-docker rm gusty-testing
+make remove-container # if you have a stopped container
 make build-image
 make run-image
 ```

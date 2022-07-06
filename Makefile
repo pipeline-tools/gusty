@@ -13,6 +13,9 @@ start-container:
 stop-container:
 	docker stop gusty-testing
 
+remove-container:
+	docker rm gusty-testing
+
 test:
 	docker run --rm -v ${GUSTY_DEV_HOME}:/gusty --name gusty-make-test gusty-testing:latest pytest
 

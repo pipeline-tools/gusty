@@ -1,6 +1,7 @@
 import os, yaml, inspect, airflow
 from airflow import DAG
 from absql import Runner
+from functools import partial
 from gusty.errors import NonexistentDagDirError
 from gusty.parsing import parse, default_parsers
 from gusty.parsing.loaders import (
@@ -291,6 +292,13 @@ class GustyBuilder:
                 ).parameters.keys()
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
+
+        if "wait_for_class" in kwargs.keys():
+            self.create_external_sensor = partial(
+                create_external_sensor, sensor=kwargs["wait_for_class"]
+            )
+        else:
+            self.create_external_sensor = create_external_sensor
 
         # We will accept multiple levels only for Airflow v2 and up
         # This will keep the TaskGroup logic of the Levels class
@@ -600,7 +608,7 @@ class GustyBuilder:
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         task.set_upstream(wait_for_task)
                     else:
-                        wait_for_task = create_external_sensor(
+                        wait_for_task = self.create_external_sensor(
                             get_top_level_dag(self.schematic),
                             external_dag_id,
                             external_task_id,
@@ -637,7 +645,7 @@ class GustyBuilder:
                         wait_for_task = self.wait_for_tasks[wait_for_task_name]
                         level_structure.set_upstream(wait_for_task)
                     else:
-                        wait_for_task = create_external_sensor(
+                        wait_for_task = self.create_external_sensor(
                             get_top_level_dag(self.schematic),
                             external_dag_id,
                             external_task_id,
@@ -764,7 +772,7 @@ class GustyBuilder:
                             {wait_for_task_name: wait_for_task}
                         )
                     else:
-                        wait_for_task = create_external_sensor(
+                        wait_for_task = self.create_external_sensor(
                             get_top_level_dag(self.schematic),
                             external_dag_id,
                             external_task_id,
