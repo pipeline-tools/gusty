@@ -40,7 +40,7 @@ def create_dags(dags_dir, globals, parallel=False, timeout=None, **kwargs):
 
     if parallel:
         if timeout is None:
-            os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.7
+            timeout = os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
         asyncio.run(create_dags_async(gusty_dags, globals, timeout, **kwargs))
 
     else:
