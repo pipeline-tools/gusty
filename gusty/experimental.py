@@ -32,7 +32,7 @@ async def create_dags_async(gusty_dags, globals, timeout, max_concurrency, **kwa
 
 
 def create_dags(
-    dags_dir, globals, parallel=False, timeout=None, max_concurrency=8, **kwargs
+    dags_dir, globals, parallel=False, parallel_timeout=None, parallel_concurrency=8, **kwargs
 ):
     # assumes any subdirectories in the dags directory are
     # gusty DAGs (excludes subdirectories like __pycache__)
@@ -43,10 +43,10 @@ def create_dags(
     ]
 
     if parallel:
-        if timeout is None:
-            timeout = os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
+        if parallel_timeout is None:
+            parallel_timeout = os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
         asyncio.run(
-            create_dags_async(gusty_dags, globals, timeout, max_concurrency, **kwargs)
+            create_dags_async(gusty_dags, globals, parallel_timeout, parallel_concurrency, **kwargs)
         )
 
     else:
