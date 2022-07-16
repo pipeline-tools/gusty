@@ -25,9 +25,9 @@ async def create_dags_async(
                 globals[dag_dict["dag_id"]] = dag_dict["dag"]
             except asyncio.exceptions.TimeoutError:
                 raise asyncio.exceptions.TimeoutError(
-                    "create_dags took more than "
-                    + str(concurrent_timeout)
-                    + " seconds."
+                    f"create_dags took more than {concurrent_timeout} seconds. "
+                    "To fix, adjust the concurrent_timeout in the call to create_dags, "
+                    "or set a higher AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT in your environment."
                 )
 
 
@@ -37,7 +37,7 @@ def create_dags(
     concurrent=False,
     concurrent_timeout=None,
     max_concurrency=8,
-    **kwargs
+    **kwargs,
 ):
     # assumes any subdirectories in the dags directory are
     # gusty DAGs (excludes subdirectories like __pycache__)
