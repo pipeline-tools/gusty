@@ -10,7 +10,9 @@ async def create_dag_async(dag_dir, **kwargs):
     }
 
 
-async def create_dags_async(gusty_dags, globals, timeout, max_concurrency, **kwargs):
+async def create_dags_async(
+    gusty_dags, globals, concurrent_timeout, max_concurrency, **kwargs
+):
     # loop instead of listcomp so we can (hopefully) attach
     #  the dag name to the async function in the future
     async_dags = []
@@ -18,7 +20,7 @@ async def create_dags_async(gusty_dags, globals, timeout, max_concurrency, **kwa
         async_func = create_dag_async(gusty_dag, **kwargs)
         async_dags.append(async_func)
     # async_dags = [create_dag_async(gusty_dag, **kwargs) for gusty_dag in gusty_dags]
-    async_results = asyncio.as_completed(async_dags, timeout=timeout)
+    async_results = asyncio.as_completed(async_dags, timeout=concurrent_timeout)
     sem = asyncio.Semaphore(max_concurrency)
     async with sem:
         for async_dag in async_results:
@@ -27,12 +29,19 @@ async def create_dags_async(gusty_dags, globals, timeout, max_concurrency, **kwa
                 globals[dag_dict["dag_id"]] = dag_dict["dag"]
             except asyncio.exceptions.TimeoutError:
                 raise asyncio.exceptions.TimeoutError(
-                    "create_dags took more than " + str(timeout) + " seconds."
+                    "create_dags took more than "
+                    + str(concurrent_timeout)
+                    + " seconds."
                 )
 
 
 def create_dags(
-    dags_dir, globals, parallel=False, parallel_timeout=None, parallel_concurrency=8, **kwargs
+    dags_dir,
+    globals,
+    concurrent=False,
+    concurrent_timeout=None,
+    max_concurrency=8,
+    **kwargs
 ):
     # assumes any subdirectories in the dags directory are
     # gusty DAGs (excludes subdirectories like __pycache__)
@@ -42,11 +51,15 @@ def create_dags(
         if os.path.isdir(os.path.join(dags_dir, name)) and not name.endswith("__")
     ]
 
-    if parallel:
-        if parallel_timeout is None:
-            parallel_timeout = os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
+    if concurrent:
+        concurrent_timeout = (
+            concurrent_timeout
+            or os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
+        )
         asyncio.run(
-            create_dags_async(gusty_dags, globals, parallel_timeout, parallel_concurrency, **kwargs)
+            create_dags_async(
+                gusty_dags, globals, concurrent_timeout, max_concurrency, **kwargs
+            )
         )
 
     else:
