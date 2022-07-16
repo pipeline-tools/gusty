@@ -48,10 +48,10 @@ def create_dags(
     ]
 
     if concurrent:
-        concurrent_timeout = (
-            concurrent_timeout
-            or os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
-        )
+        if concurrent_timeout is None:
+            concurrent_timeout = (
+                os.environ.get("AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT", 30.0) * 0.9
+            )
         asyncio.run(
             create_dags_async(
                 gusty_dags, globals, concurrent_timeout, max_concurrency, **kwargs
