@@ -13,14 +13,10 @@ async def create_dag_async(dag_dir, **kwargs):
 async def create_dags_async(
     gusty_dags, globals, concurrent_timeout, max_concurrency, **kwargs
 ):
-    # loop instead of listcomp so we can (hopefully) attach
-    #  the dag name to the async function in the future
-    async_dags = []
-    for gusty_dag in gusty_dags:
-        async_func = create_dag_async(gusty_dag, **kwargs)
-        async_dags.append(async_func)
-    # async_dags = [create_dag_async(gusty_dag, **kwargs) for gusty_dag in gusty_dags]
-    async_results = asyncio.as_completed(async_dags, timeout=concurrent_timeout)
+    async_results = asyncio.as_completed(
+        [create_dag_async(gusty_dag, **kwargs) for gusty_dag in gusty_dags],
+        timeout=concurrent_timeout,
+    )
     sem = asyncio.Semaphore(max_concurrency)
     async with sem:
         for async_dag in async_results:
