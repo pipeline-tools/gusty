@@ -336,9 +336,9 @@ class GustyBuilder:
                 and "default_args" in level_metadata.keys()
             ):
                 # metadata defaults
-                metadata_default_args = metadata_defaults["default_args"]
+                metadata_default_args = metadata_defaults["default_args"].copy()
                 # level_metadata (provided via METADATA.yml)
-                level_default_args = level_metadata["default_args"]
+                level_default_args = level_metadata["default_args"].copy()
                 # metadata defaults updated with level_metadata
                 metadata_default_args.update(level_default_args)
                 # updated and resolved attached back to level_metadata

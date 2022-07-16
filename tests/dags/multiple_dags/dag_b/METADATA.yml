@@ -1,0 +1,11 @@
+description: "For making parallel"
+schedule_interval: "0 0 * * *"
+default_args:
+    owner: b
+    depends_on_past: False
+    start_date: !days_ago 1
+    email: b@gusty.com
+    email_on_failure: False
+    email_on_retry: False
+    retry_delay: !timedelta 'minutes: 5'
+latest_only: False
