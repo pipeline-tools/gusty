@@ -1,0 +1,8 @@
+description: "For making parallel"
+default_args:
+    depends_on_past: False
+    start_date: !days_ago 1
+    email_on_failure: False
+    email_on_retry: False
+    retry_delay: !timedelta 'minutes: 5'
+latest_only: False
