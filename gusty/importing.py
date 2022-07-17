@@ -5,7 +5,7 @@ from inflection import underscore
 ## Params ##
 ############
 
-airflow_version = int(str(airflow.__version__)[0])
+airflow_version = int(str(airflow.__version__).split(".")[0])
 
 ###########################
 ## Operator Import Logic ##

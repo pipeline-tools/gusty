@@ -2,6 +2,7 @@ import pytest
 from gusty import create_dag
 from datetime import timedelta
 from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.operators.empty import EmptyOperator
 
 ###############
 ## FIXTURES ##
@@ -33,6 +34,18 @@ def dag(external_deps_dir, custom_sensor_class):
     return dag
 
 
+@pytest.fixture(scope="session")
+def empty_dag(external_deps_dir):
+    dag = create_dag(
+        external_deps_dir,
+        default_args={"email": "default@gusty.com", "retries": 5},
+        task_group_defaults={"prefix_group_id": True},
+        wait_for_defaults={"poke_interval": 12},
+        wait_for_class=EmptyOperator,
+    )
+    return dag
+
+
 ###########
 ## TESTS ##
 ###########
@@ -58,3 +71,8 @@ def test_custom_sensor(dag, custom_sensor_class):
     wait_for_task = dag.task_dict["wait_for_some_task"]
     assert isinstance(wait_for_task, custom_sensor_class)
     assert wait_for_task.is_custom_sensor
+
+
+def test_empty_dag(empty_dag):
+    wait_for_task = empty_dag.task_dict["wait_for_some_task"]
+    assert isinstance(wait_for_task, EmptyOperator)
