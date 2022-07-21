@@ -4,11 +4,11 @@ from gusty.building import GustyBuilder
 
 def create_dag(
     dag_dir,
-    task_group_defaults={},
-    wait_for_defaults={},
+    task_group_defaults=None,
+    wait_for_defaults=None,
     latest_only=True,
-    parse_hooks={},
-    dag_constructors={},
+    parse_hooks=None,
+    dag_constructors=None,
     **kwargs
 ):
     """
@@ -45,11 +45,11 @@ def create_dag(
 
     setup = GustyBuilder(
         dag_dir,
-        task_group_defaults=task_group_defaults,
-        wait_for_defaults=wait_for_defaults,
+        task_group_defaults=task_group_defaults or {},
+        wait_for_defaults=wait_for_defaults or {},
         latest_only=latest_only,
-        parse_hooks=parse_hooks,
-        dag_constructors=dag_constructors,
+        parse_hooks=parse_hooks or {},
+        dag_constructors=dag_constructors or {},
         **kwargs
     )
     [setup.parse_metadata(level) for level in setup.levels]

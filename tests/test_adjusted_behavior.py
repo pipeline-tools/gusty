@@ -1,5 +1,6 @@
 import pytest
 from gusty import create_dag
+from gusty.building import GustyBuilder
 
 ###############
 ## FIXTURES ##
@@ -12,12 +13,31 @@ def with_metadata_dir():
 
 
 @pytest.fixture(scope="session")
+def builder(with_metadata_dir):
+    def env_var(x):
+        return x + x
+
+    return GustyBuilder(
+        with_metadata_dir,
+        dag_constructors=[env_var],
+        task_group_defaults={},
+        wait_for_defaults={},
+        latest_only=True,
+        parse_hooks={},
+    )
+
+
+@pytest.fixture(scope="session")
 def dag(with_metadata_dir):
+    def env_var(x):
+        return x + x
+
     dag = create_dag(
         with_metadata_dir,
         default_args={"email": "default@gusty.com", "retries": 5},
         task_group_defaults={"prefix_group_id": True},
         wait_for_defaults={"poke_interval": 12},
+        dag_constructors=[env_var],
     )
     return dag
 
@@ -125,3 +145,10 @@ def test_leaf_tasks(dag):
     leaf_task = dag.leaves[0].__dict__
     assert len(leaf_task["downstream_task_ids"]) == 0
     assert leaf_task["task_id"] == "final_task"
+
+
+def test_absql_override(builder, dag):
+    runner_func = builder.runner.__dict__["extra_context"]["env_var"]
+    loader_results = dag.task_dict["final_task"].bash_command
+    assert runner_func("hey") == "heyhey"
+    assert loader_results == "finalfinal"

@@ -9,9 +9,10 @@ default_constructors = {
 }
 
 
-def generate_loader(custom_constructors={}):
+def generate_loader(custom_constructors=None):
     """Generates a SafeLoader with both standard Airflow and custom constructors"""
     dag_yaml_tags = default_constructors.copy()
+    custom_constructors = custom_constructors or {}
 
     if isinstance(custom_constructors, list) and len(custom_constructors) > 0:
         custom_constructors = {

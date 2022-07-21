@@ -255,12 +255,12 @@ class GustyBuilder:
                 handle_user_constructors(kwargs["dag_constructors"])
             )
 
-        # Generate loader with dag_constructors
-        self.loader = generate_loader(dag_constructors)
-
         # Generate runner with dag_constructors
         runner_context = {k.strip("!"): v for k, v in dag_constructors.items()}
         self.runner = Runner(**runner_context)
+
+        # Generate loader with dag_constructors
+        self.loader = generate_loader(dag_constructors)
 
         self.schematic = create_schematic(dag_dir, self.parsers)
 
