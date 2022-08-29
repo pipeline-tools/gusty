@@ -1,5 +1,5 @@
 import pytest
-from gusty.experimental import create_dags
+from gusty import create_dags
 
 ##############
 ## FIXTURES ##
