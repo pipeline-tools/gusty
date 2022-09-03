@@ -78,4 +78,11 @@ def test_combined_multi_partials(dag):
 
 
 def test_correct_task_count(dag):
-    assert len(dag.task_dict) == 5
+    assert len(dag.task_dict) == 6
+
+
+def test_nested_update(dag):
+    op_kwargs = dag.task_dict["nested_py"].__dict__["op_kwargs"]
+    assert op_kwargs["foo"] == "bar"
+    assert op_kwargs["biz"] == "bazz"
+    assert op_kwargs["min"] == "mouse"
