@@ -187,7 +187,7 @@ gusty features additional helpful arguments at the DAG-level to help you design 
   - **`leaf_tasks`** - A list of task ids which should represent the leaves of a DAG. For example, at the end of the DAG run, you might save a report to S3.
   - **`external_dependencies`** - You can also set external dependencies at the DAG level! Making your DAG wait on other DAGs works just like in the external dependencies examples above.
   - **`ignore_subfolders`** - If you don't want subfolders to generate Task Groups, set this to `True`.
-  - **`latest_only`** - On by default, installs a `LatestOnlyOperator` at the absolute root of the DAG, skipping all tasks in the DAG if the DAG run is not the current run. You can read more about the LatestOnlyOperator in [Airflow's documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#latest-run-only).
+  - **`latest_only`** - On by default, installs a `LatestOnlyOperator` at the absolute root of the DAG, skipping all tasks in the DAG if the DAG run is not the current run. You can read more about the LatestOnlyOperator in [Airflow's documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/latest_only/index.html?highlight=latestonly#airflow.operators.latest_only.LatestOnlyOperator).
 
   Any of these arguments can be placed in `create_dag` or `METADATA.yml`!
 
