@@ -89,3 +89,9 @@ def test_nested_update(dag):
     assert op_kwargs["outer_dict"] == {"outer": "dict"}
     assert op_kwargs["inner_dict"] == {"inner": "dict"}
     assert op_kwargs["updated_dict"] == {"updated": "updated"}
+
+
+def test_nested_result(dag):
+    op_kwargs = dag.task_dict["nested_py"].__dict__["op_kwargs"]
+    callable = dag.task_dict["nested_py"].__dict__["python_callable"]
+    assert callable(**op_kwargs) == "bar, bazz, mouse, dict, dict, updated"

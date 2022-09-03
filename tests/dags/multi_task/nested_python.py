@@ -19,5 +19,14 @@
 # ---
 
 
-def main(foo, biz, min):
-    return foo + biz
+def main(foo, biz, min, outer_dict, inner_dict, updated_dict):
+    return ", ".join(
+        [
+            foo,
+            biz,
+            min,
+            outer_dict["outer"],
+            inner_dict["inner"],
+            updated_dict["updated"],
+        ]
+    )
