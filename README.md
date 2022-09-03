@@ -179,6 +179,48 @@ You might notice that `task_group_defaults` does not include dependencies. For T
 
 Default arguments in `create_dag` and a DAG or TaskGroup's `METADATA.yml` can be mixed and matched. `METADATA.yml` will always override defaults set in `create_dag`.
 
+#### create_dags
+
+If you have multiple gusty DAGs located inside of a single directory, you can conveniently use the `create_dags` (plural) function.
+
+`create_dags` works just like `create_dag`, with two exceptions:
+
+1. The first argument to `create_dags` is the path to a directory with many gusty DAGs.
+
+2. The second argument to `create_dags` is `globals()`. `gloabls()` is essentially the namespace to which your DAGs are assigned.
+
+Let's adjust the above `create_dag` example to use `create_dags` instead:
+
+```py
+import airflow
+from datetime import timedelta
+from airflow.utils.dates import days_ago
+from gusty import create_dags
+
+create_dags(
+  '/usr/local/airflow/my_gusty_dags',
+  globals(),
+  description="A default description for my DAGs.",
+  schedule_interval="1 0 * * *",
+  default_args={
+      "owner": "airflow",
+      "depends_on_past": False,
+      "start_date": days_ago(1),
+      "email": "airflow@example.com",
+      "email_on_failure": False,
+      "email_on_retry": False,
+      "retries": 1,
+      "retry_delay": timedelta(minutes=5),
+  },
+  task_group_defaults={
+      "tooltip": "This is a task group tooltip",
+      "prefix_group_id": True
+  }
+)
+```
+
+The above will create many gusty DAGs located in the `/usr/local/airflow/my_gusty_dags` directory.
+
 #### DAG-level Features
 
 gusty features additional helpful arguments at the DAG-level to help you design your DAGs with ease:
