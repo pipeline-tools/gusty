@@ -65,4 +65,5 @@ def create_dag(
     [setup.create_root_dependencies(level) for level in setup.levels]
     return setup.return_dag()
 
-from gusty.multi import create_dags
+
+from gusty.multi import create_dags  # noqa
