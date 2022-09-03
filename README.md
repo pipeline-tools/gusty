@@ -187,7 +187,7 @@ If you have multiple gusty DAGs located inside of a single directory, you can co
 
 1. The first argument to `create_dags` is the path to a directory with many gusty DAGs.
 
-2. The second argument to `create_dags` is `globals()`. `gloabls()` is essentially the namespace to which your DAGs are assigned.
+2. The second argument to `create_dags` is `globals()`. `globals()` is essentially the namespace to which your DAGs are assigned.
 
 Let's adjust the above `create_dag` example to use `create_dags` instead:
 
