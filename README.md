@@ -156,7 +156,7 @@ from gusty import create_dag
 
 dag = create_dag(
   '/usr/local/airflow/dags/hello_world',
-  description="A dag created without any metadata",
+  description="A DAG created without any metadata",
   schedule_interval="1 0 * * *",
   default_args={
       "owner": "airflow",
