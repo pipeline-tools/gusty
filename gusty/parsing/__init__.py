@@ -4,6 +4,7 @@ from functools import partial
 from absql.utils import get_function_arg_names
 from gusty.parsing.loaders import generate_loader
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
+from gusty.utils import nested_update
 
 default_parsers = {
     ".yml": parse_generic,
@@ -81,7 +82,7 @@ def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
         for task_id, spec in multi_task_spec.items():
             base_spec = yaml_file.copy()
             base_spec["task_id"] = task_id
-            base_spec.update(spec)
+            nested_update(base_spec, spec)
             multi_specs.append(base_spec)
 
     if len(multi_specs) > 0:
