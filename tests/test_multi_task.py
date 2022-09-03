@@ -86,3 +86,6 @@ def test_nested_update(dag):
     assert op_kwargs["foo"] == "bar"
     assert op_kwargs["biz"] == "bazz"
     assert op_kwargs["min"] == "mouse"
+    assert op_kwargs["outer_dict"] == {"outer": "dict"}
+    assert op_kwargs["inner_dict"] == {"inner": "dict"}
+    assert op_kwargs["updated_dict"] == {"updated": "updated"}
