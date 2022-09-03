@@ -249,7 +249,7 @@ gusty will convert the above in two task instances, `python_task_1` and `python_
 
 One good thing about gusty is that if you choose to use this package, gusty doesn't have to be the **only** way that you create DAGs. You can use gusty's `create_dag` to generate DAGs out of directories where applicable, and then implement more traditional methods of creating Airflow DAGs where the tried and true methods feel like a better approach.
 
-So feel free to give the gusty approach a try, because you don't have to commit to it everywhere. But when you try it, don't be surprised if you are blown away.
+So feel free to give the gusty approach a try, because you don't have to commit to it everywhere. But when you try it, don't be surprised if you start using it everywhere!
 
 ## Containerized Demo
 
