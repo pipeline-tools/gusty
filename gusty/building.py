@@ -312,6 +312,9 @@ class GustyBuilder:
         self.wait_for_tasks = {}
         self.all_tasks = {}
 
+        # Allow for the assignment of additional leaf tasks from a dictionary
+        self.leaf_tasks_from_dict = kwargs.get("leaf_tasks_from_dict", {})
+
     def parse_metadata(self, id):
         """
         For a given level id, parse any metadata if there is a METADATA.yml path,
@@ -430,6 +433,16 @@ class GustyBuilder:
             for spec_path in level_spec_paths
         ]
         level_specs = flatten_nested_lists(level_specs)
+
+        # Add any additional specs from leaf_tasks_from_dict
+        if self.schematic[id]["parent_id"] is None and self.leaf_tasks_from_dict:
+            # Existing specs will take precedence over any from the dict
+            existing_task_ids = [s["task_id"] for s in level_specs]
+            for task_id, task_spec in self.leaf_tasks_from_dict.items():
+                if task_id.lower().strip() not in existing_task_ids:
+                    task_spec.update({"task_id": task_id.lower().strip()})
+                    level_specs.append(task_spec)
+
         if airflow_version > 1:
             level_structure = self.schematic[id]["structure"]
             level_name = self.schematic[id]["name"]
@@ -814,14 +827,20 @@ class GustyBuilder:
             level_leaf_tasks = (
                 level_metadata["leaf_tasks"]
                 if "leaf_tasks" in level_metadata.keys()
-                else None
+                else []
             )
+            # Add leaf tasks from dict if applicable
+            if self.leaf_tasks_from_dict:
+                level_leaf_tasks.extend(list(self.leaf_tasks_from_dict.keys()))
+                # Ensure unique values
+                level_leaf_tasks = list(set(level_leaf_tasks))
+
             level_root_tasks = (
                 level_metadata["root_tasks"]
                 if "root_tasks" in level_metadata.keys()
                 else []
             )
-            if level_leaf_tasks is not None:
+            if level_leaf_tasks:
                 level_tasks = self.schematic[id]["tasks"]
                 child_levels = {
                     level["name"]: level["structure"]

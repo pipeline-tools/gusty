@@ -1,0 +1,13 @@
+latest_only: False
+schedule_interval: "0 11 * * *"
+default_args:
+    owner: leaves
+    depends_on_past: False
+    start_date: !days_ago 1
+    email: leaves@gusty.com
+    email_on_failure: False
+    email_on_retry: False
+    retry_delay: !timedelta 'minutes: 5'
+leaf_tasks:
+  - overwritten_leaf
+  - yaml_leaf
