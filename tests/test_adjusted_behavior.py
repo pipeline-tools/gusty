@@ -152,3 +152,7 @@ def test_absql_override(builder, dag):
     loader_results = dag.task_dict["final_task"].bash_command
     assert runner_func("hey") == "heyhey"
     assert loader_results == "finalfinal"
+
+
+def test_metadata_renders(dag):
+    assert dag.description == "For making the most important meal of the day."
