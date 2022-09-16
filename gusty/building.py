@@ -1,4 +1,4 @@
-import os, yaml, inspect, airflow
+import os, inspect, airflow
 from airflow import DAG
 from absql import Runner
 from functools import partial
@@ -329,8 +329,9 @@ class GustyBuilder:
         # METADATA.yml will override defaults
         level_metadata_path = self.schematic[id]["metadata_path"]
         if os.path.exists(level_metadata_path or ""):
-            with open(level_metadata_path) as inf:
-                level_metadata = yaml.load(inf, self.loader)
+            level_metadata = default_parsers[".yml"](
+                level_metadata_path, self.loader, self.runner
+            )
 
             # special case - default_args provided in both metadata_defaults and level_metadata
             if (

@@ -1,4 +1,4 @@
-description: "For making the most important meal of the day"
+description: "For making the most important meal of the {{env_switch(default='day')}}."
 schedule_interval: "0 0 * * *"
 tags:
   - delicious
