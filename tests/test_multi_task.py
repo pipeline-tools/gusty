@@ -78,7 +78,7 @@ def test_combined_multi_partials(dag):
 
 
 def test_correct_task_count(dag):
-    assert len(dag.task_dict) == 6
+    assert len(dag.task_dict) == 7
 
 
 def test_nested_update(dag):

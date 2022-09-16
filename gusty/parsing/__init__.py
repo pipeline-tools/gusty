@@ -82,7 +82,7 @@ def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
         for task_id, spec in multi_task_spec.items():
             base_spec = yaml_file.copy()
             base_spec["task_id"] = task_id
-            nested_update(base_spec, spec)
+            base_spec = nested_update(base_spec, spec)
             multi_specs.append(base_spec)
 
     if len(multi_specs) > 0:

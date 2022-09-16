@@ -9,6 +9,7 @@ def days_ago(n):
 
 
 def nested_update(d, u):
+    d = d.copy()
     for k, v in u.items():
         if isinstance(v, collections.abc.Mapping):
             d[k] = nested_update(d.get(k, {}), v)
