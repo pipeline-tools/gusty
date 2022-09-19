@@ -1,5 +1,5 @@
 description: "For testing the generation of PythonOperator from .py files"
-schedule_interval: "0 0 * * *"
+schedule: "0 0 * * *"
 default_args:
     owner: Gusy Testing
     depends_on_past: False

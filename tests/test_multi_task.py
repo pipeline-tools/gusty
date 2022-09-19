@@ -18,7 +18,7 @@ def dag(multi_task_dir):
     dag = create_dag(
         multi_task_dir,
         description="A dag created without metadata",
-        schedule_interval="0 0 * * *",
+        schedule="0 0 * * *",
         default_args={
             "owner": "gusty",
             "depends_on_past": False,

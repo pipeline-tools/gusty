@@ -1,5 +1,5 @@
 latest_only: False
-schedule_interval: "0 11 * * *"
+schedule: "0 11 * * *"
 default_args:
     owner: leaves
     depends_on_past: False

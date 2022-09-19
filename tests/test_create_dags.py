@@ -17,7 +17,7 @@ def multi_serial(multiple_dags_dir):
     create_dags(
         multiple_dags_dir,
         dag_dict,
-        schedule_interval="0 11 * * *",
+        schedule="0 11 * * *",
         default_args={"email": "default@gusty.com", "owner": "default"},
         wait_for_defaults={"timeout": 679},
     )
@@ -31,7 +31,7 @@ def multi_concurrent(multiple_dags_dir):
         multiple_dags_dir,
         dag_dict,
         concurrent=True,
-        schedule_interval="0 11 * * *",
+        schedule="0 11 * * *",
         default_args={"email": "default@gusty.com", "owner": "default"},
         wait_for_defaults={"timeout": 679},
     )

@@ -1,5 +1,5 @@
 description: "For making parallel"
-schedule_interval: "0 0 * * *"
+schedule: "0 0 * * *"
 default_args:
     owner: a
     depends_on_past: False

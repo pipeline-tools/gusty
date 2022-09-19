@@ -19,7 +19,7 @@ def dag(parsing_dag_dir):
     dag = create_dag(
         parsing_dag_dir,
         description="A dag with some custom parsing functions.",
-        schedule_interval="0 0 * * *",
+        schedule="0 0 * * *",
         default_args={
             "owner": "gusty",
             "depends_on_past": False,
