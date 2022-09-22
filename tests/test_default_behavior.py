@@ -107,19 +107,19 @@ def test_external_dependencies(dag):
     dependable_task = dag.task_dict["dependable_task"]
     dependable_task_dependencies = dependable_task.__dict__["upstream_task_ids"]
     assert "wait_for_DAG_a_whole_dag" in dependable_task_dependencies
-    assert "wait_for_external_task" in dependable_task_dependencies
-    assert "wait_for_external_task_2" in dependable_task_dependencies
+    assert "wait_for_external_dag_external_task" in dependable_task_dependencies
+    assert "wait_for_external_dag_external_task_2" in dependable_task_dependencies
 
     # wait_for_ tasks
     wait_for_DAG_a_whole_dag = dag.task_dict["wait_for_DAG_a_whole_dag"]
     assert wait_for_DAG_a_whole_dag.external_dag_id == "a_whole_dag"
     assert wait_for_DAG_a_whole_dag.external_task_id is None
 
-    wait_for_external_task = dag.task_dict["wait_for_external_task"]
+    wait_for_external_task = dag.task_dict["wait_for_external_dag_external_task"]
     assert wait_for_external_task.external_dag_id == "external_dag"
     assert wait_for_external_task.external_task_id == "external_task"
 
-    wait_for_external_task_2 = dag.task_dict["wait_for_external_task_2"]
+    wait_for_external_task_2 = dag.task_dict["wait_for_external_dag_external_task_2"]
     assert wait_for_external_task_2.external_dag_id == "external_dag"
     assert wait_for_external_task_2.external_task_id == "external_task_2"
 
@@ -130,8 +130,8 @@ def test_external_dependencies_dict_tasks(dag):
         "upstream_task_ids"
     ]
     assert "wait_for_DAG_a_whole_dag" in ext_dep_dict_spec_task_dependencies
-    assert "wait_for_another_task_1" in ext_dep_dict_spec_task_dependencies
-    assert "wait_for_another_task_2" in ext_dep_dict_spec_task_dependencies
+    assert "wait_for_another_dag_another_task_1" in ext_dep_dict_spec_task_dependencies
+    assert "wait_for_another_dag_another_task_2" in ext_dep_dict_spec_task_dependencies
 
 
 def test_tasks_created(dag, dag_files):
@@ -162,7 +162,7 @@ def test_sensor_support(dag):
 
 def test_root_external_dependencies_accepted(dag):
     assert (
-        "wait_for_a_root_level_external"
+        "wait_for_external_dag_a_root_level_external"
         in dag.task_dict["latest_only"].__dict__["downstream_task_ids"]
     )
 
