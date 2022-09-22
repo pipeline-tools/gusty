@@ -44,9 +44,11 @@ def multi_concurrent(multiple_dags_dir):
 
 
 def test_wait_for_defaults(multi_serial, multi_concurrent):
-    serial_a = multi_serial["dag_a"].task_dict["wait_for_task_2"].__dict__["timeout"]
+    serial_a = (
+        multi_serial["dag_a"].task_dict["wait_for_dag_b_task_2"].__dict__["timeout"]
+    )
     concurrent_a = (
-        multi_concurrent["dag_a"].task_dict["wait_for_task_2"].__dict__["timeout"]
+        multi_concurrent["dag_a"].task_dict["wait_for_dag_b_task_2"].__dict__["timeout"]
     )
     assert serial_a == 679
     assert concurrent_a == 679

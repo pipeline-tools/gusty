@@ -46,5 +46,5 @@ def make_external_task_name(external_dag_id, external_task_id):
     return (
         "wait_for_DAG_{x}".format(x=external_dag_id)
         if external_task_id == "all"
-        else "wait_for_{x}".format(x=external_task_id)
+        else "wait_for_{dag}_{task}".format(dag=external_dag_id, task=external_task_id)
     )
