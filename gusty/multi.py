@@ -11,7 +11,7 @@ async def create_dag_async(dag_dir, **kwargs):
 
 
 async def create_dags_async(
-    gusty_dags, globals, concurrent_timeout, max_concurrency, **kwargs
+    gusty_dags, caller_env, concurrent_timeout, max_concurrency, **kwargs
 ):
     async_results = asyncio.as_completed(
         [create_dag_async(gusty_dag, **kwargs) for gusty_dag in gusty_dags],
@@ -22,7 +22,7 @@ async def create_dags_async(
         for async_dag in async_results:
             try:
                 dag_dict = await async_dag
-                globals[dag_dict["dag_id"]] = dag_dict["dag"]
+                caller_env[dag_dict["dag_id"]] = dag_dict["dag"]
             except asyncio.exceptions.TimeoutError:
                 raise asyncio.exceptions.TimeoutError(
                     f"create_dags took more than {concurrent_timeout} seconds. "
@@ -33,7 +33,7 @@ async def create_dags_async(
 
 def create_dags(
     dags_dir,
-    globals,
+    caller_env,
     concurrent=False,
     concurrent_timeout=None,
     max_concurrency=8,
@@ -56,13 +56,12 @@ def create_dags(
             )
         asyncio.run(
             create_dags_async(
-                gusty_dags, globals, concurrent_timeout, max_concurrency, **kwargs
+                gusty_dags, caller_env, concurrent_timeout, max_concurrency, **kwargs
             )
         )
 
     else:
         for gusty_dag in gusty_dags:
             dag_id = os.path.basename(gusty_dag)
-            if current_dag_id is not None and current_dag_id != dag_id:
-                continue  # skip generation of non-selected DAG
-            globals[dag_id] = create_dag(gusty_dag, **kwargs)
+            if current_dag_id is None or current_dag_id == dag_id:
+                caller_env[dag_id] = create_dag(gusty_dag, **kwargs)
