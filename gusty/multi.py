@@ -37,7 +37,6 @@ def create_dags(
     concurrent=False,
     concurrent_timeout=None,
     max_concurrency=8,
-    current_dag_id=None,
     **kwargs,
 ):
     # assumes any subdirectories in the dags directory are
@@ -63,5 +62,4 @@ def create_dags(
     else:
         for gusty_dag in gusty_dags:
             dag_id = os.path.basename(gusty_dag)
-            if current_dag_id is None or current_dag_id == dag_id:
-                caller_env[dag_id] = create_dag(gusty_dag, **kwargs)
+            caller_env[dag_id] = create_dag(gusty_dag, **kwargs)
