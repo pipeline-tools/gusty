@@ -5,6 +5,8 @@
 # external_dependencies:
 #   - a_whole_dag: all
 # python_callable: hello_world
+# extra_callables:
+#   python_callable: hello_world
 # ---
 
 

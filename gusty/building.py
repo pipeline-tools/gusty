@@ -152,6 +152,7 @@ def build_task(spec, level_id, schematic):
         if k
         in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
         or k in _get_operator_parameters(operator)
+        or k in _get_operator_parameters(operator.__base__)
     }
     args["task_id"] = spec["task_id"]
     args["dag"] = get_top_level_dag(schematic)

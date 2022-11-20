@@ -1,8 +1,8 @@
-import yaml, ast, importlib.util, nbformat, jupytext
+import yaml, nbformat, jupytext
 from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version
 from absql.files.parsers import frontmatter_load
-from gusty.parsing.utils import render_frontmatter
+from gusty.parsing.utils import render_frontmatter, get_callable_from_file
 
 
 def parse_generic(file_path, loader=None, runner=None):
@@ -49,38 +49,21 @@ def parse_py(file_path, loader=None, runner=None):
 
         # search for a python callable if one is specified
         if "python_callable" in job_spec.keys():
-            with open(file_path) as f:
-                tree = ast.parse(f.read())
-
-                class Visitor(ast.NodeVisitor):
-                    def __init__(self):
-                        self.has_callable = None
-
-                    def visit_FunctionDef(self, node):
-                        ast.NodeVisitor.generic_visit(self, node)
-                        if node.name == job_spec["python_callable"]:
-                            self.has_callable = True
-
-                v = Visitor()
-                v.visit(tree)
-                if v.has_callable:
-                    mod_file = importlib.util.spec_from_file_location(
-                        "".join(i for i in file_path if i.isalnum()), file_path
-                    )
-                    mod = importlib.util.module_from_spec(mod_file)
-                    mod_file.loader.exec_module(mod)
-                    job_spec.update(
-                        {"python_callable": getattr(mod, job_spec["python_callable"])}
-                    )
-                else:
-                    assert (
-                        False
-                    ), "{file_path} specifies python_callable {callable} but {callable} not found in {file_path}".format(  # noqa
-                        file_path=file_path, callable=job_spec["python_callable"]
-                    )
+            callable_name = job_spec["python_callable"]
+            job_spec.update(
+                {"python_callable": get_callable_from_file(file_path, callable_name)}
+            )
         # Default to sourcing this file for a PythonOperator
         else:
             job_spec.update({"python_callable": lambda: exec(open(file_path).read())})
+
+        # Support additional callables
+        if "extra_callables" in job_spec.keys():
+            for arg_name, callable_name in job_spec["extra_callables"].items():
+                job_spec.update(
+                    {arg_name: get_callable_from_file(file_path, callable_name)}
+                )
+
     # If no metadata then we also default to sourcing this file for a PythonOperator
     else:
         job_spec.update({"python_callable": lambda: exec(open(file_path).read())})
