@@ -1,11 +1,12 @@
-import os, sys, pkgutil, itertools, airflow, importlib
+import os, sys, pkgutil, itertools, importlib
+from airflow.version import version as _airflow_version
 from inflection import underscore
 
 ############
 ## Params ##
 ############
 
-airflow_version = int(str(airflow.__version__).split(".")[0])
+airflow_version = int(_airflow_version.split(".")[0])
 
 ###########################
 ## Operator Import Logic ##

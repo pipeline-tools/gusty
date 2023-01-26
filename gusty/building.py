@@ -1,5 +1,5 @@
-import os, inspect, airflow
-from airflow import DAG
+import os, inspect
+from airflow.models import BaseOperator, DAG
 from absql import Runner
 from functools import partial
 from gusty.errors import NonexistentDagDirError
@@ -150,7 +150,7 @@ def build_task(spec, level_id, schematic):
         k: v
         for k, v in spec.items()
         if k
-        in inspect.signature(airflow.models.BaseOperator.__init__).parameters.keys()
+        in inspect.signature(BaseOperator.__init__).parameters.keys()
         or k in _get_operator_parameters(operator)
         or k in _get_operator_parameters(operator.__base__)
     }
@@ -289,7 +289,7 @@ class GustyBuilder:
                 if k in AVAILABLE_WAIT_FOR_PARAMS
                 or k
                 in inspect.signature(
-                    airflow.models.BaseOperator.__init__
+                    BaseOperator.__init__
                 ).parameters.keys()
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
