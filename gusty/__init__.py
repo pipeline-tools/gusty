@@ -1,4 +1,3 @@
-import airflow  # noqa
 from gusty.building import GustyBuilder
 
 

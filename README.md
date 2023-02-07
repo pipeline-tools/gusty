@@ -149,7 +149,6 @@ While `METADATA.yml` will always be the primary source of truth for a DAG or Tas
 Here's an example using `create_dag`, where instead of metadata we use `create_dag` arguments:
 
 ```py
-import airflow
 from datetime import timedelta
 from airflow.utils.dates import days_ago
 from gusty import create_dag
@@ -192,7 +191,6 @@ If you have multiple gusty DAGs located inside of a single directory, you can co
 Let's adjust the above `create_dag` example to use `create_dags` instead:
 
 ```py
-import airflow
 from datetime import timedelta
 from airflow.utils.dates import days_ago
 from gusty import create_dags
