@@ -149,8 +149,7 @@ def build_task(spec, level_id, schematic):
     args = {
         k: v
         for k, v in spec.items()
-        if k
-        in inspect.signature(BaseOperator.__init__).parameters.keys()
+        if k in inspect.signature(BaseOperator.__init__).parameters.keys()
         or k in _get_operator_parameters(operator)
         or k in _get_operator_parameters(operator.__base__)
     }
@@ -241,6 +240,8 @@ class GustyBuilder:
                 "DAG directory {dag_dir} does not exist".format(dag_dir=dag_dir)
             )
 
+        self.extra_tags = kwargs.get("extra_tags")
+
         self.parsers = default_parsers.copy()
 
         if len(kwargs["parse_hooks"]) > 0:
@@ -287,10 +288,7 @@ class GustyBuilder:
                 k: v
                 for k, v in kwargs["wait_for_defaults"].items()
                 if k in AVAILABLE_WAIT_FOR_PARAMS
-                or k
-                in inspect.signature(
-                    BaseOperator.__init__
-                ).parameters.keys()
+                or k in inspect.signature(BaseOperator.__init__).parameters.keys()
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
 
@@ -359,6 +357,12 @@ class GustyBuilder:
         else:
             level_metadata = {}
         metadata_defaults.update(level_metadata)
+
+        if self.extra_tags and self.schematic[id]["parent_id"] is None:
+            tags = metadata_defaults.get("tags", [])
+            tags = list(set(tags + self.extra_tags))
+            metadata_defaults.update({"tags": tags})
+
         self.schematic[id]["metadata"] = metadata_defaults
 
         # dependencies get explicity set at the level-"level" for each level

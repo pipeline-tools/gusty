@@ -8,6 +8,7 @@ def create_dag(
     latest_only=True,
     parse_hooks=None,
     dag_constructors=None,
+    extra_tags=None,
     **kwargs
 ):
     """
@@ -49,6 +50,7 @@ def create_dag(
         latest_only=latest_only,
         parse_hooks=parse_hooks or {},
         dag_constructors=dag_constructors or {},
+        extra_tags=extra_tags or [],
         **kwargs
     )
     [setup.parse_metadata(level) for level in setup.levels]

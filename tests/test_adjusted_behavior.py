@@ -38,6 +38,7 @@ def dag(with_metadata_dir):
         task_group_defaults={"prefix_group_id": True},
         wait_for_defaults={"poke_interval": 12},
         dag_constructors=[env_var],
+        extra_tags=["extra"],
     )
     return dag
 
@@ -156,3 +157,11 @@ def test_absql_override(builder, dag):
 
 def test_metadata_renders(dag):
     assert dag.description == "For making the most important meal of the day."
+
+
+def test_extra_tags(dag):
+    tags = dag.__dict__["tags"]
+    assert "delicious" in tags
+    assert "nutritious" in tags
+    assert "important" in tags
+    assert "extra" in tags
