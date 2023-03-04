@@ -9,6 +9,7 @@ def create_dag(
     parse_hooks=None,
     dag_constructors=None,
     extra_tags=None,
+    render_on_create=True,
     **kwargs
 ):
     """
@@ -35,6 +36,10 @@ def create_dag(
         parse_hooks (dict): Keys are file extensions (beginning with periods), values are functions that
             parse a given file path for a the associated file extension.
 
+        render_on_create (bool): By default, gusty will render templated Jinja during dag creation. This is
+            contrary to Airflow's default behavior, which doesn't render templates until runtime. To disable
+            this feature, set this argument to False.
+
         kwargs: Any additional keyword argument that can be passed to Airflow's DAG class,
             e.g. default_args, schedule_interval, description
 
@@ -51,6 +56,7 @@ def create_dag(
         parse_hooks=parse_hooks or {},
         dag_constructors=dag_constructors or {},
         extra_tags=extra_tags or [],
+        render_on_create=render_on_create,
         **kwargs
     )
     [setup.parse_metadata(level) for level in setup.levels]

@@ -16,7 +16,13 @@ default_parsers = {
 }
 
 
-def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
+def parse(
+    file_path,
+    parse_dict=default_parsers,
+    loader=None,
+    runner=None,
+    render_on_create=True,
+):
     """
     Reading in yaml specs / frontmatter.
     """
@@ -31,6 +37,8 @@ def parse(file_path, parse_dict=default_parsers, loader=None, runner=None):
         parser = partial(parser, loader=loader)
     if "runner" in get_function_arg_names(parser):
         parser = partial(parser, runner=runner)
+    if "render_on_create" in get_function_arg_names(parser):
+        parser = partial(parser, render_on_create=render_on_create)
 
     yaml_file = parser(file_path)
 

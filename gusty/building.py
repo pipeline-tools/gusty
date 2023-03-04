@@ -242,6 +242,8 @@ class GustyBuilder:
 
         self.extra_tags = kwargs.get("extra_tags")
 
+        self.render_on_create = kwargs.get("render_on_create")
+
         self.parsers = default_parsers.copy()
 
         if len(kwargs["parse_hooks"]) > 0:
@@ -435,7 +437,9 @@ class GustyBuilder:
         level_metadata = self.schematic[id]["metadata"]
         level_spec_paths = self.schematic[id]["spec_paths"]
         level_specs = [
-            parse(spec_path, self.parsers, self.loader, self.runner)
+            parse(
+                spec_path, self.parsers, self.loader, self.runner, self.render_on_create
+            )
             for spec_path in level_spec_paths
         ]
         level_specs = flatten_nested_lists(level_specs)
