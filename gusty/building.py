@@ -331,7 +331,7 @@ class GustyBuilder:
         level_metadata_path = self.schematic[id]["metadata_path"]
         if os.path.exists(level_metadata_path or ""):
             level_metadata = default_parsers[".yml"](
-                level_metadata_path, self.loader, self.runner
+                level_metadata_path, self.loader, self.runner, render_on_create=True
             )
 
             # special case - default_args provided in both metadata_defaults and level_metadata
