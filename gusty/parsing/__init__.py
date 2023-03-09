@@ -21,7 +21,7 @@ def parse(
     parse_dict=default_parsers,
     loader=None,
     runner=None,
-    render_on_create=True,
+    render_on_create=False,
 ):
     """
     Reading in yaml specs / frontmatter.

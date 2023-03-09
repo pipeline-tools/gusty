@@ -29,6 +29,12 @@ def builder(with_metadata_dir):
 
 @pytest.fixture(scope="session")
 def dag(with_metadata_dir):
+    def simple_constructor(hello=True):
+        if hello:
+            return "hello"
+        else:
+            return "goodbye"
+
     def env_var(x):
         return x + x
 
@@ -37,8 +43,9 @@ def dag(with_metadata_dir):
         default_args={"email": "default@gusty.com", "retries": 5},
         task_group_defaults={"prefix_group_id": True},
         wait_for_defaults={"poke_interval": 12},
-        dag_constructors=[env_var],
+        dag_constructors=[env_var, simple_constructor],
         extra_tags=["extra"],
+        render_on_create=True,
     )
     return dag
 
@@ -165,3 +172,22 @@ def test_extra_tags(dag):
     assert "nutritious" in tags
     assert "important" in tags
     assert "extra" in tags
+
+
+def test_constructors(dag):
+    assert dag.task_dict["sensor_task"].__dict__["email"] == "goodbye"
+    assert dag.task_dict["sensor_task"].__dict__["owner"] == "hello"
+    # Below is generated a default func available in absql
+    assert dag.task_dict["sensor_task"].__dict__["doc"] == "default_absql_func"
+
+
+def test_context_rendering_omits_sql(dag):
+    sql_task = dag.task_dict["sql_task"]
+    assert sql_task.__dict__["doc"] == "hello"
+    assert (
+        sql_task.__dict__["sql"] == "SELECT date FROM my_table WHERE date = {{ date }}"
+    )
+
+
+def test_context_rendering_py(dag):
+    assert dag.task_dict["py_task"].__dict__["python_callable"]() == "hey"
