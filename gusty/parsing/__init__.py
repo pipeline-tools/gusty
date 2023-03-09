@@ -1,5 +1,5 @@
 import os
-from copy import deepcopy
+from copy import copy
 from functools import partial
 from absql.utils import get_function_arg_names
 from gusty.parsing.loaders import generate_loader
@@ -55,7 +55,7 @@ def parse(
     yaml_file["file_path"] = file_path
 
     # gusty will also attach the absql_runner
-    yaml_file["absql_runner"] = deepcopy(runner)
+    yaml_file["absql_runner"] = copy(runner)
 
     # Check dependencies
     if "dependencies" in yaml_file.keys():
