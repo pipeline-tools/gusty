@@ -1,5 +1,2 @@
 operator: airflow.sensors.time_delta.TimeDeltaSensor
 delta: !timedelta 'seconds: 2'
-email: "{{simple_constructor(hello=False)}}"
-owner: !simple_constructor
-doc: "{{env_switch(nonexistant='irrelevant', default='default_absql_func')}}"
