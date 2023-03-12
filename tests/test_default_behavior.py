@@ -34,12 +34,6 @@ def dag_files(no_metadata_dir):
 
 @pytest.fixture(scope="session")
 def dag(no_metadata_dir):
-    def simple_constructor(hello=True):
-        if hello:
-            return "hello"
-        else:
-            return "goodbye"
-
     dag = create_dag(
         no_metadata_dir,
         description="A dag created without metadata",
@@ -54,8 +48,9 @@ def dag(no_metadata_dir):
             "retries": 3,
             "retry_delay": timedelta(minutes=5),
         },
+        user_defined_macros={"udf": lambda: "udf"},
+        dag_constructors={"!dc": lambda: "dc"},
         external_dependencies=[{"external_dag": "a_root_level_external"}],
-        dag_constructors=[simple_constructor],
     )
     return dag
 
@@ -178,20 +173,13 @@ def test_root_external_dependencies_latest_only_order(dag):
     )
 
 
-def test_constructors(dag):
-    assert dag.task_dict["sensor_task"].__dict__["email"] == "goodbye"
-    assert dag.task_dict["sensor_task"].__dict__["owner"] == "hello"
-    # Below is generated a default func available in absql
-    assert dag.task_dict["sensor_task"].__dict__["doc"] == "default_absql_func"
+def test_udf_in_macros(dag):
+    assert dag.__dict__["user_defined_macros"]["udf"]() == "udf"
 
 
-def test_context_rendering_omits_sql(dag):
-    sql_task = dag.task_dict["sql_task"]
-    assert sql_task.__dict__["doc"] == "hello"
-    assert (
-        sql_task.__dict__["sql"] == "SELECT date FROM my_table WHERE date = {{ date }}"
-    )
+def test_dc_in_macros(dag):
+    assert dag.__dict__["user_defined_macros"]["dc"]() == "dc"
 
 
-def test_context_rendering_py(dag):
-    assert dag.task_dict["py_task"].__dict__["python_callable"]() == "hey"
+def test_udf_as_constructor(dag):
+    assert dag.task_dict["sensor_task"].__dict__["email"] == "udf"

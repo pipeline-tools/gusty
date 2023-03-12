@@ -35,7 +35,6 @@ def dag(no_render_on_create_dir):
             "retries": 3,
             "retry_delay": timedelta(minutes=5),
         },
-        render_on_create=False,
     )
     return dag
 

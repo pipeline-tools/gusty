@@ -5,7 +5,7 @@ from absql.files.parsers import frontmatter_load
 from gusty.parsing.utils import render_frontmatter, get_callable_from_file
 
 
-def parse_generic(file_path, loader=None, runner=None, render_on_create=True):
+def parse_generic(file_path, loader=None, runner=None, render_on_create=False):
     if loader is None:
         loader = generate_loader()
     # Read either the frontmatter or the parsed yaml file (using "or" to coalesce them)
@@ -18,7 +18,7 @@ def parse_generic(file_path, loader=None, runner=None, render_on_create=True):
     return job_spec
 
 
-def parse_py(file_path, loader=None, runner=None, render_on_create=True):
+def parse_py(file_path, loader=None, runner=None, render_on_create=False):
     if loader is None:
         loader = generate_loader()
 
@@ -75,7 +75,7 @@ def parse_py(file_path, loader=None, runner=None, render_on_create=True):
     return job_spec
 
 
-def parse_ipynb(file_path, loader=None, runner=None, render_on_create=True):
+def parse_ipynb(file_path, loader=None, runner=None, render_on_create=False):
     if loader is None:
         loader = generate_loader()
     # Find first yaml cell in jupyter notebook and parse yaml
@@ -99,7 +99,7 @@ def parse_ipynb(file_path, loader=None, runner=None, render_on_create=True):
     return job_spec
 
 
-def parse_sql(file_path, loader=None, runner=None, render_on_create=True):
+def parse_sql(file_path, loader=None, runner=None, render_on_create=False):
     if loader is None:
         loader = generate_loader()
     file_contents = frontmatter_load(file_path, loader=loader)
