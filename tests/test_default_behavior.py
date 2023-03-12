@@ -48,6 +48,8 @@ def dag(no_metadata_dir):
             "retries": 3,
             "retry_delay": timedelta(minutes=5),
         },
+        user_defined_macros={"udf": lambda: "udf"},
+        dag_constructors={"!dc": lambda: "dc"},
         external_dependencies=[{"external_dag": "a_root_level_external"}],
     )
     return dag
@@ -169,3 +171,15 @@ def test_root_external_dependencies_latest_only_order(dag):
     assert (
         len(latest_only_upstream_tasks) == 0 and len(latest_only_downstream_tasks) == 1
     )
+
+
+def test_udf_in_macros(dag):
+    assert dag.__dict__["user_defined_macros"]["udf"]() == "udf"
+
+
+def test_dc_in_macros(dag):
+    assert dag.__dict__["user_defined_macros"]["dc"]() == "dc"
+
+
+def test_udf_as_constructor(dag):
+    assert dag.task_dict["sensor_task"].__dict__["email"] == "udf"

@@ -4,13 +4,14 @@ from absql import Runner
 from functools import partial
 from gusty.errors import NonexistentDagDirError
 from gusty.parsing import parse, default_parsers
-from gusty.parsing.loaders import (
-    generate_loader,
-    default_constructors,
-    handle_user_constructors,
-)
+from gusty.parsing.loaders import generate_loader
 from gusty.importing import airflow_version, get_operator
 from gusty.external_sensor import create_external_sensor, make_external_task_name
+from gusty.utils.context import (
+    generate_loader_constructors,
+    generate_runner_context,
+    generate_user_defined_macros,
+)
 
 ###########################
 ## Version Compatability ##
@@ -252,19 +253,41 @@ class GustyBuilder:
             ), "parse_hooks should be a dict of file extensions and handler functions for file_path."
             self.parsers.update(kwargs["parse_hooks"])
 
-        # Create dag_constructors
-        dag_constructors = default_constructors.copy()
-        if kwargs["dag_constructors"]:
-            dag_constructors.update(
-                handle_user_constructors(kwargs["dag_constructors"])
-            )
+        # ------------------------- #
+        # Begin Consolidate Context #
+        # ------------------------- #
 
-        # Generate runner with dag_constructors
-        runner_context = {k.strip("!"): v for k, v in dag_constructors.items()}
+        user_defined_macros = kwargs.get("user_defined_macros", {})
+        user_dag_constructors = kwargs.get("dag_constructors", {})
+
+        # Create dag_constructors (for the loader)
+        dag_constructors = generate_loader_constructors(
+            user_defined_macros=user_defined_macros,
+            dag_constructors=user_dag_constructors,
+        )
+
+        # Create runner_context (for the runner)
+        runner_context = generate_runner_context(dag_constructors)
+
+        # Make the runner
         self.runner = Runner(**runner_context)
 
-        # Generate loader with dag_constructors
+        # Make the loader
         self.loader = generate_loader(dag_constructors)
+
+        # Consolidate user_defined_macros
+        kwargs.update(
+            {
+                "user_defined_macros": generate_user_defined_macros(
+                    user_defined_macros=user_defined_macros,
+                    dag_constructors=user_dag_constructors,
+                )
+            }
+        )
+
+        # ----------------------- #
+        # END Consolidate Context #
+        # ----------------------- #
 
         self.schematic = create_schematic(dag_dir, self.parsers)
 
