@@ -36,9 +36,9 @@ def create_dag(
         parse_hooks (dict): Keys are file extensions (beginning with periods), values are functions that
             parse a given file path for a the associated file extension.
 
-        render_on_create (bool): When set to True, gusty will render templated Jinja during dag creation. This is
-            contrary to Airflow's default behavior, which doesn't render templates until runtime. This feature is
-            disabled by default.
+        render_on_create (bool): When set to True, gusty will render templated Jinja during dag
+            creation. This is contrary to Airflow's default behavior, which doesn't render templates
+            until runtime. This feature is disabled by default.
 
         kwargs: Any additional keyword argument that can be passed to Airflow's DAG class,
             e.g. default_args, schedule_interval, description
