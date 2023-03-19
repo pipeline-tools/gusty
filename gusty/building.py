@@ -25,9 +25,9 @@ if airflow_version > 1:
 else:
     from airflow.operators.latest_only_operator import LatestOnlyOperator
 
-#####################
-## Wait for Params ##
-#####################
+###############
+## Constants ##
+###############
 
 AVAILABLE_WAIT_FOR_PARAMS = [
     "poke_interval",
@@ -39,6 +39,8 @@ AVAILABLE_WAIT_FOR_PARAMS = [
     "execution_date_fn",
     "check_existence",
 ]
+
+BASE_OPERATOR_KEYS = inspect.signature(BaseOperator.__init__).parameters.keys()
 
 #########################
 ## Schematic Functions ##
@@ -150,7 +152,7 @@ def build_task(spec, level_id, schematic):
     args = {
         k: v
         for k, v in spec.items()
-        if k in inspect.signature(BaseOperator.__init__).parameters.keys()
+        if k in BASE_OPERATOR_KEYS
         or k in _get_operator_parameters(operator)
         or k in _get_operator_parameters(operator.__base__)
     }
@@ -312,8 +314,7 @@ class GustyBuilder:
             user_wait_for_defaults = {
                 k: v
                 for k, v in kwargs["wait_for_defaults"].items()
-                if k in AVAILABLE_WAIT_FOR_PARAMS
-                or k in inspect.signature(BaseOperator.__init__).parameters.keys()
+                if k in AVAILABLE_WAIT_FOR_PARAMS or k in BASE_OPERATOR_KEYS
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
 
