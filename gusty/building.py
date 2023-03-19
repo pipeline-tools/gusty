@@ -133,37 +133,35 @@ def parse_wait_for_overrides(external_dependencies):
 ## Builder Functions ##
 #######################
 
-OPERATOR_PARAM_CACHE = {}
 
-
-def _get_operator_parameters(operator):
-    params = OPERATOR_PARAM_CACHE.get(operator)
+def _get_operator_parameters(operator, operator_param_cache):
+    params = operator_param_cache.get(operator)
     if params:
         return params
 
     params = getattr(operator, "_gusty_parameters", None)
     if params is not None:
-        OPERATOR_PARAM_CACHE.update({operator: params})
+        operator_param_cache.update({operator: params})
         return params
 
     params = inspect.signature(operator.__init__).parameters.keys()
-    OPERATOR_PARAM_CACHE.update({operator: params})
+    operator_param_cache.update({operator: params})
     return params
 
 
-def build_task(spec, level_id, schematic):
+def build_task(spec, level_id, schematic, operator_cache, operator_param_cache):
     """
     Given a task specification ("spec"), locate the operator and
     instantiate the object with args from the spec.
     """
-    operator = get_operator(spec["operator"])
+    operator = get_operator(spec["operator"], operator_cache)
 
     args = {
         k: v
         for k, v in spec.items()
         if k in BASE_OPERATOR_KEYS
-        or k in _get_operator_parameters(operator)
-        or k in _get_operator_parameters(operator.__base__)
+        or k in _get_operator_parameters(operator, operator_param_cache)
+        or k in _get_operator_parameters(operator.__base__, operator_param_cache)
     }
     args["task_id"] = spec["task_id"]
     args["dag"] = get_top_level_dag(schematic)
@@ -349,6 +347,10 @@ class GustyBuilder:
         # Allow for the assignment of additional leaf tasks from a dictionary
         self.leaf_tasks_from_dict = kwargs.get("leaf_tasks_from_dict", {})
 
+        # caching
+        self.operator_param_cache = {}
+        self.operator_cache = {}
+
     def parse_metadata(self, id):
         """
         For a given level id, parse any metadata if there is a METADATA.yml path,
@@ -513,7 +515,9 @@ class GustyBuilder:
         """
         level_specs = self.schematic[id]["specs"]
         level_tasks = {
-            spec["task_id"]: build_task(spec, id, self.schematic)
+            spec["task_id"]: build_task(
+                spec, id, self.schematic, self.operator_cache, self.operator_param_cache
+            )
             for spec in level_specs
         }
         self.schematic[id]["tasks"] = level_tasks

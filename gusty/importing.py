@@ -59,15 +59,13 @@ pairs = [
 ]
 module_dict = dict(itertools.chain(*pairs))
 
-OPERATOR_CACHE = {}
 
-
-def get_operator(operator_string):
+def get_operator(operator_string, operator_cache):
     """
     Given an operator string, determine the location of that operator and return the operator object
     """
 
-    operator = OPERATOR_CACHE.get(operator_string)
+    operator = operator_cache.get(operator_string)
     if operator:
         return operator
 
@@ -81,5 +79,5 @@ def get_operator(operator_string):
     )
 
     operator = getattr(importlib.import_module(module_name), operator_name)
-    OPERATOR_CACHE.update({operator_string: operator})
+    operator_cache.update({operator_string: operator})
     return operator

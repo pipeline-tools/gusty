@@ -33,5 +33,5 @@ def test_module_fail():
 
 
 def test_get_operator():
-    operator = get_operator("airflow.operators.bash.BashOperator")
+    operator = get_operator("airflow.operators.bash.BashOperator", {})
     assert operator.__name__ == "BashOperator"
