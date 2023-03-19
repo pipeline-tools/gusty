@@ -25,9 +25,9 @@ if airflow_version > 1:
 else:
     from airflow.operators.latest_only_operator import LatestOnlyOperator
 
-#####################
-## Wait for Params ##
-#####################
+###############
+## Constants ##
+###############
 
 AVAILABLE_WAIT_FOR_PARAMS = [
     "poke_interval",
@@ -39,6 +39,8 @@ AVAILABLE_WAIT_FOR_PARAMS = [
     "execution_date_fn",
     "check_existence",
 ]
+
+BASE_OPERATOR_KEYS = inspect.signature(BaseOperator.__init__).parameters.keys()
 
 #########################
 ## Schematic Functions ##
@@ -132,27 +134,34 @@ def parse_wait_for_overrides(external_dependencies):
 #######################
 
 
-def _get_operator_parameters(operator):
-    params = getattr(operator, "_gusty_parameters", None)
-    if params is not None:
+def _get_operator_parameters(operator, operator_param_cache):
+    params = operator_param_cache.get(operator)
+    if params:
         return params
 
-    return inspect.signature(operator.__init__).parameters.keys()
+    params = getattr(operator, "_gusty_parameters", None)
+    if params is not None:
+        operator_param_cache.update({operator: params})
+        return params
+
+    params = inspect.signature(operator.__init__).parameters.keys()
+    operator_param_cache.update({operator: params})
+    return params
 
 
-def build_task(spec, level_id, schematic):
+def build_task(spec, level_id, schematic, operator_cache, operator_param_cache):
     """
     Given a task specification ("spec"), locate the operator and
     instantiate the object with args from the spec.
     """
-    operator = get_operator(spec["operator"])
+    operator = get_operator(spec["operator"], operator_cache)
 
     args = {
         k: v
         for k, v in spec.items()
-        if k in inspect.signature(BaseOperator.__init__).parameters.keys()
-        or k in _get_operator_parameters(operator)
-        or k in _get_operator_parameters(operator.__base__)
+        if k in BASE_OPERATOR_KEYS
+        or k in _get_operator_parameters(operator, operator_param_cache)
+        or k in _get_operator_parameters(operator.__base__, operator_param_cache)
     }
     args["task_id"] = spec["task_id"]
     args["dag"] = get_top_level_dag(schematic)
@@ -312,8 +321,7 @@ class GustyBuilder:
             user_wait_for_defaults = {
                 k: v
                 for k, v in kwargs["wait_for_defaults"].items()
-                if k in AVAILABLE_WAIT_FOR_PARAMS
-                or k in inspect.signature(BaseOperator.__init__).parameters.keys()
+                if k in AVAILABLE_WAIT_FOR_PARAMS or k in BASE_OPERATOR_KEYS
             }
             self.wait_for_defaults.update(user_wait_for_defaults)
 
@@ -338,6 +346,10 @@ class GustyBuilder:
 
         # Allow for the assignment of additional leaf tasks from a dictionary
         self.leaf_tasks_from_dict = kwargs.get("leaf_tasks_from_dict", {})
+
+        # caching
+        self.operator_param_cache = {}
+        self.operator_cache = {}
 
     def parse_metadata(self, id):
         """
@@ -503,7 +515,9 @@ class GustyBuilder:
         """
         level_specs = self.schematic[id]["specs"]
         level_tasks = {
-            spec["task_id"]: build_task(spec, id, self.schematic)
+            spec["task_id"]: build_task(
+                spec, id, self.schematic, self.operator_cache, self.operator_param_cache
+            )
             for spec in level_specs
         }
         self.schematic[id]["tasks"] = level_tasks
