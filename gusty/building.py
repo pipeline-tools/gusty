@@ -133,13 +133,22 @@ def parse_wait_for_overrides(external_dependencies):
 ## Builder Functions ##
 #######################
 
+OPERATOR_PARAM_CACHE = {}
+
 
 def _get_operator_parameters(operator):
-    params = getattr(operator, "_gusty_parameters", None)
-    if params is not None:
+    params = OPERATOR_PARAM_CACHE.get(operator)
+    if params:
         return params
 
-    return inspect.signature(operator.__init__).parameters.keys()
+    params = getattr(operator, "_gusty_parameters", None)
+    if params is not None:
+        OPERATOR_PARAM_CACHE.update({operator: params})
+        return params
+
+    params = inspect.signature(operator.__init__).parameters.keys()
+    OPERATOR_PARAM_CACHE.update({operator: params})
+    return params
 
 
 def build_task(spec, level_id, schematic):
