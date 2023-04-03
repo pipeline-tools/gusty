@@ -1,4 +1,4 @@
-from airflow import macros
+# from airflow import macros
 from airflow.utils.context import VariableAccessor
 
 from gusty.parsing.loaders import (
@@ -7,7 +7,8 @@ from gusty.parsing.loaders import (
 )
 
 airflow_default_macros = {
-    "macros": macros,
+    # Cannot include macros because Airflow uses deepcopy
+    # "macros": macros,
     "var": {
         "json": VariableAccessor(deserialize_json=True),
         "value": VariableAccessor(deserialize_json=False),

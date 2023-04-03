@@ -64,9 +64,10 @@ def test_runner_context_dag_con_over_default_con(runner_context):
     assert runner_context["datetime"]() == "yesyesyes"
 
 
-def test_runner_context_macros_in_context(runner_context):
-    # airflow_default_macros make it into runner context
-    assert runner_context["macros"].ds_add("2022-01-01", 1) == "2022-01-02"
+# Cannot include macros because Airflow uses deepcopy
+# def test_runner_context_macros_in_context(runner_context):
+#     # airflow_default_macros make it into runner context
+#     assert runner_context["macros"].ds_add("2022-01-01", 1) == "2022-01-02"
 
 
 def test_runner_context_udf_over_default_macros(runner_context):
