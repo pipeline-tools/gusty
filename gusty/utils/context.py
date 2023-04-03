@@ -1,5 +1,5 @@
 # from airflow import macros
-from airflow.utils.context import VariableAccessor
+# from airflow.utils.context import VariableAccessor
 
 from gusty.parsing.loaders import (
     default_constructors,
