@@ -6,14 +6,14 @@ from gusty.parsing.loaders import (
     handle_user_constructors,
 )
 
-airflow_default_macros = {
-    # Cannot include macros because Airflow uses deepcopy
-    # "macros": macros,
-    "var": {
-        "json": VariableAccessor(deserialize_json=True),
-        "value": VariableAccessor(deserialize_json=False),
-    },
-}
+# airflow_default_macros = {
+#     # Cannot include macros because Airflow uses deepcopy
+#     # "macros": macros,
+#     "var": {
+#         "json": VariableAccessor(deserialize_json=True),
+#         "value": VariableAccessor(deserialize_json=False),
+#     },
+# }
 
 
 def generate_loader_constructors(user_defined_macros, dag_constructors):
@@ -40,9 +40,9 @@ def generate_runner_context(loader_constructors):
     # support for airflow_default_macros, as long as the
     # user hasn't already added them via in user_defined_macros
     # or dag_constructors
-    for k, v in airflow_default_macros.items():
-        if k not in runner_context.keys():
-            runner_context[k] = v
+    # for k, v in airflow_default_macros.items():
+    #     if k not in runner_context.keys():
+    #         runner_context[k] = v
     return runner_context
 
 
