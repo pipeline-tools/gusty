@@ -65,9 +65,9 @@ def get_operator(operator_string, operator_cache):
     Given an operator string, determine the location of that operator and return the operator object
     """
 
-    # operator = operator_cache.get(operator_string)
-    # if operator:
-    #     return operator
+    operator = operator_cache.get(operator_string)
+    if operator:
+        return operator
 
     operator_name = get_operator_name(operator_string)
     operator_location = get_operator_location(operator_string)
@@ -79,5 +79,5 @@ def get_operator(operator_string, operator_cache):
     )
 
     operator = getattr(importlib.import_module(module_name), operator_name)
-    # operator_cache.update({operator_string: operator})
+    operator_cache.update({operator_string: operator})
     return operator

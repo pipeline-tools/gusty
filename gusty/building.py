@@ -135,17 +135,17 @@ def parse_wait_for_overrides(external_dependencies):
 
 
 def _get_operator_parameters(operator, operator_param_cache):
-    # params = operator_param_cache.get(operator)
-    # if params:
-    #     return params
+    params = operator_param_cache.get(operator)
+    if params:
+        return params
 
     params = getattr(operator, "_gusty_parameters", None)
     if params is not None:
-        # operator_param_cache.update({operator: params})
+        operator_param_cache.update({operator: params})
         return params
 
     params = inspect.signature(operator.__init__).parameters.keys()
-    # operator_param_cache.update({operator: params})
+    operator_param_cache.update({operator: params})
     return params
 
 
