@@ -21,7 +21,13 @@ setuptools.setup(
         "nbformat",
         "pendulum",
         "PyYaml",
+        "Click"
     ],
+    entry_points={
+        'console_scripts': [
+            'gusty = gusty.cli:cli',
+        ],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
