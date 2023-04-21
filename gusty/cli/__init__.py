@@ -1,6 +1,6 @@
 import click
 import os
-from gusty.cli.contents import create_dag_file, dag_contents_map
+from gusty.cli.sample_tasks import create_dag_file, dag_contents_map
 
 @click.group()
 def cli():
