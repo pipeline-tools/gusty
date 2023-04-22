@@ -7,12 +7,11 @@ from gusty.cli import cli, sample_tasks
 def cli_runner():
     return CliRunner()
 
-def test_cli_create_dag(cli_runner, tmp_path):
+def test_use_create_dag(cli_runner, tmp_path):
     # Create an isolated directory in which to create DAG
     with cli_runner.isolated_filesystem(temp_dir=tmp_path):
         dag_name = 'cli_dag'
         result = cli_runner.invoke(cli, ['use', 'create-dag', 'cli_dag', f'--dags-dir={tmp_path}'])
-
         assert result.exit_code == 0
 
         # Get expected contents of the create_dag file
