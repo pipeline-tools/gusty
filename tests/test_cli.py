@@ -3,17 +3,17 @@ import os
 from click.testing import CliRunner
 from gusty.cli import cli, sample_tasks
 
-def test_cli_create_dag(tmp_path):
-    """
-    create_dag default_args should be implemented on top of
-    METADATA.yml-provided default_args when a default arg (e.g. retries)
-    is not provided METADATA.yml but is provided by create_dag default_args
-    """
-    runner = CliRunner()
+@pytest.fixture()
+def cli_runner():
+    return CliRunner()
+
+def test_cli_create_dag(cli_runner, tmp_path):
     # Create an isolated directory in which to create DAG
-    with runner.isolated_filesystem(temp_dir=tmp_path):
+    with cli_runner.isolated_filesystem(temp_dir=tmp_path):
         dag_name = 'cli_dag'
         result = runner.invoke(cli, ['use', 'create-dag', 'cli_dag', f'--dags-dir={tmp_path}'])
+
+        assert result.exit_code == 0
 
         # Get expected contents of the create_dag file
         create_dag_filename, create_dag_file_expected_contents_list = sample_tasks.create_dag_file(dag_name)
@@ -41,3 +41,4 @@ def test_cli_create_dag(tmp_path):
             with open(task_file_path, 'r') as f:
                 task_file_contents = f.read()
                 assert task_file_contents == task_file_expected_contents
+
