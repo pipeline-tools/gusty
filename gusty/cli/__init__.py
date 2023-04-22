@@ -1,26 +1,36 @@
 import click
 import os
-from gusty.cli.sample_tasks import create_dag_file, dag_contents_map
+from gusty.cli.utils import get_dags_directory
+from gusty.cli.sample_tasks import create_dag_file, dag_contents_map, create_dags_file
 
 @click.group()
 def cli():
     pass
 
 @click.command()
-@click.argument('dag_name', type=click.Path())
-@click.option('--dags-dir', default='dags')
-def create_dag(dag_name, dags_dir):
-    # Look at current, parent, and child directory for dags directory
+@click.argument('func', type=click.Choice(['create-dag', 'create-dags']))
+@click.argument('name', type=str)
+@click.option('--dags-dir')
+def use(func, name, dags_dir):
 
-    dag_path = os.path.join(dags_dir, dag_name)
-    os.mkdir(dag_path)
+    # dags directory defaults to current directory if not specified
+    # and is not the current, parent, or child directory.
+    if not dags_dir:
+        dags_dir = dags_dir if dags_dir else get_dags_directory(dags_dir)
+
+    dag_path = os.path.join(dags_dir, name)
+    if func == 'create-dags':
+        dag_path = os.path.join(dags_dir, name, 'hello_dag')
+        os.makedirs(dag_path)
+    else:
+        os.mkdir(dag_path)
 
     for filename, contents in dag_contents_map.items():
         with open(os.path.join(dag_path, filename), 'x') as f:
             f.writelines(contents)
 
-    create_dag_filename, create_dag_contents = create_dag_file(dag_name)
+    create_dag_filename, create_dag_contents = create_dag_file(name) if func == 'create-dag' else create_dags_file(name)
     with open(os.path.join(dags_dir, create_dag_filename), 'x') as f:
         f.writelines(create_dag_contents)
 
-cli.add_command(create_dag)
+cli.add_command(use)

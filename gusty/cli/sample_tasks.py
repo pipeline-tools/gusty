@@ -61,3 +61,35 @@ create_dag_file = lambda dag_name: (
         'hello_dag = create_dag(hello_dag_dir, latest_only=False)\n'
     )
 )
+
+create_dags_file = lambda dag_folder_name: (
+    f'create_{dag_folder_name}.py', (
+        'import os\n',
+        'from gusty import create_dags\n',
+        'from gusty.utils import days_ago\n',
+        '\n',
+        '# gusty_dags_dir returns something like: "/usr/local/airflow/dags/gusty_dags"\n',
+        'gusty_dags_dir = os.path.join(\n',
+        '\tos.environ["AIRFLOW_HOME"], \n',
+        f'\t"dags", \n',
+        f'\t"{dag_folder_name}"\n',
+        ')\n',
+        '\n',
+        'create_dags(\n',
+        '\tgusty_dags_dir,\n',
+        '\tglobals(),\n',
+        '\tschedule="0 0 * * *",\n',
+        '\tcatchup=False,\n',
+        '\tdefault_args={\n',
+            '\t\t"owner": "you",\n',
+            '\t\t"email": "you@you.com",\n',
+            '\t\t"start_date": days_ago(1)\n',
+        '\t},\n',
+        '\twait_for_defaults={\n',
+            '\t\t"mode": "reschedule"\n',
+        '\t},\n',
+        '\textra_tags=["gusty_dags"],\n',
+        '\tlatest_only=False\n'
+        ')\n'
+    )
+)
