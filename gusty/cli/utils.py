@@ -1,3 +1,5 @@
+import os
+
 def get_dags_directory(dags_dir):
     current_directory_name = os.path.split(os.getcwd())
 

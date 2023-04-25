@@ -30,7 +30,10 @@ def use(func, name, dags_dir):
         with open(fpath, 'x') as f:
             f.writelines(contents)
 
-    create_dag_filename, create_dag_contents = create_dag_file(name) if func == 'create-dag' else create_dags_file(name)
+    full_dag_path = os.path.abspath(dag_path)
+    create_dag_filename, create_dag_contents = (
+        create_dag_file(name, full_dag_path) if func == 'create-dag' else create_dags_file(name, full_dag_path)
+    )
     create_file_fpath = os.path.join(dags_dir, create_dag_filename)
     with open(create_file_fpath, 'x') as f:
         f.writelines(create_dag_contents)
