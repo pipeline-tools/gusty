@@ -9,9 +9,12 @@ def cli():
 
 @click.command()
 @click.argument('func', type=click.Choice(['create-dag', 'create-dags']))
-@click.argument('name', type=str)
-@click.option('--dags-dir')
+@click.option('--name', '-n', type=str)
+@click.option('--dags-dir', '-d', type=click.Path())
 def use(func, name, dags_dir):
+
+    if not name:
+        name = 'hello_dag' if func == 'create-dag' else 'gusty_dags'
 
     # dags directory defaults to current directory if not specified
     # and is not the current, parent, or child directory.
