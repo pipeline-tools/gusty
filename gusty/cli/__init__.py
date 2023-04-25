@@ -3,9 +3,11 @@ import os
 from gusty.cli.utils import get_dags_directory
 from gusty.cli.sample_tasks import create_dag_file, dag_contents_map, create_dags_file
 
+
 @click.group()
 def cli():
     pass
+
 
 @click.command()
 @click.argument('func', type=click.Choice(['create-dag', 'create-dags']))
@@ -34,10 +36,12 @@ def use(func, name, dags_dir):
 
     full_dag_path = os.path.abspath(dag_path)
     create_dag_filename, create_dag_contents = (
-        create_dag_file(name, full_dag_path) if func == 'create-dag' else create_dags_file(name, full_dag_path)
+        create_dag_file(name, full_dag_path) if func == 'create-dag'
+        else create_dags_file(name, full_dag_path)
     )
     create_file_fpath = os.path.join(dags_dir, create_dag_filename)
     with open(create_file_fpath, 'x') as f:
         f.writelines(create_dag_contents)
+
 
 cli.add_command(use)
