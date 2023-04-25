@@ -18,8 +18,7 @@ def use(func, name, dags_dir):
 
     # dags directory defaults to current directory if not specified
     # and is not the current, parent, or child directory.
-    if not dags_dir:
-        dags_dir = dags_dir if dags_dir else get_dags_directory(dags_dir)
+    dags_dir = dags_dir if dags_dir else get_dags_directory(dags_dir)
 
     dag_path = os.path.join(dags_dir, name)
     if func == 'create-dags':
