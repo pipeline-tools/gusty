@@ -2,13 +2,13 @@ import pytest
 import os
 from click.testing import CliRunner
 
-from gusty.cli import cli, sample_tasks
-from gusty import create_dag
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.providers.sqlite.operators.sqlite import SqliteOperator
+
+from gusty.cli import cli, sample_tasks
+from gusty import create_dag
 
 
 @pytest.fixture()
