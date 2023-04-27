@@ -16,7 +16,7 @@ gusty works with both Airflow 1.x and Airflow 2.x, and has even more features, a
 
 ## Documentation
 
-The official documentation is hosted here: https://pipeline-tools.github.io/gusty-docs/
+The official documentation for gusty is hosted here: https://pipeline-tools.github.io/gusty-docs/
 
 ## What's in gusty?
 
