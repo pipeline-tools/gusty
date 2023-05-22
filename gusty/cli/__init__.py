@@ -26,23 +26,27 @@ def use(func, name, dags_dir):
     dag_path = os.path.join(dags_dir, name)
     if func == 'create-dags':
         dag_path = os.path.join(dags_dir, name, 'hello_dag')
-        os.makedirs(dag_path)
+        try:
+            os.makedirs(dag_path)
+        except FileExistsError:
+            click.echo(f'DAG directory {name} already exists, exiting!', err=True)
+            exit(1)
     else:
-        os.mkdir(dag_path)
+        try:
+            os.makedir(dag_path)
+        except FileExistsError:
+            click.echo(f'DAG {name} already exists, exiting!', err=True)
+            exit(1)
 
     for filename, contents in dag_contents_map.items():
         fpath = os.path.join(dag_path, filename)
         with open(fpath, 'x') as f:
             f.writelines(contents)
 
-    full_dag_path = os.path.abspath(dag_path)
-    create_dag_filename, create_dag_contents = (
-        create_dag_file(name, full_dag_path) if func == 'create-dag'
-        else create_dags_file(name, full_dag_path)
-    )
+    create_dag_filename, create_dag_contents = create_dag_file(name) if func == 'create-dag' else create_dags_file(name)
+
     create_file_fpath = os.path.join(dags_dir, create_dag_filename)
     with open(create_file_fpath, 'x') as f:
         f.writelines(create_dag_contents)
-
 
 cli.add_command(use)

@@ -18,6 +18,8 @@ dag_contents_map = {
     ),
     'hello.yml': (
         "operator: airflow.operators.bash.BashOperator\n"
+        "dependencies:\n",
+        "  - hi\n",
         "bash_command: echo hello\n"
     ),
     'METADATA.yml': (
@@ -45,27 +47,27 @@ dag_contents_map = {
     )
 }
 
-create_dag_file = lambda dag_name, full_dag_path: (
+create_dag_file = lambda dag_name: (
     f'create_{dag_name}.py', (
         'import os\n',
         'from gusty import create_dag\n',
         '\n',
         '# There are many different ways to find Airflow\'s DAGs directory.\n',
         '# hello_dag_dir returns something like: "/usr/local/airflow/dags/hello_dag"\n',
-        f'hello_dag_dir = "{full_dag_path}"\n'
+        f'hello_dag_dir = os.path.join(os.environ.get("AIRFLOW_HOME"), "dags/{dag_name}")\n'
         '\n',
         'hello_dag = create_dag(hello_dag_dir, latest_only=False)\n'
     )
 )
 
-create_dags_file = lambda dag_folder_name, full_dags_path: (
+create_dags_file = lambda dag_folder_name: (
     f'create_{dag_folder_name}.py', (
         'import os\n',
         'from gusty import create_dags\n',
         'from gusty.utils import days_ago\n',
         '\n',
         '# gusty_dags_dir returns something like: "/usr/local/airflow/dags/gusty_dags"\n',
-        f'gusty_dags_dir = "{full_dags_path}"\n',
+        f'gusty_dags_dir = os.path.join(os.environ.get("AIRFLOW_HOME"), "dags/{dag_folder_name}")\n',
         '\n',
         'create_dags(\n',
         '  gusty_dags_dir,\n',
