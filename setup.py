@@ -21,7 +21,7 @@ setuptools.setup(
         "jupytext",
         "nbformat",
         "pendulum",
-        "PyYaml"
+        "PyYaml",
     ],
     entry_points={
         'console_scripts': [
