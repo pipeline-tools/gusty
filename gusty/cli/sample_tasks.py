@@ -39,7 +39,7 @@ dag_contents_map = {
         '  email_on_retry: False\n',
         '  retries: 1\n',
         '  retry_delay: !timedelta \n',
-        '  minutes: 5\n',
+        '    minutes: 5\n',
         'tags:\n',
         '  - docs\n',
         '  - demo\n',
@@ -53,7 +53,7 @@ create_dag_file = lambda dag_name: (
         'from gusty import create_dag\n',
         '\n',
         '# There are many different ways to find Airflow\'s DAGs directory.\n',
-        '# gusty_dag_dir returns something like: "/usr/local/airflow/dags/hello_dag"\n',
+        f'# gusty_dag_dir returns something like: "/usr/local/airflow/dags/{dag_name}"\n',
         f'gusty_dag_dir = os.path.join(os.environ.get("AIRFLOW_HOME"), "dags/{dag_name}")\n'
         '\n',
         'gusty_dag = create_dag(gusty_dag_dir, latest_only=False)\n'
