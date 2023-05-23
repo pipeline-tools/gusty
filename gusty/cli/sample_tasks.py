@@ -66,7 +66,7 @@ create_dags_file = lambda dag_folder_name: (
         'from gusty import create_dags\n',
         'from gusty.utils import days_ago\n',
         '\n',
-        '# gusty_dags_dir returns something like: "/usr/local/airflow/dags/gusty_dags"\n',
+        f'# gusty_dags_dir returns something like: "/usr/local/airflow/dags/{dag_folder_name}"\n',
         f'gusty_dags_dir = os.path.join(os.environ.get("AIRFLOW_HOME"), "dags/{dag_folder_name}")\n',
         '\n',
         'create_dags(\n',
