@@ -11,7 +11,7 @@ setuptools.setup(
     description="Making DAG construction easier",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/chriscardillo/gusty",
+    url="https://github.com/pipeline-tools/gusty",
     packages=setuptools.find_packages(),
     install_requires=[
         "ABSQL",

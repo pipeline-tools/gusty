@@ -1,9 +1,9 @@
-![logo](https://raw.githubusercontent.com/chriscardillo/gusty/main/images/logo_500.svg?raw=true)
+![logo](https://raw.githubusercontent.com/pipeline-tools/gusty/main/images/logo_500.svg?raw=true)
 
 [![Versions](https://img.shields.io/badge/python-3.6+-blue)](https://pypi.org/project/gusty/)
 [![PyPi](https://img.shields.io/pypi/v/gusty.svg)](https://pypi.org/project/gusty/)
-![build](https://github.com/chriscardillo/gusty/workflows/build/badge.svg)
-[![coverage](https://codecov.io/github/chriscardillo/gusty/coverage.svg?branch=main)](https://codecov.io/github/chriscardillo/gusty?branch=main)
+![build](https://github.com/pipeline-tools/gusty/workflows/build/badge.svg)
+[![coverage](https://codecov.io/github/pipeline-tools/gusty/coverage.svg?branch=main)](https://codecov.io/github/pipeline-tools/gusty?branch=main)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ---
@@ -297,7 +297,7 @@ So feel free to give the gusty approach a try, because you don't have to commit 
 
 ## Containerized Demo
 
-As an additional resource, you can check out a containerized demo of gusty and Airflow over at the [gusty-demo repo](https://github.com/chriscardillo/gusty-demo), which illustrates how gusty and a few custom operators can make SQL queries, Jupyter notebooks, and RMarkdown documents all work together in the same data pipeline.
+As an additional resource, you can check out a containerized demo of gusty and Airflow over at the [gusty-demo repo](https://github.com/pipeline-tools/gusty-demo), which illustrates how gusty and a few custom operators can make SQL queries, Jupyter notebooks, and RMarkdown documents all work together in the same data pipeline.
 
 
 ## Development
