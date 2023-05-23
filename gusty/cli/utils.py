@@ -2,7 +2,7 @@ import os
 
 
 def get_dags_directory(dags_dir):
-    current_directory_name = os.path.split(os.getcwd())
+    current_directory_name = os.path.split(os.getcwd())[-1]
 
     # Check if current, parent, or child directory is the dags directory
     if current_directory_name == 'dags':
