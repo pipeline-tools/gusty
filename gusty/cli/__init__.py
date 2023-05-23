@@ -33,7 +33,7 @@ def use(func, name, dags_dir):
             exit(1)
     else:
         try:
-            os.makedir(dag_path)
+            os.mkdir(dag_path)
         except FileExistsError:
             click.echo(f'DAG {name} already exists, exiting!', err=True)
             exit(1)

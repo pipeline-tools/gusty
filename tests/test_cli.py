@@ -29,7 +29,7 @@ def cli_runner():
 @pytest.fixture()
 def cli_result(dag_name, cli_runner, output_path):
     with cli_runner.isolated_filesystem(temp_dir=output_path):
-        result = cli_runner.invoke(cli, ['use', 'create-dag', dag_name, f'--dags-dir={output_path}'])
+        result = cli_runner.invoke(cli, ['use', 'create-dag', f'--name={dag_name}', f'--dags-dir={output_path}'])
     return result
 
 
@@ -47,7 +47,7 @@ def test_create_dag_file(dag_name, output_path):
     # Get expected contents of the create_dag file
     full_dag_path = os.path.abspath(os.path.join(output_path, dag_name))
     create_dag_filename, create_dag_file_expected_contents_list = (
-        sample_tasks.create_dag_file(dag_name, full_dag_path)
+        sample_tasks.create_dag_file(dag_name)
     )
     create_dag_file_expected_contents = ''.join(create_dag_file_expected_contents_list)
 
