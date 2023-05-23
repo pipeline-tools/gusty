@@ -16,12 +16,12 @@ setuptools.setup(
     install_requires=[
         "ABSQL",
         "apache-airflow",
+        "click",
         "inflection",
         "jupytext",
         "nbformat",
         "pendulum",
-        "PyYaml",
-        "Click"
+        "PyYaml"
     ],
     entry_points={
         'console_scripts': [

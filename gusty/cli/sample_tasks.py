@@ -53,10 +53,10 @@ create_dag_file = lambda dag_name: (
         'from gusty import create_dag\n',
         '\n',
         '# There are many different ways to find Airflow\'s DAGs directory.\n',
-        '# hello_dag_dir returns something like: "/usr/local/airflow/dags/hello_dag"\n',
-        f'hello_dag_dir = os.path.join(os.environ.get("AIRFLOW_HOME"), "dags/{dag_name}")\n'
+        '# gusty_dag_dir returns something like: "/usr/local/airflow/dags/hello_dag"\n',
+        f'gusty_dag_dir = os.path.join(os.environ.get("AIRFLOW_HOME"), "dags/{dag_name}")\n'
         '\n',
-        'hello_dag = create_dag(hello_dag_dir, latest_only=False)\n'
+        'gusty_dag = create_dag(gusty_dag_dir, latest_only=False)\n'
     )
 )
 
