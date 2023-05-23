@@ -15,7 +15,6 @@ def create_external_sensor(
     wait_for_task_name,
     sensor=ExternalTaskSensor,
 ):
-
     if sensor.__name__ in ["EmptyOperator", "DummyOperator"]:
         return sensor(dag=dag, task_id=wait_for_task_name)
 

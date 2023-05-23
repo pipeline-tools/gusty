@@ -24,8 +24,8 @@ setuptools.setup(
         "PyYaml",
     ],
     entry_points={
-        'console_scripts': [
-            'gusty = gusty.cli:cli',
+        "console_scripts": [
+            "gusty = gusty.cli:cli",
         ],
     },
     classifiers=[
