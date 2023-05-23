@@ -1,5 +1,6 @@
 import pytest
 import os
+from datetime import timedelta
 from click.testing import CliRunner
 
 from airflow import DAG
@@ -98,3 +99,6 @@ def test_yml_task(dag):
 def test_latest_only_root(dag):
     assert len(dag.roots) == 1
     assert dag.roots[0].task_id == "latest_only"
+
+def test_metadata(dag):
+    assert dag.__dict__['default_args']['retry_delay'] == timedelta(minutes=5)
