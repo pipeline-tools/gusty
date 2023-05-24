@@ -14,6 +14,10 @@ gusty also manages dependencies (within one DAG) and external dependencies (depe
 
 gusty works with both Airflow 1.x and Airflow 2.x, and has even more features, all of which aim to make the creation, management, and iteration of DAGs more fluid, so that you can intuitively design your DAG and build your tasks.
 
+## Documentation
+
+The official documentation for gusty is hosted here: https://pipeline-tools.github.io/gusty-docs/
+
 ## What's in gusty?
 
 ### Five Ways to Make Tasks

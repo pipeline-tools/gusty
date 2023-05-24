@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gusty",
-    version="0.20.0",
+    version="0.21.0",
     author="Chris Cardillo, Michael Chow, David Robinson",
     author_email="cfcardillo23@gmail.com",
     description="Making DAG construction easier",
@@ -16,12 +16,18 @@ setuptools.setup(
     install_requires=[
         "ABSQL",
         "apache-airflow",
+        "click",
         "inflection",
         "jupytext",
         "nbformat",
         "pendulum",
         "PyYaml",
     ],
+    entry_points={
+        "console_scripts": [
+            "gusty = gusty.cli:cli",
+        ],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
