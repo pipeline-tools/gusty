@@ -1,8 +1,11 @@
 import os
 from copy import copy
 from functools import partial
+
 from absql.utils import get_function_arg_names
+
 from gusty.parsing.loaders import generate_loader
+from gusty.parsing.models import MultiTaskGenerator, RangeForIntervalParams
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
 from gusty.utils import nested_update
 
@@ -88,10 +91,28 @@ def parse(
     multi_specs = []
     if len(multi_task_spec) > 0:
         for task_id, spec in multi_task_spec.items():
-            base_spec = yaml_file.copy()
-            base_spec["task_id"] = task_id
-            base_spec = nested_update(base_spec, spec)
-            multi_specs.append(base_spec)
+            spec_for_new_task = yaml_file.copy()
+            spec_for_new_task["task_id"] = task_id
+            spec_for_new_task = nested_update(spec_for_new_task, spec)
+            multi_specs.append(spec_for_new_task)
+
+    if multi_task_generator := yaml_file.get("multi_task_generator") or {}:
+        multi_task_generator: MultiTaskGenerator
+        interval_params = multi_task_generator.get("interval_params")
+        _range: RangeForIntervalParams = multi_task_generator.get("range_for_interval_params")
+        range_for_task_creation = range(
+            _range["from_"],
+            _range["to_"],
+            _range["increment"],
+        )
+        for offset_start in range_for_task_creation:
+            spec_for_new_task = yaml_file.copy()
+            del spec_for_new_task["multi_task_generator"]
+            offset_end = offset_start + _range["increment"] - 1
+            spec_for_new_task["task_id"] = f'{yaml_file["task_id"]}_{offset_start}_{offset_end}'
+            spec_for_new_task[interval_params[0]] = offset_start
+            spec_for_new_task[interval_params[1]] = offset_end
+            multi_specs.append(spec_for_new_task)
 
     if len(multi_specs) > 0:
         return multi_specs
