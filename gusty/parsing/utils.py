@@ -68,9 +68,11 @@ def get_nested_value(dictionary: dict[str, Any], keys_path: list[str]) -> Any:
 
 
 def set_nested_value(
-    dictionary: dict[str, Any], keys_path: list[str], value: Any,
+    dictionary: dict[str, Any], keys_path: list[str] | str, value: Any,
 ) -> None:
     """Устанавливает значение вложенного словаря по ключу `keys_path`."""
+    if isinstance(keys_path, str):
+        keys_path = keys_path.split('__')
     for key in keys_path[:-1]:
         dictionary = dictionary.setdefault(key, {})
     dictionary[keys_path[-1]] = value

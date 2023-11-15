@@ -130,12 +130,11 @@ def _get_spec_from_integer_params(
 ) -> list[dict[str, Any]]:
     new_specs = []
     old_task_id = spec['task_id']
-    range_params = range(start, end, increment)
-    for start_param in range_params:
-        set_nested_value(spec, param_names[0], start_param)
+    for start_param in range(start, end, increment):
         end_param = start_param + increment - 1
-        set_nested_value(spec, param_names[1], end_param)
         spec['task_id'] = f'{old_task_id}_{start_param}_{end_param}'
+        set_nested_value(spec, param_names[0], start_param)
+        set_nested_value(spec, param_names[1], end_param)
         new_specs.append(spec)
     return new_specs
 
