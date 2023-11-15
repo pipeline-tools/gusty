@@ -1,13 +1,18 @@
 import os
 from copy import copy
+from datetime import date
 from functools import partial
+from typing import Any, Callable
 
 from absql.utils import get_function_arg_names
 
 from gusty.parsing.loaders import generate_loader
 from gusty.parsing.models import MultiTaskGenerator, RangeForIntervalParams
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
+from gusty.parsing.utils import get_dates_range, set_nested_value
 from gusty.utils import nested_update
+
+T_SpecGetter = Callable[[Any, Any, list[str], dict[str, Any]], list[dict[str, Any]]]
 
 default_parsers = {
     ".yml": parse_generic,
@@ -96,25 +101,51 @@ def parse(
             spec_for_new_task = nested_update(spec_for_new_task, spec)
             multi_specs.append(spec_for_new_task)
 
-    if multi_task_generator := yaml_file.get("multi_task_generator") or {}:
-        multi_task_generator: MultiTaskGenerator
-        interval_params = multi_task_generator.get("interval_params")
-        _range: RangeForIntervalParams = multi_task_generator.get("range_for_interval_params")
-        range_for_task_creation = range(
-            _range["from_"],
-            _range["to_"],
-            _range["increment"],
+    multi_task_generator = yaml_file.get("multi_task_generator") or {}
+    if multi_task_generator:
+        _range: RangeForIntervalParams = multi_task_generator["range_for_interval_params"]
+        specs_getter: T_SpecGetter = {
+            'days': _get_spec_from_date_params,
+            'integers': partial(_get_spec_from_integer_params, increment=_range['increment']),
+        }[_range['range_type']]
+        multi_specs.extend(
+            specs_getter(
+                _range['from_'],
+                _range['to_'],
+                multi_task_generator['interval_params'],
+                yaml_file.copy(),
+            ),
         )
-        for offset_start in range_for_task_creation:
-            spec_for_new_task = yaml_file.copy()
-            del spec_for_new_task["multi_task_generator"]
-            offset_end = offset_start + _range["increment"] - 1
-            spec_for_new_task["task_id"] = f'{yaml_file["task_id"]}_{offset_start}_{offset_end}'
-            spec_for_new_task[interval_params[0]] = offset_start
-            spec_for_new_task[interval_params[1]] = offset_end
-            multi_specs.append(spec_for_new_task)
 
     if len(multi_specs) > 0:
         return multi_specs
 
     return yaml_file
+
+
+def _get_spec_from_integer_params(
+    start: int, end: int, param_names: list[str], spec: dict[Any, Any], increment: int,
+) -> list[dict[str, Any]]:
+    new_specs = []
+    old_task_id = spec['task_id']
+    range_params = range(start, end, increment)
+    for start_param in range_params:
+        spec = set_nested_value(spec, param_names[0], start_param)
+        end_param = start_param + increment - 1
+        spec = set_nested_value(spec, param_names[1], end_param)
+        spec['task_id'] = f'{old_task_id}_{start_param}_{end_param}'
+        new_specs.append(spec)
+    return new_specs
+
+
+def _get_spec_from_date_params(
+    start: date, end: date, param_names: list[str], spec: dict[Any, Any],
+) -> list[dict[str, Any]]:
+    new_specs = []
+    old_task_id = spec['task_id']
+    range_params = get_dates_range(start, end)
+    for day_date in range_params:
+        spec = set_nested_value(spec, param_names[0], day_date)
+        spec['task_id'] = f'{old_task_id}_{day_date}'
+        new_specs.append(spec)
+    return new_specs

@@ -1,5 +1,10 @@
-import ast, importlib.util
+import ast
+import importlib.util
+from datetime import date, datetime, timedelta
+from typing import Iterator, TypeVar, Any
+
 from absql.render import render_context
+from dateutil.relativedelta import relativedelta
 
 
 def render_frontmatter(frontmatter, runner=None, exclude=["sql"]):
@@ -43,3 +48,31 @@ class CallableFinder(ast.NodeVisitor):
         ast.NodeVisitor.generic_visit(self, node)
         if node.name == self.callable_name:
             self.has_callable = True
+
+
+DateOrDt = TypeVar('DateOrDt', datetime, date)
+
+
+def get_dates_range(date_from: DateOrDt, date_to: DateOrDt) -> Iterator[DateOrDt]:
+    """Возвращает генератор дат между `date_from` и `date_to`."""
+    for diff in range((date_to - date_from).days + 1):
+        yield date_from + timedelta(days=diff)
+
+
+def get_nested_value(dictionary: dict[str, Any], keys_path: list[str]) -> Any:
+    """Возвращает значение вложенного словаря по ключу `keys_path`."""
+    nested_value = dictionary.copy()
+    for key in keys_path:
+        nested_value = nested_value[key]
+    return nested_value
+
+
+def set_nested_value(
+    dictionary: dict[str, Any], keys_path: list[str], value: Any,
+) -> dict[str, Any]:
+    """Устанавливает значение вложенного словаря по ключу `keys_path`."""
+    new_dictionary = dictionary.copy()
+    for key in keys_path[:-1]:
+        new_dictionary = new_dictionary.setdefault(key, {})
+    new_dictionary[keys_path[-1]] = value
+    return new_dictionary
