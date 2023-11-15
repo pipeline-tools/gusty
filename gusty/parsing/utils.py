@@ -53,10 +53,10 @@ class CallableFinder(ast.NodeVisitor):
 DateOrDt = TypeVar('DateOrDt', datetime, date)
 
 
-def get_dates_range(date_from: DateOrDt, date_to: DateOrDt) -> Iterator[DateOrDt]:
+def get_dates_range(date_from: DateOrDt, date_to: DateOrDt) -> Iterator[date]:
     """Возвращает генератор дат между `date_from` и `date_to`."""
     for diff in range((date_to - date_from).days + 1):
-        yield date_from + timedelta(days=diff)
+        yield (date_from + timedelta(days=diff)).date()
 
 
 def get_nested_value(dictionary: dict[str, Any], keys_path: list[str]) -> Any:

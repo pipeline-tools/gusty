@@ -1,0 +1,10 @@
+operator: airflow.operators.empty.EmptyOperator
+multi_task_generator:
+  interval_params:
+    - offset_start
+    - offset_end
+  range_for_interval_params:
+    from_: 0
+    to_: 10
+    increment: 2
+    range_type: integers

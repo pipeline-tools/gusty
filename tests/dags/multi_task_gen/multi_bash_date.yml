@@ -1,0 +1,8 @@
+operator: airflow.operators.empty.EmptyOperator
+multi_task_generator:
+  interval_params:
+    - day_date
+  range_for_interval_params:
+    from_: !days_ago 4
+    to_: !days_ago 1
+    range_type: days

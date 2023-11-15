@@ -1,3 +1,4 @@
+import logging
 import os
 from copy import copy
 from datetime import date
@@ -7,7 +8,7 @@ from typing import Any, Callable
 from absql.utils import get_function_arg_names
 
 from gusty.parsing.loaders import generate_loader
-from gusty.parsing.models import MultiTaskGenerator, RangeForIntervalParams
+from gusty.parsing.models import RangeForIntervalParams
 from gusty.parsing.parsers import parse_generic, parse_py, parse_ipynb, parse_sql
 from gusty.parsing.utils import get_dates_range, set_nested_value
 from gusty.utils import nested_update
@@ -131,11 +132,13 @@ def _get_spec_from_integer_params(
     new_specs = []
     old_task_id = spec['task_id']
     for start_param in range(start, end, increment):
+        current_spec = spec.copy()
         end_param = start_param + increment - 1
-        spec['task_id'] = f'{old_task_id}_{start_param}_{end_param}'
-        set_nested_value(spec, param_names[0], start_param)
-        set_nested_value(spec, param_names[1], end_param)
-        new_specs.append(spec)
+        logging.info('start: %s, end: %s, increment: %s', start_param, end_param, increment)
+        current_spec['task_id'] = f'{old_task_id}_{start_param}_{end_param}'
+        set_nested_value(current_spec, param_names[0], start_param)
+        set_nested_value(current_spec, param_names[1], end_param)
+        new_specs.append(current_spec)
     return new_specs
 
 
@@ -146,7 +149,8 @@ def _get_spec_from_date_params(
     old_task_id = spec['task_id']
     range_params = get_dates_range(start, end)
     for day_date in range_params:
-        set_nested_value(spec, param_names[0], day_date)
-        spec['task_id'] = f'{old_task_id}_{day_date}'
-        new_specs.append(spec)
+        current_spec = spec.copy()
+        set_nested_value(current_spec, param_names[0], day_date)
+        current_spec['task_id'] = f'{old_task_id}_{day_date}'
+        new_specs.append(current_spec)
     return new_specs
