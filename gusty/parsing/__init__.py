@@ -106,8 +106,10 @@ def parse(
         _range: RangeForIntervalParams = multi_task_generator["range_for_interval_params"]
         specs_getter: T_SpecGetter = {
             'days': _get_spec_from_date_params,
-            'integers': partial(_get_spec_from_integer_params, increment=_range['increment']),
-        }[_range['range_type']]
+            'integers': partial(
+                _get_spec_from_integer_params, increment=_range.get('increment', 1),
+            ),
+        }[_range.get('range_type', 'integers')]
         multi_specs.extend(
             specs_getter(
                 _range['from_'],
