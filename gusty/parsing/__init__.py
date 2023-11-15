@@ -130,9 +130,9 @@ def _get_spec_from_integer_params(
     old_task_id = spec['task_id']
     range_params = range(start, end, increment)
     for start_param in range_params:
-        spec = set_nested_value(spec, param_names[0], start_param)
+        set_nested_value(spec, param_names[0], start_param)
         end_param = start_param + increment - 1
-        spec = set_nested_value(spec, param_names[1], end_param)
+        set_nested_value(spec, param_names[1], end_param)
         spec['task_id'] = f'{old_task_id}_{start_param}_{end_param}'
         new_specs.append(spec)
     return new_specs
@@ -145,7 +145,7 @@ def _get_spec_from_date_params(
     old_task_id = spec['task_id']
     range_params = get_dates_range(start, end)
     for day_date in range_params:
-        spec = set_nested_value(spec, param_names[0], day_date)
+        set_nested_value(spec, param_names[0], day_date)
         spec['task_id'] = f'{old_task_id}_{day_date}'
         new_specs.append(spec)
     return new_specs
