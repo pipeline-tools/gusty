@@ -53,3 +53,8 @@ def test_multiple_tasks_exist(dag):
 def test_multiple_tasks_exist_date(dag):
     for cur_date in get_dates_range(days_ago(4), days_ago(1)):
         assert f"multi_bash_date_{cur_date}" in dag.task_dict.keys()
+
+
+def test_multiple_tasks_exist_date_two_params(dag):
+    for cur_date in get_dates_range(days_ago(4), days_ago(1)):
+        assert f"multi_date_two_params_{cur_date}" in dag.task_dict.keys()

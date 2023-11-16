@@ -1,4 +1,3 @@
-import logging
 import os
 from copy import copy
 from datetime import date
@@ -134,7 +133,6 @@ def _get_spec_from_integer_params(
     for start_param in range(start, end, increment):
         current_spec = spec.copy()
         end_param = start_param + increment - 1
-        logging.info('start: %s, end: %s, increment: %s', start_param, end_param, increment)
         current_spec['task_id'] = f'{old_task_id}_{start_param}_{end_param}'
         set_nested_value(current_spec, param_names[0], start_param)
         set_nested_value(current_spec, param_names[1], end_param)
@@ -151,6 +149,8 @@ def _get_spec_from_date_params(
     for day_date in range_params:
         current_spec = spec.copy()
         set_nested_value(current_spec, param_names[0], day_date)
+        if len(param_names) > 1:
+            set_nested_value(current_spec, param_names[1], day_date)
         current_spec['task_id'] = f'{old_task_id}_{day_date}'
         new_specs.append(current_spec)
     return new_specs
