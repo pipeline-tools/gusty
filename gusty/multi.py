@@ -1,7 +1,9 @@
-import os
 import asyncio
+import os
+
 from gusty import create_dag
 from gusty.exceptions import GustyDagsImportError
+from gusty.models import DagErrorData
 
 
 async def create_dag_async(dag_dir, **kwargs):
@@ -63,16 +65,14 @@ def create_dags(
 
     else:
         excs = []
-        err_dag_ids = []
         for gusty_dag in gusty_dags:
             dag_id = os.path.basename(gusty_dag)
             if current_dag_id is None or current_dag_id == dag_id:
                 try:
                     dag_to_add_to_environment = create_dag(gusty_dag, **kwargs)
                 except Exception as exc:
-                    excs.append(exc)
-                    err_dag_ids.append(dag_id)
+                    excs.append(DagErrorData(dag_id, exc))
                 else:
                     caller_env[dag_id] = dag_to_add_to_environment
         if excs:
-            raise GustyDagsImportError(err_dag_ids, excs)
+            raise GustyDagsImportError(excs)
