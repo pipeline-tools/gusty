@@ -69,10 +69,8 @@ def create_dags(
             dag_id = os.path.basename(gusty_dag)
             if current_dag_id is None or current_dag_id == dag_id:
                 try:
-                    dag_to_add_to_environment = create_dag(gusty_dag, **kwargs)
+                    caller_env[dag_id] = create_dag(gusty_dag, **kwargs)
                 except Exception as exc:
                     excs.append(DagErrorData(dag_id, exc))
-                else:
-                    caller_env[dag_id] = dag_to_add_to_environment
         if excs:
             raise GustyDagsImportError(excs)
