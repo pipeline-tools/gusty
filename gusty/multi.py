@@ -61,7 +61,15 @@ def create_dags(
         )
 
     else:
+        excs = []
+        err_dag_ids = []
         for gusty_dag in gusty_dags:
             dag_id = os.path.basename(gusty_dag)
             if current_dag_id is None or current_dag_id == dag_id:
-                caller_env[dag_id] = create_dag(gusty_dag, **kwargs)
+                try:
+                    caller_env[dag_id] = create_dag(gusty_dag, **kwargs)
+                except Exception as exc:
+                    excs.append(exc)
+                    err_dag_ids.append(dag_id)
+        if excs:
+            raise ExceptionGroup(f"Ошибка импорта DAG'ов {err_dag_ids}", excs)
