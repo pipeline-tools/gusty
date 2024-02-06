@@ -81,6 +81,7 @@ def create_schematic(dag_dir, parsers=default_parsers):
         }
         for dir, subdirs, files in os.walk(dag_dir)
         if not os.path.basename(dir).startswith(("_", "."))
+        and not os.path.exists(dir + "/.gustyignore")
     }
 
 
