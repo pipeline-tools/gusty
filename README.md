@@ -1,6 +1,6 @@
 ![logo](https://raw.githubusercontent.com/pipeline-tools/gusty/main/images/logo_500.svg?raw=true)
 
-[![Versions](https://img.shields.io/badge/python-3.6+-blue)](https://pypi.org/project/gusty/)
+[![Versions](https://img.shields.io/badge/python-3.8+-blue)](https://pypi.org/project/gusty/)
 [![PyPi](https://img.shields.io/pypi/v/gusty.svg)](https://pypi.org/project/gusty/)
 ![build](https://github.com/pipeline-tools/gusty/workflows/build/badge.svg)
 [![coverage](https://codecov.io/github/pipeline-tools/gusty/coverage.svg?branch=main)](https://codecov.io/github/pipeline-tools/gusty?branch=main)
