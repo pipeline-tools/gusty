@@ -68,4 +68,4 @@ def test_py_dummy(dag):
 
 def test_automatic_py(dag, py_task):
     task = dag.task_dict["simple_leaf"]
-    assert type(py_task) == type(task)
+    assert type(py_task) is type(task)
