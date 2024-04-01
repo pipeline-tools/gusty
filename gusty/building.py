@@ -145,7 +145,10 @@ def _get_operator_parameters(operator, operator_param_cache):
         operator_param_cache.update({operator: params})
         return params
 
-    params = inspect.signature(operator.__init__).parameters.keys()
+    params = list(inspect.signature(operator.__init__).parameters.keys())
+    template_fields = list(getattr(operator, "template_fields", []))
+    if len(template_fields) > 0:
+        params = list(set(params + template_fields))
     operator_param_cache.update({operator: params})
     return params
 
