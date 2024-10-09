@@ -21,6 +21,9 @@ RUN pip3 install -r dev-requirements.txt
 # Airflow env
 ENV AIRFLOW_HOME='/usr/local/airflow'
 
+# Nope
+ENV SCARF_ANALYTICS=false
+
 # wd
 WORKDIR /gusty
 
