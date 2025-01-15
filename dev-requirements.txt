@@ -6,4 +6,4 @@ jupytext==1.16.6
 line-profiler==4.2.0
 nbformat==5.10.4
 PyYAML==6.0.2
-snakeviz==2.2.2
+snakeviz==2.2.1
