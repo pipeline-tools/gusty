@@ -11,7 +11,7 @@ dag_contents_map = {
     ),
     "hey.sql": (
         "---\n"
-        "operator: airflow.providers.sqlite.operators.sqlite.SqliteOperator\n"
+        "operator: airflow.providers.common.sql.operators.sql.SQLExecuteQueryOperator\n"
         "---\n"
         "\n"
         "SELECT 'hey'\n"

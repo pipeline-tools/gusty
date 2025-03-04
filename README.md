@@ -52,7 +52,7 @@ Lastly, here's a slightly different `.sql` example:
 
 ```sql
 ---
-operator: airflow.providers.sqlite.operators.sqlite.SqliteOperator
+operator: airflow.providers.common.sql.operators.sql.SQLExecuteQueryOperator
 ---
 
 SELECT
