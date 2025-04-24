@@ -29,7 +29,8 @@ def dag(loader_dir):
         default_args={
             "owner": "gusty",
             "depends_on_past": False,
-            "start_date": days_ago(1),
+            # Something to do with _time_restriction in airflow.models.dag
+            # "start_date": days_ago(1),
             "email": "gusty@gusty.com",
             "email_on_failure": False,
             "email_on_retry": False,
