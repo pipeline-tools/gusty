@@ -1,2 +1,2 @@
-operator: airflow.operators.bash.BashOperator
+operator: airflow.providers.standard.operators.bash.BashOperator
 bash_command: echo overwritten

@@ -1,4 +1,4 @@
-operator: airflow.operators.bash.BashOperator
+operator: airflow.providers.standard.operators.bash.BashOperator
 bash_command: sleep 5
 retries: 3
 dependencies:
