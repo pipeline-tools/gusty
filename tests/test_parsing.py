@@ -33,7 +33,7 @@ def dag(parsing_dag_dir):
         ignore_subfolders=True,
         parse_hooks={
             ".py": lambda file_path: {
-                "operator": "airflow.operators.python.PythonOperator",
+                "operator": "airflow.providers.standard.operators.python.PythonOperator",
                 "python_callable": lambda: "this was custom",
             },
         },

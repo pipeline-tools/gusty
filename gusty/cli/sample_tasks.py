@@ -17,7 +17,7 @@ dag_contents_map = {
         "SELECT 'hey'\n"
     ),
     "hello.yml": (
-        "operator: airflow.operators.bash.BashOperator\n" "dependencies:\n",
+        "operator: airflow.providers.standard.operators.bash.BashOperator\n" "dependencies:\n",
         "  - hi\n",
         "bash_command: echo hello\n",
     ),

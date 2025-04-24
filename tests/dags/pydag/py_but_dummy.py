@@ -1,4 +1,4 @@
 # ---
-# operator: airflow.operators.empty.EmptyOperator
+# operator: airflow.providers.standard.operators.empty.EmptyOperator
 # ---
 print("another one")

@@ -1,4 +1,4 @@
-operator: airflow.operators.empty.EmptyOperator
+operator: airflow.providers.standard.operators.empty.EmptyOperator
 external_dependencies:
   - a_whole_dag: all
   - external_dag: external_task

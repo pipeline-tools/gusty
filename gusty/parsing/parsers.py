@@ -23,7 +23,9 @@ def parse_py(file_path, loader=None, runner=None, render_on_create=False):
         loader = generate_loader()
 
     job_spec = {}
-    if airflow_version > 1:
+    if airflow_version > 2:
+        job_spec.update({"operator": "airflow.providers.standard.operators.python.PythonOperator"})
+    elif airflow_version > 1:
         job_spec.update({"operator": "airflow.operators.python.PythonOperator"})
     else:
         job_spec.update(

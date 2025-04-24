@@ -1,3 +1,3 @@
-operator: airflow.operators.empty.EmptyOperator
+operator: airflow.providers.standard.operators.empty.EmptyOperator
 start_date: !custom_days_ago
 retries: !custom_retries [3, 2, 4]
