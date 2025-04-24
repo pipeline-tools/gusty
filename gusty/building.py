@@ -28,7 +28,7 @@ else:
 if airflow_version > 2:
     from airflow.sdk.bases.operator import BaseOperator
 else:
-    from airflow.models import BaseOperator, DAG
+    from airflow.models import BaseOperator
 
 ###############
 ## Constants ##
