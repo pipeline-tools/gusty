@@ -20,7 +20,9 @@ from gusty.utils.context import (
 if airflow_version > 1:
     from airflow.utils.task_group import TaskGroup
 
-if airflow_version > 1:
+if airflow_version > 2:
+    from airflow.providers.standard.operators.latest_only import LatestOnlyOperator
+elif airflow_version > 1:
     from airflow.operators.latest_only import LatestOnlyOperator
 else:
     from airflow.operators.latest_only_operator import LatestOnlyOperator

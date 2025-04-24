@@ -1,6 +1,8 @@
 from gusty.importing import airflow_version
 
-if airflow_version > 1:
+if airflow_version > 2:
+    from airflow.providers.standard.sensors.external_task import ExternalTaskSensor
+elif airflow_version > 1:
     from airflow.sensors.external_task import ExternalTaskSensor
 else:
     from airflow.sensors.external_task_sensor import ExternalTaskSensor

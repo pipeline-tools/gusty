@@ -1,6 +1,6 @@
 import pytest
 from gusty import create_dag
-from airflow.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
 
 ###############
 ## FIXTURES ##
