@@ -1,5 +1,5 @@
 ---
-operator: airflow.providers.sqlite.operators.sqlite.SqliteOperator
+operator: airflow.providers.common.sql.operators.sql.SQLExecuteQueryOperator
 date: "2022-04-01"
 doc: "{{simple_constructor()}}"
 ---

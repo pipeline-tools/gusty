@@ -1,8 +1,8 @@
 import pytest
 from gusty import create_dag
 from datetime import timedelta
-from airflow.sensors.external_task import ExternalTaskSensor
-from airflow.operators.empty import EmptyOperator
+from airflow.providers.standard.sensors.external_task import ExternalTaskSensor
+from airflow.providers.standard.operators.empty import EmptyOperator
 
 ###############
 ## FIXTURES ##

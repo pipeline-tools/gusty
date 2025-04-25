@@ -1,5 +1,5 @@
 ---
-operator: airflow.providers.sqlite.operators.sqlite.SqliteOperator
+operator: airflow.providers.common.sql.operators.sql.SQLExecuteQueryOperator
 ---
 
 SELECT *

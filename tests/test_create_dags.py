@@ -41,19 +41,26 @@ def test_wait_for_defaults(multi_serial):
     assert serial_a == 679
 
 
-def test_kwargs(multi_serial):
-    serial_c = multi_serial["dag_c"].__dict__["schedule_interval"]
+def test_kwargs(multi_serial, multi_concurrent):
+    serial_c = multi_serial["dag_c"].__dict__["schedule"]
+    concurrent_c = multi_concurrent["dag_c"].__dict__["schedule"]
     assert serial_c == "0 11 * * *"
+    assert concurrent_c == "0 11 * * *"
 
 
-def test_kwargs_override(multi_serial):
+def test_kwargs_override(multi_serial, multi_concurrent):
     # a
-    serial_a = multi_serial["dag_a"].__dict__["schedule_interval"]
+    serial_a = multi_serial["dag_a"].__dict__["schedule"]
+    concurrent_a = multi_concurrent["dag_a"].__dict__["schedule"]
     # b
-    serial_b = multi_serial["dag_b"].__dict__["schedule_interval"]
+    serial_b = multi_serial["dag_b"].__dict__["schedule"]
+    concurrent_b = multi_concurrent["dag_b"].__dict__["schedule"]
+    # a
     assert serial_a == "0 0 * * *"
+    assert concurrent_a == "0 0 * * *"
     # b
     assert serial_b == "0 0 * * *"
+    assert concurrent_b == "0 0 * * *"
 
 
 def test_default_args(multi_serial):

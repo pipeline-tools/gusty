@@ -1,6 +1,6 @@
 import pytest
 from gusty import create_dag
-from airflow.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
 
 ###############
 ## FIXTURES ##
@@ -68,4 +68,4 @@ def test_py_dummy(dag):
 
 def test_automatic_py(dag, py_task):
     task = dag.task_dict["simple_leaf"]
-    assert type(py_task) == type(task)
+    assert type(py_task) is type(task)

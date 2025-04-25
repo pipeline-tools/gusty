@@ -11,13 +11,13 @@ dag_contents_map = {
     ),
     "hey.sql": (
         "---\n"
-        "operator: airflow.providers.sqlite.operators.sqlite.SqliteOperator\n"
+        "operator: airflow.providers.common.sql.operators.sql.SQLExecuteQueryOperator\n"
         "---\n"
         "\n"
         "SELECT 'hey'\n"
     ),
     "hello.yml": (
-        "operator: airflow.operators.bash.BashOperator\n" "dependencies:\n",
+        "operator: airflow.providers.standard.operators.bash.BashOperator\n" "dependencies:\n",
         "  - hi\n",
         "bash_command: echo hello\n",
     ),

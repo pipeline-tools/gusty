@@ -191,3 +191,7 @@ def test_context_rendering_omits_sql(dag):
 
 def test_context_rendering_py(dag):
     assert dag.task_dict["py_task"].__dict__["python_callable"]() == "hey"
+
+
+def test_gusty_ignored_folder(dag):
+    assert "ignored.ignored_ignored" not in dag.task_dict.keys()

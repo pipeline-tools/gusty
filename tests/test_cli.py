@@ -4,9 +4,9 @@ from datetime import timedelta
 from click.testing import CliRunner
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
-from airflow.providers.sqlite.operators.sqlite import SqliteOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 from gusty.cli import cli, sample_tasks
 from gusty import create_dag
@@ -93,7 +93,7 @@ def test_python_task(dag):
 
 
 def test_sql_task(dag):
-    assert isinstance(dag.task_dict["hey"], SqliteOperator)
+    assert isinstance(dag.task_dict["hey"], SQLExecuteQueryOperator)
     assert dag.task_dict["hey"].sql == "SELECT 'hey'"
 
 

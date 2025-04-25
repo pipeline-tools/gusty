@@ -1,4 +1,4 @@
-operator: airflow.operators.empty.EmptyOperator
+operator: airflow.providers.standard.operators.empty.EmptyOperator
 start_date: !datetime [2022, 1, 15]
 end_date: !days_ago 4
 retry_delay: !timedelta {minutes: 20}

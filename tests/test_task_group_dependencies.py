@@ -45,7 +45,7 @@ def test_task_group_dependencies(dag):
     task groups which depend on other tasks groups are not considered valid dependency
     objects for root tasks.
     """
-    second_task_group = dag.__dict__["_task_group"].__dict__["children"][
+    second_task_group = dag.__dict__["task_group"].children[
         "second_task_group"
     ]
     assert "latest_only" not in second_task_group.upstream_task_ids
