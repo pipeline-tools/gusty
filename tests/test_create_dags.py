@@ -29,6 +29,20 @@ def multi_serial(multiple_dags_dir):
     return dag_dict
 
 
+@pytest.fixture(scope="session")
+def multi_concurrent(multiple_dags_dir):
+    dag_dict = {}
+    create_dags(
+        multiple_dags_dir,
+        dag_dict,
+        concurrent=True,
+        schedule="0 11 * * *",
+        default_args={"email": "default@gusty.com", "owner": "default"},
+        wait_for_defaults={"timeout": 679},
+    )
+    return dag_dict
+
+
 ###########
 ## Tests ##
 ###########

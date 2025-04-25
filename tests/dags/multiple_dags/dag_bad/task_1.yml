@@ -1,4 +1,4 @@
-operator: airflow.operators.UnexistingOperator
+operator: airflow.operators.empty.EmptyOperator
 unexisting_parameter: echo hello
 external_dependencies:
   - dag_b: task_2
