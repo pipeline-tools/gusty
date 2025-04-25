@@ -1,6 +1,6 @@
 import os
 from copy import copy
-from datetime import date
+from datetime import datetime
 from functools import partial
 from typing import Any, Callable
 
@@ -141,11 +141,11 @@ def _get_spec_from_integer_params(
 
 
 def _get_spec_from_date_params(
-    start: date, end: date, param_names: list[str], spec: dict[Any, Any],
+    start: str, end: str, param_names: list[str], spec: dict[Any, Any],
 ) -> list[dict[str, Any]]:
     new_specs = []
     old_task_id = spec['task_id']
-    range_params = get_dates_range(start, end)
+    range_params = get_dates_range(datetime.fromisoformat(start), datetime.fromisoformat(end))
     for day_date in range_params:
         current_spec = spec.copy()
         set_nested_value(current_spec, param_names[0], day_date)
