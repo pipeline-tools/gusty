@@ -5,6 +5,7 @@ from functools import partial
 from typing import Any, Callable
 
 from absql.utils import get_function_arg_names
+from exceptions_mapper import map_error
 
 from gusty.parsing.loaders import generate_loader
 from gusty.parsing.models import RangeForIntervalParams
@@ -140,13 +141,16 @@ def _get_spec_from_integer_params(
     return new_specs
 
 
+@map_error()
 def _get_spec_from_date_params(
     start: str | date, end: str | date, param_names: list[str], spec: dict[Any, Any],
 ) -> list[dict[str, Any]]:
     new_specs = []
     old_task_id = spec['task_id']
-    if isinstance(start, str) and isinstance(end, str):
-        start, end = datetime.fromisoformat(start), datetime.fromisoformat(end)
+    if isinstance(start, str):
+        start = datetime.fromisoformat(start)
+    if isinstance(end, str):
+        end = datetime.fromisoformat(end)
     range_params = get_dates_range(start, end)
     for day_date in range_params:
         current_spec = spec.copy()

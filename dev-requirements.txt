@@ -7,3 +7,4 @@ line-profiler==4.2.0
 nbformat==5.10.4
 PyYAML==6.0.2
 snakeviz==2.2.1
+logging-decorator @ git+https://github.com/frost3281/logging-decorator

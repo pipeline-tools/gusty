@@ -2,7 +2,7 @@ FROM python:3.10.4-slim-buster
 USER root
 
 # PSQL Requirements
-RUN apt-get update && apt-get install -y libpq-dev build-essential
+RUN apt-get update && apt-get install -y libpq-dev build-essential git
 
 # pip3 upgrade
 RUN pip3 install --upgrade pip
