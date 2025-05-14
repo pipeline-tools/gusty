@@ -12,7 +12,7 @@ gusty allows you to control your Airflow DAGs, Task Groups, and Tasks with great
 
 gusty also manages dependencies (within one DAG) and external dependencies (dependencies on tasks in other DAGs) for each task file you define. All you have to do is provide a list of `dependencies` or `external_dependencies` inside of a task file, and gusty will automatically set each task's dependencies and create external task sensors for any external dependencies listed.
 
-gusty works with both Airflow 1.x and Airflow 2.x, and has even more features, all of which aim to make the creation, management, and iteration of DAGs more fluid, so that you can intuitively design your DAG and build your tasks.
+gusty works with all major Airflow versions and has even more features, all of which aim to make the creation, management, and iteration of DAGs more fluid, so that you can intuitively design your DAG and build your tasks.
 
 ## Documentation
 
@@ -35,7 +35,7 @@ gusty will turn every file in a DAG directory into a task. By default gusty supp
 Here is quick example of a YAML task file, which might be called something like `hello_world.yml`:
 
 ```yml
-operator: airflow.operators.bash.BashOperator
+operator: airflow.providers.standard.operators.bash.BashOperator
 bash_command: echo hello world
 ```
 
@@ -70,7 +70,7 @@ Every task file type supports `dependencies` and `external_dependencies` paramet
 For .yml, .ipynb, and .Rmd task file types, dependencies and external_dependencies would be defined using YAML syntax:
 
 ```yml
-operator: airflow.operators.bash.BashOperator
+operator: airflow.providers.standard.operators.bash.BashOperator
 bash_command: echo hello world
 dependencies:
   - same_dag_task
@@ -105,7 +105,7 @@ You will also note that we wrapped our previous Python code in a function called
 
 #### Dynamic Dependencies
 
-gusty can also detect and generate dependencies through a task object's `dependencies` attribute. This means you can also **dynamically** set dependencies. One popular example of this option would be if your operator runs SQL, you can parse that SQL for table names, and attach a list of those table names to the operator's `dependencies` attribute. If those table names listed in the `dependencies` attribute are also task ids in the DAG, gusty will be able to automatically set these dependencies for you!
+gusty can also detect and generate dependencies through a task object's `dependencies` attribute. This means you can also **dynamically** set dependencies. One popular example of this option would be if your operator runs SQL, you can parse that SQL for table names, and attach a list of those table names to the operator's `dependencies` attribute. If those table names listed in the `dependencies` attribute are also task ids in the DAG, gusty will be able to automatically set these dependencies for you! See [an example in the offical gusty documentation](https://pipeline-tools.github.io/gusty-docs/custom-operators.html#auto-detecting-dependencies).
 
 ### DAG and TaskGroup Control
 
@@ -258,7 +258,7 @@ The `local.` syntax is what gusty uses to know to look in your local operators f
 Sometimes task definitions can be repetitive. To account for this, gusty allows for a `multi_task_spec` block in any frontmatter. This allows you to generate multiple similar tasks with a single task definition file! For example, let's say you wanted to create two bash tasks, each containing a different `bash_command`. You can define these two tasks in a single task definition file like so:
 
 ```yml
-operator: airflow.operators.bash.BashOperator
+operator: airflow.providers.standard.operators.bash.BashOperator
 multi_task_spec:
   bash_task_1:
     bash_command: echo first_task
