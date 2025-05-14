@@ -1,6 +1,6 @@
 ABSQL==0.6.2
 apache-airflow==3.0.1
-click==8.2.0
+click==8.1.8
 inflection==0.5.1
 jupytext==1.17.1
 line-profiler==4.2.0
