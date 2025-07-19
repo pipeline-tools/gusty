@@ -3,6 +3,7 @@ import os
 from airflow import DAG
 from airflow.models import BaseOperator
 from airflow.sensors.base import BaseSensorOperator
+from airflow.providers.common.sql.operators.sql import BaseSQLOperator
 from datetime import timedelta
 from gusty.utils import days_ago
 from gusty.building import create_schematic
@@ -141,7 +142,12 @@ def test_tasks_created(dag, dag_files):
     expected_tasks = [*map(os.path.basename, dag_files)]
     expected_tasks = [*map(replace_extension, expected_tasks)]
     tasks_are_operators = [
-        ( isinstance(dag.task_dict[task], BaseOperator) or isinstance(dag.task_dict[task], BaseSensorOperator) ) for task in expected_tasks
+        (
+            isinstance(dag.task_dict[task], BaseOperator)
+            or isinstance(dag.task_dict[task], BaseSensorOperator)
+            or (dag.task_dict[task], BaseSQLOperator)
+        )
+        for task in expected_tasks
     ]
     assert all(expected_tasks)
     assert all(tasks_are_operators)
