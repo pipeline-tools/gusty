@@ -16,8 +16,12 @@ def dag(leaves_from_dag_dir):
     dag = create_dag(
         leaves_from_dag_dir,
         leaf_tasks_from_dict={
-            "dict_leaf": {"operator": "airflow.providers.standard.operators.empty.EmptyOperator"},
-            "overwritten_leaf": {"operator": "airflow.providers.standard.operators.empty.EmptyOperator"},
+            "dict_leaf": {
+                "operator": "airflow.providers.standard.operators.empty.EmptyOperator"
+            },
+            "overwritten_leaf": {
+                "operator": "airflow.providers.standard.operators.empty.EmptyOperator"
+            },
         },
     )
     return dag
