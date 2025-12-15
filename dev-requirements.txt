@@ -1,8 +1,8 @@
 ABSQL==0.6.2
-apache-airflow==3.1.0
-click==8.3.0
+apache-airflow==3.1.5
+click==8.3.1
 inflection==0.5.1
-jupytext==1.17.3
+jupytext==1.18.1
 line-profiler==5.0.0
 nbformat==5.10.4
 PyYAML==6.0.3
