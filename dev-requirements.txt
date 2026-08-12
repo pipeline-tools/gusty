@@ -1,5 +1,5 @@
 ABSQL==0.7.0
-apache-airflow==3.2.2
+apache-airflow==3.3.0
 click==8.4.1
 inflection==0.5.1
 jupytext==1.19.4
