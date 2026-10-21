@@ -1,4 +1,4 @@
-ABSQL==0.7.0
+ABSQL==0.8.0
 apache-airflow==3.3.2
 click==8.5.0
 inflection==0.5.1
